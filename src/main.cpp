@@ -76,12 +76,14 @@ private:
   }
   void initVulkan() {
     // check validation layer support
+    // ---------------------------------------------------------------------------------------------------------------
     if (enableValidationLayers && !checkValidationLayerSupport()) {
       throw std::runtime_error(
           "Validation layers requested, but failed to get");
     }
 
     // instance setup
+    // ---------------------------------------------------------------------------------------------------------------
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pApplicationName = "Vulkan";
@@ -102,6 +104,7 @@ private:
     instanceCreateInfo.ppEnabledExtensionNames = glfwExtensions;
 
     // setup validation layers if wanted
+    // ---------------------------------------------------------------------------------------------------------------
     if (enableValidationLayers) {
       instanceCreateInfo.enabledLayerCount = (uint32_t)validationLayers.size();
       instanceCreateInfo.ppEnabledLayerNames = validationLayers.data();
@@ -115,6 +118,7 @@ private:
     }
 
     // setup surface
+    // ---------------------------------------------------------------------------------------------------------------
     if (glfwCreateWindowSurface(instance, window, nullptr, &surface)) {
       throw std::runtime_error("Failed to create window surface");
     }
@@ -131,6 +135,7 @@ private:
     }
 
     // pick physical device (gpu)
+    // ---------------------------------------------------------------------------------------------------------------
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
@@ -153,6 +158,7 @@ private:
     }
 
     // setup logical device
+    // ---------------------------------------------------------------------------------------------------------------
     QueueFamily queueFamily = findQueueFamilies(phyDevice);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -192,6 +198,7 @@ private:
     }
 
     // setup swapchain
+    // ---------------------------------------------------------------------------------------------------------------
     SwapchainSupportDetails swapchainSupport = querySwapchainSupport(phyDevice);
     VkSurfaceFormatKHR surfaceFormat =
         chooseSwapSurfaceFormat(swapchainSupport.formats);
@@ -249,6 +256,7 @@ private:
     swapchainExtent = extent;
 
     // create image views
+    // ---------------------------------------------------------------------------------------------------------------
     swapchainImageViews.resize(swapchainImages.size());
     for (int i = 0; i < swapchainImages.size(); i++) {
       VkImageViewCreateInfo viewImageCreateInfo{};
@@ -274,7 +282,12 @@ private:
       }
     }
 
+    // setup graphics pipeline
+    // ---------------------------------------------------------------------------------------------------------------
+
+
     // get graphics queue handle
+    // ---------------------------------------------------------------------------------------------------------------
     vkGetDeviceQueue(device, queueFamily.graphics.value(), 0, &graphicsQueue);
     // get present queue handle
     vkGetDeviceQueue(device, queueFamily.present.value(), 0, &presentQueue);
