@@ -248,6 +248,32 @@ private:
     swapchainImageFormat = surfaceFormat.format;
     swapchainExtent = extent;
 
+    // create image views
+    swapchainImageViews.resize(swapchainImages.size());
+    for (int i = 0; i < swapchainImages.size(); i++) {
+      VkImageViewCreateInfo viewImageCreateInfo{};
+      viewImageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+      viewImageCreateInfo.image = swapchainImages[i];
+      viewImageCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+      viewImageCreateInfo.format = swapchainImageFormat;
+      viewImageCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+      viewImageCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+      viewImageCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+      viewImageCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+      viewImageCreateInfo.subresourceRange.aspectMask =
+          VK_IMAGE_ASPECT_COLOR_BIT;
+      viewImageCreateInfo.subresourceRange.baseMipLevel = 0;
+      viewImageCreateInfo.subresourceRange.levelCount = 1;
+      viewImageCreateInfo.subresourceRange.baseArrayLayer = 0;
+      viewImageCreateInfo.subresourceRange.layerCount = 1;
+
+      if (vkCreateImageView(device, &viewImageCreateInfo, nullptr,
+                            &swapchainImageViews[i]) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create image view");
+      }
+    }
+
     // get graphics queue handle
     vkGetDeviceQueue(device, queueFamily.graphics.value(), 0, &graphicsQueue);
     // get present queue handle
@@ -288,6 +314,9 @@ private:
   }
 
   void clean() {
+    for (auto imageView : swapchainImageViews) {
+      vkDestroyImageView(device, imageView, nullptr);
+    }
     vkDestroySwapchainKHR(device, swapchain, nullptr);
     vkDestroyDevice(device, nullptr);
     vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -406,6 +435,7 @@ private:
   VkSurfaceKHR surface;
   VkSwapchainKHR swapchain;
   std::vector<VkImage> swapchainImages;
+  std::vector<VkImageView> swapchainImageViews;
   VkFormat swapchainImageFormat;
   VkExtent2D swapchainExtent;
 
