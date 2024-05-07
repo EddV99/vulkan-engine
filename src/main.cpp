@@ -521,6 +521,18 @@ private:
       i++;
     }
 
+    // create command pools
+    // ---------------------------------------------------------------------------------------------------------------
+    VkCommandPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    poolInfo.queueFamilyIndex = queueFamily.graphics.value();
+
+    if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) !=
+        VK_SUCCESS) {
+      throw std::runtime_error("Failed to create command pool");
+    }
+
     // get graphics queue handle
     // ---------------------------------------------------------------------------------------------------------------
     vkGetDeviceQueue(device, queueFamily.graphics.value(), 0, &graphicsQueue);
@@ -577,6 +589,7 @@ private:
   }
 
   void clean() {
+    vkDestroyCommandPool(device, commandPool, nullptr);
     for (auto framebuffer : framebuffers) {
       vkDestroyFramebuffer(device, framebuffer, nullptr);
     }
@@ -711,6 +724,7 @@ private:
   VkPipelineLayout pipelineLayout;
   VkPipeline graphicsPipeline;
   std::vector<VkFramebuffer> framebuffers;
+  VkCommandPool commandPool;
 
   const std::vector<const char *> validationLayers = {
       "VK_LAYER_KHRONOS_validation"};
