@@ -3,3 +3,4 @@ build/CMakeCache.txt
 build/Makefile
 build/cmake_install.cmake
 build/vulkan-engine
+**/*.spv
