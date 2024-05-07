@@ -521,6 +521,9 @@ private:
       throw std::runtime_error("Failed to create command buffer");
     }
 
+    // create sync objects
+    // ---------------------------------------------------------------------------------------------------------------
+    
     // get graphics queue handle
     // ---------------------------------------------------------------------------------------------------------------
     vkGetDeviceQueue(device, queueFamily.graphics.value(), 0, &graphicsQueue);
@@ -622,10 +625,14 @@ private:
 
   void mainloop() {
     while (!glfwWindowShouldClose(window)) {
+      drawFrame();
       glfwPollEvents();
     }
   }
 
+  void drawFrame() {
+
+  }
   void clean() {
     vkDestroyCommandPool(device, commandPool, nullptr);
     for (auto framebuffer : framebuffers) {
@@ -792,6 +799,10 @@ private:
   std::vector<VkFramebuffer> framebuffers;
   VkCommandPool commandPool;
   VkCommandBuffer commandBuffer;
+
+  VkSemaphore imageAvailableSem;
+  VkSemaphore renderFinishedSem;
+  VkFence inFlightFench;
 
   const std::vector<const char *> validationLayers = {
       "VK_LAYER_KHRONOS_validation"};
