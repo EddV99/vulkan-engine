@@ -52,37 +52,11 @@ private:
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR> presentModes;
   };
-
-  SwapchainSupportDetails
-  querySwapchainSupport(VkPhysicalDevice physicalDevice) {
-    SwapchainSupportDetails details;
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface,
-                                              &details.capabilities);
-
-    uint32_t formatCount;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount,
-                                         nullptr);
-    if (formatCount > 0) {
-      details.formats.resize(formatCount);
-      vkGetPhysicalDeviceSurfaceFormatsKHR(
-          physicalDevice, surface, &formatCount, details.formats.data());
-    }
-
-    uint32_t presentCount;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface,
-                                              &presentCount, nullptr);
-    if (presentCount > 0) {
-      details.presentModes.resize(presentCount);
-      vkGetPhysicalDeviceSurfacePresentModesKHR(
-          physicalDevice, surface, &presentCount, details.presentModes.data());
-    }
-
-    return details;
-  }
   void init() {
     initGLFW();
     initVulkan();
   }
+
   void initGLFW() {
     glfwInit();
 
@@ -91,6 +65,7 @@ private:
 
     window = glfwCreateWindow(WIDTH, HEIGHT, "Edd Vulkan", nullptr, nullptr);
   }
+
   void initVulkan() {
     // check validation layer support
     // ---------------------------------------------------------------------------------------------------------------
@@ -521,8 +496,9 @@ private:
       i++;
     }
 
-    // create command pools
+    // create command buffer(s)
     // ---------------------------------------------------------------------------------------------------------------
+    // command pool
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
@@ -531,6 +507,18 @@ private:
     if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) !=
         VK_SUCCESS) {
       throw std::runtime_error("Failed to create command pool");
+    }
+
+    // command buffer allocation
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.commandPool = commandPool;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandBufferCount = 1;
+
+    if (vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) !=
+        VK_SUCCESS) {
+      throw std::runtime_error("Failed to create command buffer");
     }
 
     // get graphics queue handle
@@ -607,6 +595,34 @@ private:
     glfwDestroyWindow(window);
     glfwTerminate();
   }
+
+  SwapchainSupportDetails
+  querySwapchainSupport(VkPhysicalDevice physicalDevice) {
+    SwapchainSupportDetails details;
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface,
+                                              &details.capabilities);
+
+    uint32_t formatCount;
+    vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount,
+                                         nullptr);
+    if (formatCount > 0) {
+      details.formats.resize(formatCount);
+      vkGetPhysicalDeviceSurfaceFormatsKHR(
+          physicalDevice, surface, &formatCount, details.formats.data());
+    }
+
+    uint32_t presentCount;
+    vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface,
+                                              &presentCount, nullptr);
+    if (presentCount > 0) {
+      details.presentModes.resize(presentCount);
+      vkGetPhysicalDeviceSurfacePresentModesKHR(
+          physicalDevice, surface, &presentCount, details.presentModes.data());
+    }
+
+    return details;
+  }
+
   bool isDeviceCompatible(VkPhysicalDevice physicalDevice) {
     /* VkPhysicalDeviceProperties properties; */
     /* vkGetPhysicalDeviceProperties(physicalDevice, &properties); */
@@ -725,6 +741,7 @@ private:
   VkPipeline graphicsPipeline;
   std::vector<VkFramebuffer> framebuffers;
   VkCommandPool commandPool;
+  VkCommandBuffer commandBuffer;
 
   const std::vector<const char *> validationLayers = {
       "VK_LAYER_KHRONOS_validation"};
