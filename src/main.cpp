@@ -304,6 +304,29 @@ private:
     auto vertexShader = readFile("../src/shaders/vert.spv");
     auto fragmentShader = readFile("../src/shaders/frag.spv");
 
+    VkShaderModule vertexShaderModule = createShaderModule(vertexShader);
+    VkShaderModule fragmentShaderModule = createShaderModule(fragmentShader);
+
+    VkPipelineShaderStageCreateInfo vertexShaderStageInfo{};
+    vertexShaderStageInfo.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    vertexShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    vertexShaderStageInfo.module = vertexShaderModule;
+    vertexShaderStageInfo.pName = "main";
+
+    VkPipelineShaderStageCreateInfo fragmentShaderStageInfo{};
+    fragmentShaderStageInfo.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    fragmentShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    fragmentShaderStageInfo.module = fragmentShaderModule;
+    fragmentShaderStageInfo.pName = "main";
+
+    VkPipelineShaderStageCreateInfo shaderStages[] = {vertexShaderStageInfo,
+                                                      fragmentShaderStageInfo};
+
+    // destroy modules after setup
+    vkDestroyShaderModule(device, vertexShaderModule, nullptr);
+    vkDestroyShaderModule(device, fragmentShaderModule, nullptr);
 
     // get graphics queue handle
     // ---------------------------------------------------------------------------------------------------------------
@@ -312,8 +335,18 @@ private:
     vkGetDeviceQueue(device, queueFamily.present.value(), 0, &presentQueue);
   }
 
-  VkShaderModule createShaderModule(const std::vector<char>& source){
+  VkShaderModule createShaderModule(const std::vector<char> &source) {
+    VkShaderModuleCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    createInfo.codeSize = source.size();
+    createInfo.pCode = reinterpret_cast<const uint32_t *>(source.data());
+    VkShaderModule module;
+    if (vkCreateShaderModule(device, &createInfo, nullptr, &module) !=
+        VK_SUCCESS) {
+      throw std::runtime_error("Failed to create shader module");
+    }
 
+    return module;
   }
 
   QueueFamily findQueueFamilies(VkPhysicalDevice physicalDevice) {
