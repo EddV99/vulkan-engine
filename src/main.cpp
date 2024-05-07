@@ -9,11 +9,28 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
 #include <optional>
 #include <set>
 #include <stdexcept>
 #include <vector>
+
+static std::vector<char> readFile(const std::string &filename) {
+  std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+  if (!file.is_open()) {
+    throw std::runtime_error("failed to open file");
+  }
+
+  size_t fileSize = (size_t)file.tellg();
+  std::vector<char> bytes(fileSize);
+
+  file.seekg(0);
+  file.read(bytes.data(), fileSize);
+
+  return bytes;
+}
 
 class Application {
 public:
@@ -284,6 +301,8 @@ private:
 
     // setup graphics pipeline
     // ---------------------------------------------------------------------------------------------------------------
+    auto vertexShader = readFile("../src/shaders/vert.spv");
+    auto fragmentShader = readFile("../src/shaders/frag.spv");
 
 
     // get graphics queue handle
@@ -292,6 +311,11 @@ private:
     // get present queue handle
     vkGetDeviceQueue(device, queueFamily.present.value(), 0, &presentQueue);
   }
+
+  VkShaderModule createShaderModule(const std::vector<char>& source){
+
+  }
+
   QueueFamily findQueueFamilies(VkPhysicalDevice physicalDevice) {
     uint32_t familyCount;
     vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &familyCount,
