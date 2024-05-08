@@ -1,0 +1,60 @@
+* Game Idea
+Building a game inspired by F-Zero (mainly GX)
+
+* Engine Needs
+** Renderer
+We will be using Vulkan to render the game. No particular reason, just to learn
+it.
+
+** Math
+We need a math library for the render stuff (transforming matrices, linear
+algebra,...). Create our own or find one.
+
+** Physics
+F-Zero has unique vehicle physics
+
+Building own physics engine will be tricky, but we'll just build what we need.
+
+*** Particle effects
+cars should have trailing particle effects, explosions, ... (geometry shaders!)
+
+** UI
+A game needs a UI, not sure how we'll handle this.
+
+** AI
+Need to be able to play with bots offline.
+
+** Networking
+Playing with others online is fun.
+
+** Scene(s)
+We need to be able to hold the scene in a nice way for the renderer.
+
+A scene is a collection of model(s)
+
+** Model(s)
+The models to put in to the scene
+
+** Threads
+We might want multi-threading throughout the game when needed
+
+** Level Editor
+Might be cool to have level editing
+
+** Main Game Loop
+Simple loops that holds the scenes, renderer, ...
+
+Update scenes
+
+
+* Game Needs
+** Art
+We'll need _models_ for the scene, vehicles, background, players, ...
+
+We'll need _textures_ for these models
+
+Big part of F-Zero is the _music_!
+
+Art for the characters and overall aesthetic of the game
+
+Particle effects, trailing speed effects, ...
