@@ -18,8 +18,8 @@ build_shaders () {
 
 build (){
     echo "building!"
-    cmake .
-    make 
+    cmake . 
+    make -j4
 
     build_shaders
 }
