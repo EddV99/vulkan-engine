@@ -26,7 +26,8 @@ build (){
 
 clean (){
     echo "cleaning!"
-    rm -rf CMakeFiles CMakeCache.txt Makefile cmake_install.cmake vulkan-engine ../src/shaders/*.spv
+    find . ! -name 'CMakeLists.txt' -type d -exec rm -rf {} + 2> /dev/null
+    find . ! -name 'CMakeLists.txt' -type f -exec rm -f {} + 2> /dev/null
 }
 
 run (){
