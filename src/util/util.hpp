@@ -7,4 +7,10 @@
 
 #pragma once
 
-namespace Util {} // namespace Util
+#include <string>
+#include <vector>
+
+namespace Util {
+std::vector<char> readFile(const std::string &filename);
+void Error(const std::string & message);
+} // namespace Util
