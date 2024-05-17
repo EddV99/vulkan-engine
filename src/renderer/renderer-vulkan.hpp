@@ -21,21 +21,14 @@ namespace Renderer {
 // ====================================================================================================================
 //
 // ====================================================================================================================
-#ifdef NDEBUG
-const bool enableValidationLayers = false;
-#else
-const bool enableValidationLayers = true;
-#endif
-
-// ====================================================================================================================
-//
-// ====================================================================================================================
 class RendererVulkan {
 public:
+  RendererVulkan() = default;
+  ~RendererVulkan();
+
   void draw();
   void init();
 
-private:
   /**
    * Internal Structs
    */
@@ -51,7 +44,7 @@ private:
     std::optional<uint32_t> present;
 
     bool compatible() { return graphics.has_value() && present.has_value(); }
-  } queueFamily;
+  };
 
   struct SwapchainSupportDetails {
     VkSurfaceCapabilitiesKHR capabilities;
@@ -59,20 +52,55 @@ private:
     std::vector<VkPresentModeKHR> presentModes;
   } swapchainSupport;
 
+private:
   /**
    * List of wanted validation layers
    */
   const std::vector<const char *> validationLayers = {
       "VK_LAYER_KHRONOS_validation"};
 
+  const std::vector<const char *> deviceExtensions = {
+      VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
   /**
    * Function Declarations
    */
   bool checkValidationLayerSupport();
 
+  QueueFamily setupQueueFamilies(VkPhysicalDevice physicalDevice);
+  bool isDeviceCompatible(VkPhysicalDevice physicalDevice);
+  bool checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice);
+  SwapchainSupportDetails
+  querySwapchainSupport(VkPhysicalDevice physicalDevice);
+  VkSurfaceFormatKHR
+  chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &available);
+  VkPresentModeKHR
+  chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &available);
+  VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
+
   void createWindow();
 
   void createInstance();
+
+  void createSurface();
+
+  void pickPhysicalDevice();
+
+  void createDevice();
+
+  void createSwapchain();
+
+  void createImageViews();
+
+  void createRenderPass();
+
+  void createGraphicsPipeline();
+
+  void createFrameBuffers();
+
+  void createCommandBuffer();
+
+  void createSyncObjects();
 
   void createShaders(std::string vertexFilePath, std::string fragmentFilePath,
                      std::string tesselationFilePath = nullptr,
@@ -80,22 +108,54 @@ private:
 
   VkShaderModule createShaderModule(std::vector<char> &shader);
 
-  void createPipeline();
-
   void createTexture();
 
   void createVertexBuffer();
 
   void createUniform();
 
+  void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+
   /**
    * Instance Variables
    */
-  VkDevice device;
-  VkInstance instance;
   GLFWwindow *window;
+  VkInstance instance;
+  VkSurfaceKHR surface;
+  VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+  VkDevice device;
+  QueueFamily queueFamily;
+  VkSwapchainKHR swapchain;
+  VkExtent2D swapchainExtent;
+  std::vector<VkImageView> swapchainImageViews;
+  std::vector<VkImage> swapchainImages;
+  VkFormat swapchainImageFormat;
+  VkRenderPass renderPass;
+  VkExtent2D extent;
+  VkPipelineLayout pipelineLayout;
+  VkPipeline graphicsPipeline;
+  std::vector<VkFramebuffer> framebuffers;
+  std::vector<VkCommandBuffer> commandBuffers;
+  VkCommandPool commandPool;
+  std::vector<VkSemaphore> imageAvailableSem;
+  std::vector<VkSemaphore> renderFinishedSem;
+  std::vector<VkFence> inFlightFence;
+  VkQueue graphicsQueue;
+  VkQueue presentQueue;
+  uint32_t currentFrame = 0;
 
+  /**
+   * Constants
+   */
   const uint32_t WIDTH = 500;
   const uint32_t HEIGHT = 500;
+
+#ifdef NDEBUG
+  const bool enableValidationLayers = false;
+#else
+  const bool enableValidationLayers = true;
+#endif
+
+  const int MAX_FRAMES_IN_FLIGHT = 2;
 };
 } // namespace Renderer

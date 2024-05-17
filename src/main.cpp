@@ -912,7 +912,7 @@ private:
 #endif
 };
 
-int main() {
+int main2() {
   Application app;
 
   try {
