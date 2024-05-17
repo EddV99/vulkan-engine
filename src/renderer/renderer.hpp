@@ -22,7 +22,7 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-class Renderer {
+class RendererVulkan {
 public:
   void draw();
   void init();

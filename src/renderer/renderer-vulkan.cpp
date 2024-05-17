@@ -8,20 +8,20 @@
 #include <vulkan/vulkan_core.h>
 
 #include "../util/util.hpp"
-#include "renderer.hpp"
+#include "renderer-vulkan.hpp"
 
 #include <cstring>
 
 namespace Renderer {
 
-void Renderer::init() {
+void RendererVulkan::init() {
   if (enableValidationLayers && !checkValidationLayerSupport()) {
     Util::Error("Validation layers requested, but failed to get");
   }
   createWindow();
   createInstance();
 }
-void Renderer::createWindow() {
+void RendererVulkan::createWindow() {
   glfwInit();
 
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -30,7 +30,7 @@ void Renderer::createWindow() {
   window = glfwCreateWindow(WIDTH, HEIGHT, "Beast Gohan", nullptr, nullptr);
 }
 
-void Renderer::createInstance() {
+void RendererVulkan::createInstance() {
   VkApplicationInfo appInfo{};
   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
   appInfo.pApplicationName = "Beast Gohan";
@@ -62,7 +62,7 @@ void Renderer::createInstance() {
   }
 }
 
-bool Renderer::checkValidationLayerSupport() {
+bool RendererVulkan::checkValidationLayerSupport() {
   uint32_t layerCount;
   vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -84,7 +84,7 @@ bool Renderer::checkValidationLayerSupport() {
   return true;
 }
 
-void Renderer::createShaders(std::string vertexFilePath,
+void RendererVulkan::createShaders(std::string vertexFilePath,
                              std::string fragmentFilePath,
                              std::string tesselationFilePath,
                              std::string geometeryFilePath) {
@@ -100,7 +100,7 @@ void Renderer::createShaders(std::string vertexFilePath,
   shaders.fragment = fragment;
 }
 
-VkShaderModule Renderer::createShaderModule(std::vector<char> &shader) {
+VkShaderModule RendererVulkan::createShaderModule(std::vector<char> &shader) {
 
   VkShaderModuleCreateInfo createInfo{};
   createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -117,14 +117,14 @@ VkShaderModule Renderer::createShaderModule(std::vector<char> &shader) {
   return module;
 }
 
-void Renderer::createPipeline() {}
+void RendererVulkan::createPipeline() {}
 
-void Renderer::createTexture() {}
+void RendererVulkan::createTexture() {}
 
-void Renderer::createVertexBuffer() {}
+void RendererVulkan::createVertexBuffer() {}
 
-void Renderer::createUniform() {}
+void RendererVulkan::createUniform() {}
 
-void Renderer::draw() {}
+void RendererVulkan::draw() {}
 
 } // namespace Renderer
