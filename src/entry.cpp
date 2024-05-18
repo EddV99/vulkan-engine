@@ -1,16 +1,16 @@
 /**
- * @brief
+ * @brief Entry point of the program
  */
-#include "renderer/renderer-vulkan.hpp"
+#include "renderer/renderer.hpp"
 
-#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
 int main(void) {
-  Renderer::RendererVulkan renderer;
-  renderer.init();
+  Renderer::Renderer renderer(800, 800);
 
-  while (true) {
+  while (renderer.running()) {
     renderer.draw();
+
+    renderer.poll();
   }
 }

@@ -11,6 +11,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -24,10 +25,11 @@ namespace Renderer {
 class RendererVulkan {
 public:
   RendererVulkan() = default;
+  RendererVulkan(uint32_t width, uint32_t height);
   ~RendererVulkan();
 
-  void draw();
-  void init();
+  void drawFrame();
+  void init(GLFWwindow* window);
 
   /**
    * Internal Structs
@@ -77,8 +79,6 @@ private:
   VkPresentModeKHR
   chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &available);
   VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
-
-  void createWindow();
 
   void createInstance();
 
@@ -147,8 +147,8 @@ private:
   /**
    * Constants
    */
-  const uint32_t WIDTH = 500;
-  const uint32_t HEIGHT = 500;
+  uint32_t WIDTH = 500;
+  uint32_t HEIGHT = 500;
 
 #ifdef NDEBUG
   const bool enableValidationLayers = false;

@@ -17,6 +17,10 @@
 
 namespace Renderer {
 
+RendererVulkan::RendererVulkan(uint32_t width, uint32_t height) {
+  WIDTH = width;
+  HEIGHT = height;
+}
 RendererVulkan::~RendererVulkan() {
   vkDeviceWaitIdle(device);
 
@@ -27,15 +31,17 @@ RendererVulkan::~RendererVulkan() {
   }
 
   vkDestroyCommandPool(device, commandPool, nullptr);
-  for (auto framebuffer : framebuffers) {
+
+  for (auto framebuffer : framebuffers)
     vkDestroyFramebuffer(device, framebuffer, nullptr);
-  }
+
   vkDestroyPipeline(device, graphicsPipeline, nullptr);
   vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
   vkDestroyRenderPass(device, renderPass, nullptr);
-  for (auto imageView : swapchainImageViews) {
+
+  for (auto imageView : swapchainImageViews)
     vkDestroyImageView(device, imageView, nullptr);
-  }
+
   vkDestroySwapchainKHR(device, swapchain, nullptr);
   vkDestroyDevice(device, nullptr);
   vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -48,12 +54,11 @@ RendererVulkan::~RendererVulkan() {
 // ====================================================================================================================
 //     Initialization
 // ====================================================================================================================
-void RendererVulkan::init() {
-  if (enableValidationLayers && !checkValidationLayerSupport()) {
+void RendererVulkan::init(GLFWwindow *window) {
+  if (enableValidationLayers && !checkValidationLayerSupport())
     Util::Error("Validation layers requested, but failed to get");
-  }
 
-  createWindow();
+  this->window = window;
   createInstance();
   createSurface();
   pickPhysicalDevice();
@@ -70,15 +75,6 @@ void RendererVulkan::init() {
   vkGetDeviceQueue(device, queueFamily.graphics.value(), 0, &graphicsQueue);
   // get present queue handle
   vkGetDeviceQueue(device, queueFamily.present.value(), 0, &presentQueue);
-}
-
-void RendererVulkan::createWindow() {
-  glfwInit();
-
-  glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-
-  window = glfwCreateWindow(WIDTH, HEIGHT, "Beast Gohan", nullptr, nullptr);
 }
 
 void RendererVulkan::createInstance() {
@@ -796,7 +792,7 @@ void RendererVulkan::createVertexBuffer() {}
 
 void RendererVulkan::createUniform() {}
 
-void RendererVulkan::draw() {
+void RendererVulkan::drawFrame() {
   vkWaitForFences(device, 1, &inFlightFence[currentFrame], VK_TRUE, UINT64_MAX);
   vkResetFences(device, 1, &inFlightFence[currentFrame]);
 
