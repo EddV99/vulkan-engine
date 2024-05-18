@@ -18,6 +18,7 @@ public:
   bool running();
   void poll();
   void draw();
+  void resize();
 
 private:
   RendererVulkan rendererbackend;
@@ -28,4 +29,6 @@ private:
 
 void keyCallback(GLFWwindow *window, int key, int scancode, int action,
                  int mods);
+
+void resizeCallback(GLFWwindow *window, int width, int height);
 } // namespace Renderer

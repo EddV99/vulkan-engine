@@ -30,7 +30,8 @@ public:
   ~RendererVulkan();
 
   void drawFrame();
-  void init(GLFWwindow* window);
+  void init(GLFWwindow *window);
+  void resize();
 
 private:
   /**
@@ -69,7 +70,6 @@ private:
    * Function Declarations
    */
   bool checkValidationLayerSupport();
-
   QueueFamily setupQueueFamilies(VkPhysicalDevice physicalDevice);
   bool isDeviceCompatible(VkPhysicalDevice physicalDevice);
   bool checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice);
@@ -80,6 +80,8 @@ private:
   VkPresentModeKHR
   chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &available);
   VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
+  void recreateSwapchain();
+  void cleanSwapchain();
 
   void createInstance();
 
@@ -144,6 +146,7 @@ private:
   VkQueue graphicsQueue;
   VkQueue presentQueue;
   uint32_t currentFrame = 0;
+  bool resized = false;
 
   /**
    * Constants

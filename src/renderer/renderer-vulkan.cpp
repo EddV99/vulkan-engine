@@ -4,10 +4,12 @@
 #include "renderer-vulkan.hpp"
 #include "../util/util.hpp"
 
+#include <GLFW/glfw3.h>
 #include <algorithm>
 #include <cstring>
 #include <limits>
 #include <set>
+#include <vulkan/vulkan_core.h>
 
 namespace Renderer {
 
@@ -18,6 +20,8 @@ RendererVulkan::RendererVulkan(uint32_t width, uint32_t height) {
 RendererVulkan::~RendererVulkan() {
   vkDeviceWaitIdle(device);
 
+  cleanSwapchain();
+
   for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
     vkDestroySemaphore(device, imageAvailableSem[i], nullptr);
     vkDestroySemaphore(device, renderFinishedSem[i], nullptr);
@@ -26,17 +30,10 @@ RendererVulkan::~RendererVulkan() {
 
   vkDestroyCommandPool(device, commandPool, nullptr);
 
-  for (auto framebuffer : framebuffers)
-    vkDestroyFramebuffer(device, framebuffer, nullptr);
-
   vkDestroyPipeline(device, graphicsPipeline, nullptr);
   vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
   vkDestroyRenderPass(device, renderPass, nullptr);
 
-  for (auto imageView : swapchainImageViews)
-    vkDestroyImageView(device, imageView, nullptr);
-
-  vkDestroySwapchainKHR(device, swapchain, nullptr);
   vkDestroyDevice(device, nullptr);
   vkDestroySurfaceKHR(instance, surface, nullptr);
   vkDestroyInstance(instance, nullptr);
@@ -788,12 +785,19 @@ void RendererVulkan::createUniform() {}
 
 void RendererVulkan::drawFrame() {
   vkWaitForFences(device, 1, &inFlightFence[currentFrame], VK_TRUE, UINT64_MAX);
-  vkResetFences(device, 1, &inFlightFence[currentFrame]);
 
   uint32_t imageIndex;
-  vkAcquireNextImageKHR(device, swapchain, UINT64_MAX,
-                        imageAvailableSem[currentFrame], VK_NULL_HANDLE,
-                        &imageIndex);
+  VkResult result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX,
+                                          imageAvailableSem[currentFrame],
+                                          VK_NULL_HANDLE, &imageIndex);
+
+  if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+    recreateSwapchain();
+    return;
+  } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+    Util::Error("Failed to acquire swap chain image");
+
+  vkResetFences(device, 1, &inFlightFence[currentFrame]);
 
   vkResetCommandBuffer(commandBuffers[currentFrame], 0);
   recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
@@ -831,9 +835,43 @@ void RendererVulkan::drawFrame() {
   presentInfo.pImageIndices = &imageIndex;
   presentInfo.pResults = nullptr;
 
-  vkQueuePresentKHR(presentQueue, &presentInfo);
+  result = vkQueuePresentKHR(presentQueue, &presentInfo);
+  if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
+      resized) {
+    resized = false;
+    recreateSwapchain();
+  } else if (result != VK_SUCCESS)
+    Util::Error("Failed to present swap chain image");
 
   currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
+void RendererVulkan::cleanSwapchain() {
+  for (auto framebuffer : framebuffers)
+    vkDestroyFramebuffer(device, framebuffer, nullptr);
+
+  for (auto imageView : swapchainImageViews)
+    vkDestroyImageView(device, imageView, nullptr);
+
+  vkDestroySwapchainKHR(device, swapchain, nullptr);
+}
+void RendererVulkan::recreateSwapchain() {
+  int width = 0, height = 0;
+  glfwGetFramebufferSize(window, &width, &height);
+
+  while (width == 0 || height == 0) {
+    glfwGetFramebufferSize(window, &width, &height);
+    glfwWaitEvents();
+  }
+
+  vkDeviceWaitIdle(device);
+
+  cleanSwapchain();
+
+  createSwapchain();
+  createImageViews();
+  createFrameBuffers();
+}
+
+void RendererVulkan::resize() { resized = true; }
 
 } // namespace Renderer
