@@ -17,6 +17,7 @@ RendererVulkan::RendererVulkan(uint32_t width, uint32_t height) {
   WIDTH = width;
   HEIGHT = height;
 }
+
 RendererVulkan::~RendererVulkan() {
   vkDeviceWaitIdle(device);
 
@@ -452,6 +453,7 @@ void RendererVulkan::createGraphicsPipeline() {
   vkDestroyShaderModule(device, vertexShaderModule, nullptr);
   vkDestroyShaderModule(device, fragmentShaderModule, nullptr);
 }
+
 void RendererVulkan::createFrameBuffers() {
 
   int i = 0;
@@ -475,6 +477,7 @@ void RendererVulkan::createFrameBuffers() {
     i++;
   }
 }
+
 void RendererVulkan::createCommandBuffer() {
   commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
   VkCommandPoolCreateInfo poolInfo{};
@@ -499,6 +502,7 @@ void RendererVulkan::createCommandBuffer() {
     Util::Error("Failed to create command buffer");
   }
 }
+
 void RendererVulkan::createSyncObjects() {
   imageAvailableSem.resize(MAX_FRAMES_IN_FLIGHT);
   renderFinishedSem.resize(MAX_FRAMES_IN_FLIGHT);
@@ -558,6 +562,7 @@ RendererVulkan::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
     return actual;
   }
 }
+
 VkSurfaceFormatKHR RendererVulkan::chooseSwapSurfaceFormat(
     const std::vector<VkSurfaceFormatKHR> &available) {
   for (const auto &format : available) {
@@ -568,6 +573,7 @@ VkSurfaceFormatKHR RendererVulkan::chooseSwapSurfaceFormat(
   }
   return available[0];
 }
+
 bool RendererVulkan::checkValidationLayerSupport() {
   uint32_t layerCount;
   vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -607,6 +613,7 @@ void RendererVulkan::createSurface() {
   }
 #endif
 }
+
 bool RendererVulkan::checkDeviceExtensionSupport(VkPhysicalDevice pDevice) {
   uint32_t extensionCount;
   vkEnumerateDeviceExtensionProperties(pDevice, nullptr, &extensionCount,
@@ -845,6 +852,7 @@ void RendererVulkan::drawFrame() {
 
   currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
+
 void RendererVulkan::cleanSwapchain() {
   for (auto framebuffer : framebuffers)
     vkDestroyFramebuffer(device, framebuffer, nullptr);
@@ -854,6 +862,7 @@ void RendererVulkan::cleanSwapchain() {
 
   vkDestroySwapchainKHR(device, swapchain, nullptr);
 }
+
 void RendererVulkan::recreateSwapchain() {
   int width = 0, height = 0;
   glfwGetFramebufferSize(window, &width, &height);

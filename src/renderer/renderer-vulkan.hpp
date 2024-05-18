@@ -21,7 +21,7 @@
 namespace Renderer {
 
 // ====================================================================================================================
-//
+// Render Vulkan Class
 // ====================================================================================================================
 class RendererVulkan {
 public:
@@ -67,22 +67,8 @@ private:
       VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
   /**
-   * Function Declarations
+   * Vulkan Initilization
    */
-  bool checkValidationLayerSupport();
-  QueueFamily setupQueueFamilies(VkPhysicalDevice physicalDevice);
-  bool isDeviceCompatible(VkPhysicalDevice physicalDevice);
-  bool checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice);
-  SwapchainSupportDetails
-  querySwapchainSupport(VkPhysicalDevice physicalDevice);
-  VkSurfaceFormatKHR
-  chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &available);
-  VkPresentModeKHR
-  chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &available);
-  VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
-  void recreateSwapchain();
-  void cleanSwapchain();
-
   void createInstance();
 
   void createSurface();
@@ -104,6 +90,33 @@ private:
   void createCommandBuffer();
 
   void createSyncObjects();
+
+  /**
+   * Helper Methods
+   */
+  bool checkValidationLayerSupport();
+
+  QueueFamily setupQueueFamilies(VkPhysicalDevice physicalDevice);
+
+  bool isDeviceCompatible(VkPhysicalDevice physicalDevice);
+
+  bool checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice);
+
+  SwapchainSupportDetails
+
+  querySwapchainSupport(VkPhysicalDevice physicalDevice);
+
+  VkSurfaceFormatKHR
+  chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &available);
+
+  VkPresentModeKHR
+  chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &available);
+
+  VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
+
+  void recreateSwapchain();
+
+  void cleanSwapchain();
 
   void createShaders(std::string vertexFilePath, std::string fragmentFilePath,
                      std::string tesselationFilePath = nullptr,
@@ -154,12 +167,12 @@ private:
   uint32_t WIDTH = 500;
   uint32_t HEIGHT = 500;
 
+  const int MAX_FRAMES_IN_FLIGHT = 2;
+
 #ifdef NDEBUG
   const bool enableValidationLayers = false;
 #else
   const bool enableValidationLayers = true;
 #endif
-
-  const int MAX_FRAMES_IN_FLIGHT = 2;
 };
 } // namespace Renderer
