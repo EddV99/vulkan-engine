@@ -32,6 +32,7 @@ public:
   void drawFrame();
   void init(GLFWwindow* window);
 
+private:
   /**
    * Internal Structs
    */
@@ -55,7 +56,6 @@ public:
     std::vector<VkPresentModeKHR> presentModes;
   } swapchainSupport;
 
-private:
   /**
    * List of wanted validation layers
    */
