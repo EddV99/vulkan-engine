@@ -7,10 +7,9 @@
  */
 
 #pragma once
+#include "renderer-vulkan.hpp"
 
 #include "../mesh/mesh.hpp"
-#include "renderer-vulkan.hpp"
-#include <GLFW/glfw3.h>
 
 namespace Renderer {
 class Renderer {

@@ -10,12 +10,13 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 #include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
-#include <vulkan/vulkan_core.h>
 
 namespace Renderer {
 

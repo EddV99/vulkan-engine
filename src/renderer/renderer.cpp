@@ -1,7 +1,4 @@
 #include "renderer.hpp"
-#include <GLFW/glfw3.h>
-
-#include "renderer-vulkan.hpp"
 
 namespace Renderer {
 

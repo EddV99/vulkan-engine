@@ -3,8 +3,6 @@
  */
 #include "renderer/renderer.hpp"
 
-#include <GLFW/glfw3.h>
-
 int main(void) {
   Renderer::Renderer renderer(800, 800);
 

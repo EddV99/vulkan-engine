@@ -1,18 +1,12 @@
 /**
  * @file renderer.cpp
  */
+#include "renderer-vulkan.hpp"
+#include "../util/util.hpp"
 
 #include <algorithm>
-#include <limits>
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-#include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
-
-#include "../util/util.hpp"
-#include "renderer-vulkan.hpp"
-
 #include <cstring>
+#include <limits>
 #include <set>
 
 namespace Renderer {
