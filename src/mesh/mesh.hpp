@@ -23,14 +23,15 @@ public:
 
   void loadOBJFile(std::string filename);
 
-  Math::Vector3 *vertices;
+  Math::Vector3 *vertices = nullptr;
   std::vector<i32> indices;
-  Math::Vector3 *normals;
-  Math::Vector3 *uv;
+  Math::Vector3 *normals = nullptr;
+  Math::Vector3 *uv = nullptr;
 
 private:
   std::vector<Math::Vector3> _vertices;
   std::vector<Math::Vector3> _normals;
   std::vector<Math::Vector2> _uv;
+  bool _hasNormals{};
 };
 } // namespace Mesh
