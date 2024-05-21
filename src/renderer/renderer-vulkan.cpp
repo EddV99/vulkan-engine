@@ -790,6 +790,8 @@ void RendererVulkan::createVertexBuffer() {}
 
 void RendererVulkan::createUniform() {}
 
+void RendererVulkan::drawFrame(FrameData frame) {}
+
 void RendererVulkan::drawFrame() {
   vkWaitForFences(device, 1, &inFlightFence[currentFrame], VK_TRUE, UINT64_MAX);
 

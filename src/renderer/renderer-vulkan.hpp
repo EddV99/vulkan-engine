@@ -18,8 +18,9 @@
 #include <string>
 #include <vector>
 
-namespace Renderer {
+#include "renderer-core.hpp"
 
+namespace Renderer {
 // ====================================================================================================================
 // Render Vulkan Class
 // ====================================================================================================================
@@ -30,6 +31,7 @@ public:
   ~RendererVulkan();
 
   void drawFrame();
+  void drawFrame(FrameData frame);
   void init(GLFWwindow *window);
   void resize();
 

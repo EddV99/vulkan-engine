@@ -1,4 +1,5 @@
 #include "renderer.hpp"
+#include "renderer-core.hpp"
 #include <GLFW/glfw3.h>
 
 namespace Renderer {
@@ -11,6 +12,8 @@ Renderer::Renderer(int w, int h) {
 
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+  //glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
   this->window =
       glfwCreateWindow(WIDTH, HEIGHT, "Beast Gohan", nullptr, nullptr);
 
@@ -21,6 +24,7 @@ Renderer::Renderer(int w, int h) {
   rendererbackend.init(this->window);
 }
 void Renderer::draw() { rendererbackend.drawFrame(); }
+void Renderer::draw(FrameData frame) { rendererbackend.drawFrame(); }
 void Renderer::poll() { glfwPollEvents(); }
 
 bool Renderer::running() { return !glfwWindowShouldClose(window); }

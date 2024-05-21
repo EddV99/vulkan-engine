@@ -7,9 +7,9 @@
  */
 
 #pragma once
-#include "renderer-vulkan.hpp"
 
-#include "../mesh/mesh.hpp"
+#include "renderer-core.hpp"
+#include "renderer-vulkan.hpp"
 
 namespace Renderer {
 class Renderer {
@@ -18,6 +18,7 @@ public:
   bool running();
   void poll();
   void draw();
+  void draw(FrameData frame);
   void resize();
 
 private:
