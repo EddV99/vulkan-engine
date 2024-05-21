@@ -7,24 +7,30 @@
 #pragma once
 
 #include "../math/vector.hpp"
+
+#include <string>
 #include <vector>
 
 namespace Mesh {
 class Mesh {
 public:
   Mesh() = default;
-  Mesh(std::vector<float> vertices, std::vector<float> normals = {},
-       std::vector<float> uv = {});
 
   void computeBoundingBox();
 
   bool hasNormals();
   bool hasUV();
 
-  std::vector<Math::Vector3> vertices;
-  std::vector<Math::Vector3> normals;
-  std::vector<Math::Vector3> uv;
+  void loadOBJFile(std::string filename);
+
+  Math::Vector3 *vertices;
+  std::vector<i32> indices;
+  Math::Vector3 *normals;
+  Math::Vector3 *uv;
 
 private:
+  std::vector<Math::Vector3> _vertices;
+  std::vector<Math::Vector3> _normals;
+  std::vector<Math::Vector2> _uv;
 };
 } // namespace Mesh

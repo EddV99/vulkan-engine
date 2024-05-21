@@ -1,17 +1,30 @@
 #include "vector.hpp"
+
 #include <cmath>
+
 namespace Math {
+// =============================================================================
+// Vector 2
+// =============================================================================
+Vector2::Vector2() {
+  this->x = 0;
+  this->y = 0;
+}
+
+Vector2::Vector2(f32 x, f32 y) {
+  this->x = x;
+  this->y = y;
+}
 
 // =============================================================================
 // Vector 3
 // =============================================================================
+Vector3::Vector3() : x(0), y(0), z(0) {}
+Vector3::Vector3(f32 x, f32 y, f32 z) : x(x), y(y), z(z) {}
 
-Vector3::Vector3(float x, float y, float z) {
-  this->x = x;
-  this->y = y;
-  this->z = z;
+bool Vector3::operator==(const Vector3 &right) const {
+  return (this->x == right.x) && (this->y == right.y) && (this->z == right.z);
 }
-
 Vector3 Vector3::operator+(Vector3 &right) {
   return Vector3(x + right.x, this->y + right.y, this->z + right.z);
 }
@@ -22,12 +35,12 @@ Vector3 Vector3::operator-(Vector3 &right) {
 
 Vector3 &Vector3::operator=(Vector3 other) noexcept {
   x = other.x;
-  this->y = other.y;
-  this->z = other.z;
+  y = other.y;
+  z = other.z;
   return *this;
 }
 
-float Vector3::dot(Vector3 &right) {
+f32 Vector3::dot(Vector3 &right) {
   return this->x * right.x + this->y * right.y + this->z * right.z;
 }
 
@@ -37,18 +50,18 @@ Vector3 Vector3::cross(Vector3 &right) {
                  this->x * right.y - this->y * right.x);
 }
 
-float Vector3::length() {
+f32 Vector3::length() {
   return std::sqrt(this->x * this->x + this->y * this->y + this->z * this->z);
 }
 
 void Vector3::normalize() {
-  float l = 1.0f / this->length();
+  f32 l = 1.0f / this->length();
   x = x * l;
   y = y * l;
   z = z * l;
 }
 Vector3 Vector3::normal() {
-  float l = 1.0f / this->length();
+  f32 l = 1.0f / this->length();
   Vector3 result;
   result.x = x * l;
   result.y = y * l;
@@ -59,8 +72,14 @@ Vector3 Vector3::normal() {
 // =============================================================================
 // Vector 4
 // =============================================================================
+Vector4::Vector4() {
+  this->x = 0;
+  this->y = 0;
+  this->z = 0;
+  this->w = 0;
+}
 
-Vector4::Vector4(float x, float y, float z, float w) {
+Vector4::Vector4(f32 x, f32 y, f32 z, f32 w) {
   this->x = x;
   this->y = y;
   this->z = z;
