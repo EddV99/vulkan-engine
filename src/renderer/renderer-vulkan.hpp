@@ -33,7 +33,8 @@ public:
   void drawFrame();
   void drawFrame(FrameData frame);
   void init(GLFWwindow *window);
-  void resize();
+  void createVertexBuffer(Mesh::Mesh mesh);
+  void createVertexBuffer(std::vector<Mesh::Mesh> meshes);
 
 private:
   /**
@@ -96,6 +97,8 @@ private:
   /**
    * Helper Methods
    */
+  void resize();
+
   bool checkValidationLayerSupport();
 
   QueueFamily setupQueueFamilies(VkPhysicalDevice physicalDevice);
@@ -128,11 +131,10 @@ private:
 
   void createTexture();
 
-  void createVertexBuffer();
-
-  void createUniform();
+  void createUniformBuffer();
 
   void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+
 
   /**
    * Instance Variables

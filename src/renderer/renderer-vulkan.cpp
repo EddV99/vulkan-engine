@@ -7,6 +7,7 @@
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <cstring>
+#include <iostream>
 #include <limits>
 #include <set>
 #include <vulkan/vulkan_core.h>
@@ -120,14 +121,21 @@ void RendererVulkan::pickPhysicalDevice() {
 
   if (physicalDevice == VK_NULL_HANDLE)
     Util::Error("No GPU is suitable");
+
+  VkPhysicalDeviceProperties properties;
+  vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+  std::cout << "---------------- PHYSICAL DEVICE SELECTED ----------------\n";
+  std::cout << "Device Name: " << properties.deviceName << "\n";
+  std::cout << "Vendor ID: " << properties.vendorID << "\n";
+  std::cout << "Max Width: " << properties.limits.maxFramebufferWidth << "\n";
+  std::cout << "Max Height: " << properties.limits.maxFramebufferHeight << "\n";
 }
 
 void RendererVulkan::createDevice() {
   queueFamily = setupQueueFamilies(physicalDevice);
 
   std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-  std::set<uint32_t> unique = {queueFamily.graphics.value(),
-                               queueFamily.present.value()};
+  std::set<uint32_t> unique = {queueFamily.graphics.value(), queueFamily.present.value()};
   float priority = 1.0f;
 
   for (const auto &family : unique) {
@@ -156,25 +164,20 @@ void RendererVulkan::createDevice() {
     createInfo.enabledLayerCount = 0;
   }
 
-  if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) !=
-      VK_SUCCESS)
+  if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
     Util::Error("Failed to create logical device");
 }
 
 void RendererVulkan::createSwapchain() {
-  SwapchainSupportDetails swapchainSupport =
-      querySwapchainSupport(physicalDevice);
-  VkSurfaceFormatKHR surfaceFormat =
-      chooseSwapSurfaceFormat(swapchainSupport.formats);
-  VkPresentModeKHR presentMode =
-      chooseSwapPresentMode(swapchainSupport.presentModes);
+  SwapchainSupportDetails swapchainSupport = querySwapchainSupport(physicalDevice);
+  VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapchainSupport.formats);
+  VkPresentModeKHR presentMode = chooseSwapPresentMode(swapchainSupport.presentModes);
 
   extent = chooseSwapExtent(swapchainSupport.capabilities);
 
   uint32_t imageCount = swapchainSupport.capabilities.minImageCount + 1;
 
-  if (swapchainSupport.capabilities.maxImageCount > 0 &&
-      imageCount > swapchainSupport.capabilities.maxImageCount) {
+  if (swapchainSupport.capabilities.maxImageCount > 0 && imageCount > swapchainSupport.capabilities.maxImageCount) {
     imageCount = swapchainSupport.capabilities.maxImageCount;
   }
 
@@ -188,8 +191,7 @@ void RendererVulkan::createSwapchain() {
   swapchainCreateInfo.imageArrayLayers = 1;
   swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-  uint32_t indices[] = {queueFamily.graphics.value(),
-                        queueFamily.present.value()};
+  uint32_t indices[] = {queueFamily.graphics.value(), queueFamily.present.value()};
 
   if (queueFamily.graphics != queueFamily.present) {
     swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -200,22 +202,19 @@ void RendererVulkan::createSwapchain() {
     swapchainCreateInfo.queueFamilyIndexCount = 0;
     swapchainCreateInfo.pQueueFamilyIndices = nullptr;
   }
-  swapchainCreateInfo.preTransform =
-      swapchainSupport.capabilities.currentTransform;
+  swapchainCreateInfo.preTransform = swapchainSupport.capabilities.currentTransform;
   swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
   swapchainCreateInfo.presentMode = presentMode;
   swapchainCreateInfo.clipped = VK_TRUE;
   swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
 
-  if (vkCreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &swapchain) !=
-      VK_SUCCESS) {
+  if (vkCreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &swapchain) != VK_SUCCESS) {
     Util::Error("Failed to create swapchain");
   }
 
   vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
   swapchainImages.resize(imageCount);
-  vkGetSwapchainImagesKHR(device, swapchain, &imageCount,
-                          swapchainImages.data());
+  vkGetSwapchainImagesKHR(device, swapchain, &imageCount, swapchainImages.data());
   swapchainImageFormat = surfaceFormat.format;
   swapchainExtent = extent;
 }
@@ -239,8 +238,7 @@ void RendererVulkan::createImageViews() {
     viewImageCreateInfo.subresourceRange.baseArrayLayer = 0;
     viewImageCreateInfo.subresourceRange.layerCount = 1;
 
-    if (vkCreateImageView(device, &viewImageCreateInfo, nullptr,
-                          &swapchainImageViews[i]) != VK_SUCCESS) {
+    if (vkCreateImageView(device, &viewImageCreateInfo, nullptr, &swapchainImageViews[i]) != VK_SUCCESS) {
       Util::Error("Failed to create image view");
     }
   }
@@ -283,8 +281,7 @@ void RendererVulkan::createRenderPass() {
   renderPassInfo.dependencyCount = 1;
   renderPassInfo.pDependencies = &dependency;
 
-  if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) !=
-      VK_SUCCESS) {
+  if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
     Util::Error("Failed to create render pass");
   }
 }
@@ -297,25 +294,21 @@ void RendererVulkan::createGraphicsPipeline() {
   VkShaderModule fragmentShaderModule = createShaderModule(fragmentShader);
 
   VkPipelineShaderStageCreateInfo vertexShaderStageInfo{};
-  vertexShaderStageInfo.sType =
-      VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  vertexShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
   vertexShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
   vertexShaderStageInfo.module = vertexShaderModule;
   vertexShaderStageInfo.pName = "main";
 
   VkPipelineShaderStageCreateInfo fragmentShaderStageInfo{};
-  fragmentShaderStageInfo.sType =
-      VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  fragmentShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
   fragmentShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
   fragmentShaderStageInfo.module = fragmentShaderModule;
   fragmentShaderStageInfo.pName = "main";
 
-  VkPipelineShaderStageCreateInfo shaderStages[] = {vertexShaderStageInfo,
-                                                    fragmentShaderStageInfo};
+  VkPipelineShaderStageCreateInfo shaderStages[] = {vertexShaderStageInfo, fragmentShaderStageInfo};
 
   // dynamic part of pipeline
-  std::vector<VkDynamicState> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
-                                               VK_DYNAMIC_STATE_SCISSOR};
+  std::vector<VkDynamicState> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
   VkPipelineDynamicStateCreateInfo dynamicState{};
   dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
   dynamicState.dynamicStateCount = (uint32_t)dynamicStates.size();
@@ -323,8 +316,7 @@ void RendererVulkan::createGraphicsPipeline() {
 
   // vertex input (not used for now)
   VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-  vertexInputInfo.sType =
-      VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+  vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
   vertexInputInfo.vertexBindingDescriptionCount = 0;
   vertexInputInfo.pVertexBindingDescriptions = nullptr;
   vertexInputInfo.vertexAttributeDescriptionCount = 0;
@@ -332,8 +324,7 @@ void RendererVulkan::createGraphicsPipeline() {
 
   // input assembly
   VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
-  inputAssembly.sType =
-      VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+  inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
   inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
   inputAssembly.primitiveRestartEnable = VK_FALSE;
 
@@ -373,8 +364,7 @@ void RendererVulkan::createGraphicsPipeline() {
 
   // multisampling settings (for now disabled)
   VkPipelineMultisampleStateCreateInfo multisampling{};
-  multisampling.sType =
-      VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+  multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
   multisampling.sampleShadingEnable = VK_FALSE;
   multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
   multisampling.minSampleShading = 1.0f;
@@ -388,8 +378,7 @@ void RendererVulkan::createGraphicsPipeline() {
   // color blending setup
   VkPipelineColorBlendAttachmentState colorBlendAttachment{};
   colorBlendAttachment.colorWriteMask =
-      VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-      VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+      VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
   colorBlendAttachment.blendEnable = VK_FALSE;
   /* colorBlendAttachment.srcColorBlendFactor = */
   /*     VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA; */
@@ -401,8 +390,7 @@ void RendererVulkan::createGraphicsPipeline() {
   /* colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD; */
 
   VkPipelineColorBlendStateCreateInfo colorBlending{};
-  colorBlending.sType =
-      VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+  colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
   colorBlending.logicOpEnable = VK_FALSE;
   colorBlending.logicOp = VK_LOGIC_OP_COPY;
   colorBlending.attachmentCount = 1;
@@ -421,8 +409,7 @@ void RendererVulkan::createGraphicsPipeline() {
   pipelineLayoutInfo.pushConstantRangeCount = 0;
   pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
-  if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr,
-                             &pipelineLayout) != VK_SUCCESS) {
+  if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
     Util::Error("Failed to create pipeline layout");
   }
 
@@ -445,8 +432,7 @@ void RendererVulkan::createGraphicsPipeline() {
   pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
   pipelineInfo.basePipelineIndex = -1;
 
-  if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo,
-                                nullptr, &graphicsPipeline) != VK_SUCCESS) {
+  if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
     Util::Error("Failed to create graphics pipeline");
   }
   // destroy modules after setup
@@ -470,8 +456,7 @@ void RendererVulkan::createFrameBuffers() {
     framebufferInfo.height = extent.height;
     framebufferInfo.layers = 1;
 
-    if (vkCreateFramebuffer(device, &framebufferInfo, nullptr,
-                            &framebuffers[i]) != VK_SUCCESS) {
+    if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) {
       Util::Error("Failed to create framebuffer");
     }
     i++;
@@ -485,8 +470,7 @@ void RendererVulkan::createCommandBuffer() {
   poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
   poolInfo.queueFamilyIndex = queueFamily.graphics.value();
 
-  if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) !=
-      VK_SUCCESS) {
+  if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
     Util::Error("Failed to create command pool");
   }
 
@@ -497,8 +481,7 @@ void RendererVulkan::createCommandBuffer() {
   allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
   allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
-  if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) !=
-      VK_SUCCESS) {
+  if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
     Util::Error("Failed to create command buffer");
   }
 }
@@ -516,16 +499,13 @@ void RendererVulkan::createSyncObjects() {
   fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
   for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr,
-                          &imageAvailableSem[i]) != VK_SUCCESS) {
+    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSem[i]) != VK_SUCCESS) {
       Util::Error("Failed to create semaphore");
     }
-    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr,
-                          &renderFinishedSem[i]) != VK_SUCCESS) {
+    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSem[i]) != VK_SUCCESS) {
       Util::Error("Failed to create semaphore");
     }
-    if (vkCreateFence(device, &fenceInfo, nullptr, &inFlightFence[i]) !=
-        VK_SUCCESS) {
+    if (vkCreateFence(device, &fenceInfo, nullptr, &inFlightFence[i]) != VK_SUCCESS) {
       Util::Error("Failed to create fence");
     }
   }
@@ -534,8 +514,7 @@ void RendererVulkan::createSyncObjects() {
 // ====================================================================================================================
 // Helper Methods
 // ====================================================================================================================
-VkPresentModeKHR RendererVulkan::chooseSwapPresentMode(
-    const std::vector<VkPresentModeKHR> &available) {
+VkPresentModeKHR RendererVulkan::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &available) {
   for (const auto &presentMode : available) {
     if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
       return presentMode;
@@ -544,30 +523,23 @@ VkPresentModeKHR RendererVulkan::chooseSwapPresentMode(
   return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D
-RendererVulkan::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
-  if (capabilities.currentExtent.width !=
-      std::numeric_limits<uint32_t>::max()) {
+VkExtent2D RendererVulkan::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
+  if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
     return capabilities.currentExtent;
   } else {
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
     VkExtent2D actual = {(uint32_t)width, (uint32_t)height};
 
-    actual.width = std::clamp(actual.width, capabilities.minImageExtent.width,
-                              capabilities.maxImageExtent.width);
-    actual.height =
-        std::clamp(actual.height, capabilities.minImageExtent.height,
-                   capabilities.maxImageExtent.height);
+    actual.width = std::clamp(actual.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+    actual.height = std::clamp(actual.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
     return actual;
   }
 }
 
-VkSurfaceFormatKHR RendererVulkan::chooseSwapSurfaceFormat(
-    const std::vector<VkSurfaceFormatKHR> &available) {
+VkSurfaceFormatKHR RendererVulkan::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &available) {
   for (const auto &format : available) {
-    if (format.format == VK_FORMAT_B8G8R8_SRGB &&
-        format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+    if (format.format == VK_FORMAT_B8G8R8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
       return format;
     }
   }
@@ -605,8 +577,7 @@ void RendererVulkan::createSurface() {
   uint32_t extensionCount = 0;
   vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
   std::vector<VkExtensionProperties> extensions(extensionCount);
-  vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount,
-                                         extensions.data());
+  vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
   std::cout << "Availible extensions:\n";
   for (auto &extension : extensions) {
     std::cout << "\t" << extension.extensionName << "\n";
@@ -616,11 +587,9 @@ void RendererVulkan::createSurface() {
 
 bool RendererVulkan::checkDeviceExtensionSupport(VkPhysicalDevice pDevice) {
   uint32_t extensionCount;
-  vkEnumerateDeviceExtensionProperties(pDevice, nullptr, &extensionCount,
-                                       nullptr);
+  vkEnumerateDeviceExtensionProperties(pDevice, nullptr, &extensionCount, nullptr);
   std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-  vkEnumerateDeviceExtensionProperties(pDevice, nullptr, &extensionCount,
-                                       availableExtensions.data());
+  vkEnumerateDeviceExtensionProperties(pDevice, nullptr, &extensionCount, availableExtensions.data());
   bool found = false;
   for (const auto &need : deviceExtensions) {
     found = false;
@@ -635,27 +604,22 @@ bool RendererVulkan::checkDeviceExtensionSupport(VkPhysicalDevice pDevice) {
   return true;
 }
 
-RendererVulkan::SwapchainSupportDetails
-RendererVulkan::querySwapchainSupport(VkPhysicalDevice pDevice) {
+RendererVulkan::SwapchainSupportDetails RendererVulkan::querySwapchainSupport(VkPhysicalDevice pDevice) {
   SwapchainSupportDetails details;
-  vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pDevice, surface,
-                                            &details.capabilities);
+  vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pDevice, surface, &details.capabilities);
 
   uint32_t formatCount;
   vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &formatCount, nullptr);
   if (formatCount > 0) {
     details.formats.resize(formatCount);
-    vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &formatCount,
-                                         details.formats.data());
+    vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &formatCount, details.formats.data());
   }
 
   uint32_t presentCount;
-  vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &presentCount,
-                                            nullptr);
+  vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &presentCount, nullptr);
   if (presentCount > 0) {
     details.presentModes.resize(presentCount);
-    vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &presentCount,
-                                              details.presentModes.data());
+    vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &presentCount, details.presentModes.data());
   }
 
   return details;
@@ -668,20 +632,17 @@ bool RendererVulkan::isDeviceCompatible(VkPhysicalDevice pDevice) {
   bool swapchainSupported = false;
   if (extensionSupported) {
     SwapchainSupportDetails swapchainSupport = querySwapchainSupport(pDevice);
-    swapchainSupported = !swapchainSupport.presentModes.empty() &&
-                         !swapchainSupport.formats.empty();
+    swapchainSupported = !swapchainSupport.presentModes.empty() && !swapchainSupport.formats.empty();
   }
   return queue.compatible() && extensionSupported && swapchainSupported;
 }
 
-RendererVulkan::QueueFamily
-RendererVulkan::setupQueueFamilies(VkPhysicalDevice pDevice) {
+RendererVulkan::QueueFamily RendererVulkan::setupQueueFamilies(VkPhysicalDevice pDevice) {
   uint32_t familyCount;
   vkGetPhysicalDeviceQueueFamilyProperties(pDevice, &familyCount, nullptr);
 
   std::vector<VkQueueFamilyProperties> families(familyCount);
-  vkGetPhysicalDeviceQueueFamilyProperties(pDevice, &familyCount,
-                                           families.data());
+  vkGetPhysicalDeviceQueueFamilyProperties(pDevice, &familyCount, families.data());
 
   QueueFamily queue;
   uint32_t i = 0;
@@ -702,10 +663,8 @@ RendererVulkan::setupQueueFamilies(VkPhysicalDevice pDevice) {
   return queue;
 }
 
-void RendererVulkan::createShaders(std::string vertexFilePath,
-                                   std::string fragmentFilePath,
-                                   std::string tesselationFilePath,
-                                   std::string geometeryFilePath) {
+void RendererVulkan::createShaders(std::string vertexFilePath, std::string fragmentFilePath,
+                                   std::string tesselationFilePath, std::string geometeryFilePath) {
 
   auto vertexShader = Util::readFile(vertexFilePath);
   auto fragmentShader = Util::readFile(fragmentFilePath);
@@ -727,16 +686,14 @@ VkShaderModule RendererVulkan::createShaderModule(std::vector<char> &shader) {
 
   VkShaderModule module;
 
-  if (vkCreateShaderModule(device, &createInfo, nullptr, &module) !=
-      VK_SUCCESS) {
+  if (vkCreateShaderModule(device, &createInfo, nullptr, &module) != VK_SUCCESS) {
     Util::Error("Failed to create shader module");
   }
 
   return module;
 }
 
-void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer,
-                                         uint32_t imageIndex) {
+void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
   VkCommandBufferBeginInfo beginInfo{};
   beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   beginInfo.flags = 0;
@@ -757,10 +714,8 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer,
   renderPassInfo.clearValueCount = 1;
   renderPassInfo.pClearValues = &clearColor;
 
-  vkCmdBeginRenderPass(commandBuffer, &renderPassInfo,
-                       VK_SUBPASS_CONTENTS_INLINE);
-  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    graphicsPipeline);
+  vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
   VkViewport viewport{};
   viewport.x = 0.0f;
@@ -784,11 +739,29 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer,
     Util::Error("Failed to record command buffer");
 }
 
+void RendererVulkan::createVertexBuffer(Mesh::Mesh mesh) {
+  VkVertexInputBindingDescription vBindingDesc = mesh.vertices->getBindingDescription();
+  VkVertexInputAttributeDescription vAttribDesc{};
+
+  VkVertexInputBindingDescription nBindingDesc{};
+  VkVertexInputAttributeDescription nAttribDesc{};
+
+  VkVertexInputBindingDescription uBindingDesc{};
+  VkVertexInputAttributeDescription uAttribDesc{};
+
+  if (mesh.hasNormals()) {
+    nBindingDesc = mesh.normals->getBindingDescription();
+  }
+  if (mesh.hasUV()) {
+    uBindingDesc = mesh.uv->getBindingDescription();
+  }
+}
+
+void RendererVulkan::createVertexBuffer(std::vector<Mesh::Mesh> meshes) {}
+
 void RendererVulkan::createTexture() {}
 
-void RendererVulkan::createVertexBuffer() {}
-
-void RendererVulkan::createUniform() {}
+void RendererVulkan::createUniformBuffer() {}
 
 void RendererVulkan::drawFrame(FrameData frame) {}
 
@@ -796,8 +769,7 @@ void RendererVulkan::drawFrame() {
   vkWaitForFences(device, 1, &inFlightFence[currentFrame], VK_TRUE, UINT64_MAX);
 
   uint32_t imageIndex;
-  VkResult result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX,
-                                          imageAvailableSem[currentFrame],
+  VkResult result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, imageAvailableSem[currentFrame],
                                           VK_NULL_HANDLE, &imageIndex);
 
   if (result == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -815,8 +787,7 @@ void RendererVulkan::drawFrame() {
   submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
   VkSemaphore waitSemaphores[] = {imageAvailableSem[currentFrame]};
-  VkPipelineStageFlags waitStages[] = {
-      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+  VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
   submitInfo.waitSemaphoreCount = 1;
   submitInfo.pWaitSemaphores = waitSemaphores;
@@ -828,8 +799,7 @@ void RendererVulkan::drawFrame() {
   submitInfo.signalSemaphoreCount = 1;
   submitInfo.pSignalSemaphores = signalSemaphores;
 
-  if (vkQueueSubmit(graphicsQueue, 1, &submitInfo,
-                    inFlightFence[currentFrame]) != VK_SUCCESS) {
+  if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFence[currentFrame]) != VK_SUCCESS) {
     Util::Error("Failed to submit draw command buffer");
   }
 
@@ -845,8 +815,7 @@ void RendererVulkan::drawFrame() {
   presentInfo.pResults = nullptr;
 
   result = vkQueuePresentKHR(presentQueue, &presentInfo);
-  if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
-      resized) {
+  if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || resized) {
     resized = false;
     recreateSwapchain();
   } else if (result != VK_SUCCESS)

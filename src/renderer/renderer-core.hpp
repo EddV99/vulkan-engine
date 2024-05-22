@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include "../mesh/mesh.hpp"
 
 namespace Renderer {
@@ -9,6 +7,6 @@ namespace Renderer {
 // Frame Data Struct
 // ====================================================================================================================
 struct FrameData {
-  std::vector<Mesh::Mesh> scene;
+    // TODO Implement
 };
 }; // namespace Renderer
