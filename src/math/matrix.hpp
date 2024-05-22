@@ -7,8 +7,27 @@
 
 namespace Math {
 
+#define ROW_COL_TO_INDEX(R, C, S) (S * R) + C
+
+
+// =============================================================================
+// Matrix 3x3
+// =============================================================================
 class Matrix3 {
+
+/*
+ * Stored as Column-Major Order
+ *
+ * 0  3  6
+ * 1  4  7
+ * 2  5  8
+ *
+ * Functions calls will assume Row-Major Order
+ */
+
 public:
+  f32 m[9]{};
+
   Matrix3();
   Matrix3(f32 value);
   Matrix3(Matrix3 const &copy);
@@ -32,12 +51,17 @@ public:
   void print();
 
 private:
-  const i32 SIZE = 3;
-  f32 data[3][3]{};
+  const i32 SIZE = 9;
+  const i32 SIZE_ROW = 3;
 };
 
+// =============================================================================
+// Matrix 4x4
+// =============================================================================
 class Matrix4 {
 public:
+  f32 m[16]{};
+
   Matrix4();
   Matrix4(f32 value);
   Matrix4(Matrix4 const &copy);
@@ -62,8 +86,8 @@ public:
   void print();
 
 private:
-  const i32 SIZE = 4;
-  f32 data[4][4]{};
+  const i32 SIZE = 16;
+  const i32 SIZE_ROW = 4;
 };
 
 Matrix3 submatrix(i32 row, i32 col, const Matrix4 &m);
