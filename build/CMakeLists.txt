@@ -15,21 +15,26 @@ add_library(physics ../src/physics/physics.cpp)
 add_library(scene ../src/scene/camera.cpp)
 add_library(threads ../src/threads/threads.cpp)
 add_library(ui ../src/ui/ui.cpp)
-add_library(util ../src/util/util.cpp ../src/util/defines.hpp)
+add_library(util ../src/util/util.cpp ../src/util/defines.hpp ../src/util/tiny_obj_loader.h)
+add_library(renderer ../src/renderer/renderer.cpp ../src/renderer/renderer-vulkan.cpp ../src/renderer/renderer-core.hpp)
 
-add_library(renderer ../src/renderer/renderer.cpp ../src/renderer/renderer-vulkan.cpp)
-target_link_libraries(renderer 
-                      glfw 
-                      Vulkan::Vulkan
-                      mesh
-                      util
-                      math)
-
-#target_include_directories(vulkan-engine PUBLIC ../src/)
+target_link_libraries(mesh math util)
+target_link_libraries(renderer mesh util)
 
 add_executable(vulkan-engine ../src/entry.cpp)
 
-#target_link_libraries(vulkan-engine glfw)
-#target_link_libraries(vulkan-engine Vulkan::Vulkan)
+target_link_libraries(vulkan-engine PUBLIC glfw)
+target_link_libraries(vulkan-engine PUBLIC Vulkan::Vulkan)
+target_link_libraries(vulkan-engine PUBLIC math 
+                                           mesh 
+                                           networking
+                                           physics
+                                           scene 
+                                           threads
+                                           ui
+                                           util
+                                           renderer)
+
+
 #target_link_libraries(vulkan-engine glm::glm)
-target_link_libraries(vulkan-engine renderer)
+
