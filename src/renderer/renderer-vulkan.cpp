@@ -314,13 +314,19 @@ void RendererVulkan::createGraphicsPipeline() {
   dynamicState.dynamicStateCount = (uint32_t)dynamicStates.size();
   dynamicState.pDynamicStates = dynamicStates.data();
 
-  // vertex input (not used for now)
+  // vertex input
+  uint32_t count = vertexBuffers.bindingDescriptions.size();
   VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
   vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-  vertexInputInfo.vertexBindingDescriptionCount = 0;
-  vertexInputInfo.pVertexBindingDescriptions = nullptr;
-  vertexInputInfo.vertexAttributeDescriptionCount = 0;
-  vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+  vertexInputInfo.vertexBindingDescriptionCount = count;
+  vertexInputInfo.pVertexBindingDescriptions = vertexBuffers.bindingDescriptions.data();
+  vertexInputInfo.vertexAttributeDescriptionCount = count;
+  if (count == 1)
+    vertexInputInfo.pVertexAttributeDescriptions = vertexBuffers.attributeOne.data();
+  else if (count == 2)
+    vertexInputInfo.pVertexAttributeDescriptions = vertexBuffers.attributeTwo.data();
+  else if (count == 3)
+    vertexInputInfo.pVertexAttributeDescriptions = vertexBuffers.attributeThree.data();
 
   // input assembly
   VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
@@ -740,20 +746,74 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
 }
 
 void RendererVulkan::createVertexBuffer(Mesh::Mesh mesh) {
-  VkVertexInputBindingDescription vBindingDesc = mesh.vertices->getBindingDescription();
-  VkVertexInputAttributeDescription vAttribDesc{};
-
-  VkVertexInputBindingDescription nBindingDesc{};
-  VkVertexInputAttributeDescription nAttribDesc{};
-
-  VkVertexInputBindingDescription uBindingDesc{};
-  VkVertexInputAttributeDescription uAttribDesc{};
+  VkVertexInputBindingDescription vBindingDesc = Mesh::Mesh::getBindingDescriptionVertex();
+  vertexBuffers.bindingDescriptions.push_back(vBindingDesc);
 
   if (mesh.hasNormals()) {
-    nBindingDesc = mesh.normals->getBindingDescription();
+    VkVertexInputBindingDescription nBindingDesc = Mesh::Mesh::getBindingDescriptionNormal();
+    vertexBuffers.bindingDescriptions.push_back(nBindingDesc);
   }
+
   if (mesh.hasUV()) {
-    uBindingDesc = mesh.uv->getBindingDescription();
+    VkVertexInputBindingDescription uBindingDesc = Mesh::Mesh::getBindingDescriptionUV();
+    vertexBuffers.bindingDescriptions.push_back(uBindingDesc);
+  }
+
+  if (!mesh.hasNormals() && !mesh.hasUV()) {
+    std::array<VkVertexInputAttributeDescription, 1> AttribDesc{};
+
+    auto vAttribDesc = Mesh::Mesh::getAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT);
+
+    AttribDesc[0].binding = vAttribDesc.binding;
+    AttribDesc[0].offset = vAttribDesc.offset;
+    AttribDesc[0].format = vAttribDesc.format;
+    AttribDesc[0].location = vAttribDesc.location;
+
+    vertexBuffers.attributeOne = AttribDesc;
+  }
+
+  if (mesh.hasNormals() && !mesh.hasUV()) {
+    std::array<VkVertexInputAttributeDescription, 2> AttribDesc{};
+
+    auto vAttribDesc = Mesh::Mesh::getAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT);
+    auto nAttribDesc = Mesh::Mesh::getAttributeDescription(1, 1, VK_FORMAT_R32G32B32_SFLOAT);
+
+    AttribDesc[0].binding = vAttribDesc.binding;
+    AttribDesc[0].offset = vAttribDesc.offset;
+    AttribDesc[0].format = vAttribDesc.format;
+    AttribDesc[0].location = vAttribDesc.location;
+
+    AttribDesc[1].binding = nAttribDesc.binding;
+    AttribDesc[1].offset = nAttribDesc.offset;
+    AttribDesc[1].format = nAttribDesc.format;
+    AttribDesc[1].location = nAttribDesc.location;
+
+    vertexBuffers.attributeTwo = AttribDesc;
+  }
+
+  if (mesh.hasNormals() && mesh.hasUV()) {
+    std::array<VkVertexInputAttributeDescription, 3> AttribDesc{};
+
+    auto vAttribDesc = Mesh::Mesh::getAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT);
+    auto nAttribDesc = Mesh::Mesh::getAttributeDescription(1, 1, VK_FORMAT_R32G32B32_SFLOAT);
+    auto uAttribDesc = Mesh::Mesh::getAttributeDescription(2, 2, VK_FORMAT_R32G32_SFLOAT);
+
+    AttribDesc[0].binding = vAttribDesc.binding;
+    AttribDesc[0].offset = vAttribDesc.offset;
+    AttribDesc[0].format = vAttribDesc.format;
+    AttribDesc[0].location = vAttribDesc.location;
+
+    AttribDesc[1].binding = nAttribDesc.binding;
+    AttribDesc[1].offset = nAttribDesc.offset;
+    AttribDesc[1].format = nAttribDesc.format;
+    AttribDesc[1].location = nAttribDesc.location;
+
+    AttribDesc[2].binding = uAttribDesc.binding;
+    AttribDesc[2].offset = uAttribDesc.offset;
+    AttribDesc[2].format = uAttribDesc.format;
+    AttribDesc[2].location = uAttribDesc.location;
+
+    vertexBuffers.attributeThree = AttribDesc;
   }
 }
 

@@ -35,6 +35,7 @@ public:
   void init(GLFWwindow *window);
   void createVertexBuffer(Mesh::Mesh mesh);
   void createVertexBuffer(std::vector<Mesh::Mesh> meshes);
+  void resize();
 
 private:
   /**
@@ -60,14 +61,21 @@ private:
     std::vector<VkPresentModeKHR> presentModes;
   } swapchainSupport;
 
+  struct VertexBuffers {
+    std::vector<VkVertexInputBindingDescription> bindingDescriptions;
+    union {
+      std::array<VkVertexInputAttributeDescription, 3> attributeThree;
+      std::array<VkVertexInputAttributeDescription, 2> attributeTwo;
+      std::array<VkVertexInputAttributeDescription, 1> attributeOne;
+    };
+  } vertexBuffers;
+
   /**
    * List of wanted validation layers
    */
-  const std::vector<const char *> validationLayers = {
-      "VK_LAYER_KHRONOS_validation"};
+  const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
 
-  const std::vector<const char *> deviceExtensions = {
-      VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+  const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
   /**
    * Vulkan Initilization
@@ -97,8 +105,6 @@ private:
   /**
    * Helper Methods
    */
-  void resize();
-
   bool checkValidationLayerSupport();
 
   QueueFamily setupQueueFamilies(VkPhysicalDevice physicalDevice);
@@ -111,11 +117,9 @@ private:
 
   querySwapchainSupport(VkPhysicalDevice physicalDevice);
 
-  VkSurfaceFormatKHR
-  chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &available);
+  VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &available);
 
-  VkPresentModeKHR
-  chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &available);
+  VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &available);
 
   VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 
@@ -124,8 +128,7 @@ private:
   void cleanSwapchain();
 
   void createShaders(std::string vertexFilePath, std::string fragmentFilePath,
-                     std::string tesselationFilePath = nullptr,
-                     std::string geometeryFilePath = nullptr);
+                     std::string tesselationFilePath = nullptr, std::string geometeryFilePath = nullptr);
 
   VkShaderModule createShaderModule(std::vector<char> &shader);
 
@@ -134,7 +137,6 @@ private:
   void createUniformBuffer();
 
   void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
-
 
   /**
    * Instance Variables
