@@ -28,15 +28,6 @@ public:
   f32 length();
   void normalize();
   Vector3 normal();
-
-  // VULKAN ONLY ----------------------------------------------
-  static VkVertexInputBindingDescription getBindingDescription() {
-    VkVertexInputBindingDescription description;
-    description.binding = 0;
-    description.stride = sizeof(Vector3);
-    description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-    return description;
-  }
 };
 
 class Vector4 {
@@ -73,15 +64,6 @@ public:
   f32 length();
   void normalize();
   Vector2 normal();
-
-  // VULKAN ONLY ----------------------------------------------
-  static VkVertexInputBindingDescription getBindingDescription() {
-    VkVertexInputBindingDescription description;
-    description.binding = 0;
-    description.stride = sizeof(Vector2);
-    description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-    return description;
-  }
 };
 
 }; // namespace Math

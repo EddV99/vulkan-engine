@@ -4,6 +4,7 @@
 
 #include "mesh.hpp"
 #include "../math/vector.hpp"
+#define TINYOBJLOADER_IMPLEMENTATION
 #include "../util/tiny_obj_loader.h"
 #include "../util/util.hpp"
 
@@ -19,8 +20,7 @@ void Mesh::loadOBJFile(std::string filename) {
   std::vector<tinyobj::material_t> materials;
   std::string warn, err;
 
-  if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err,
-                        filename.c_str())) {
+  if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str())) {
     std::string warnMessage{};
     std::string errMessage{};
     if (!warn.empty())
@@ -32,8 +32,9 @@ void Mesh::loadOBJFile(std::string filename) {
   }
 
   std::unordered_map<Math::Vector3, i32> uniqueVertices{};
-  bool hasNormals = false;
-  bool hasUV = false;
+
+  _hasNormals = false;
+  _hasUV = false;
 
   for (const auto &shape : shapes) {
     for (const auto &index : shape.mesh.indices) {
@@ -47,7 +48,7 @@ void Mesh::loadOBJFile(std::string filename) {
         _vertices.push_back(vertex);
 
         if (index.normal_index > 0) {
-          hasNormals = true;
+          _hasNormals = true;
           Math::Vector3 normal;
           normal.x = attrib.normals[3 * index.normal_index + 0];
           normal.y = attrib.normals[3 * index.normal_index + 1];
@@ -55,7 +56,7 @@ void Mesh::loadOBJFile(std::string filename) {
           _normals.push_back(normal);
         }
         if (index.texcoord_index > 0) {
-          hasUV = true;
+          _hasUV = true;
           Math::Vector2 tex;
           tex.x = attrib.texcoords[2 * index.texcoord_index + 0];
           tex.y = attrib.texcoords[2 * index.texcoord_index + 1];
@@ -67,9 +68,12 @@ void Mesh::loadOBJFile(std::string filename) {
   }
 
   memcpy(vertices, _vertices.data(), sizeof(Math::Vector3) * _vertices.size());
-  if (hasNormals)
+  if (_hasNormals)
     memcpy(normals, _normals.data(), sizeof(Math::Vector3) * _normals.size());
-  if (hasUV)
+  if (_hasUV)
     memcpy(uv, _uv.data(), sizeof(Math::Vector2) * _uv.size());
 }
+
+bool Mesh::hasNormals() { return _hasNormals; }
+bool Mesh::hasUV() { return _hasUV; }
 } // namespace Mesh
