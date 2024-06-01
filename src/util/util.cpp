@@ -26,6 +26,6 @@ std::vector<char> readFile(const std::string &filename) {
   return bytes;
 }
 
-void Error(const std::string &message) { throw std::runtime_error(message); }
+void Error(const std::string &message) { throw std::runtime_error(message.c_str()); }
 
 } // namespace Util
