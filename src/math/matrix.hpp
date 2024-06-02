@@ -4,26 +4,26 @@
 #pragma once
 
 #include "../util/defines.hpp"
+#include "vector.hpp"
 
 namespace Math {
 
 #define ROW_COL_TO_INDEX(R, C, S) (S * R) + C
-
 
 // =============================================================================
 // Matrix 3x3
 // =============================================================================
 class Matrix3 {
 
-/*
- * Stored as Column-Major Order
- *
- * 0  3  6
- * 1  4  7
- * 2  5  8
- *
- * Functions calls will assume Row-Major Order
- */
+  /*
+   * Stored as Column-Major Order
+   *
+   * 0  3  6
+   * 1  4  7
+   * 2  5  8
+   *
+   * Functions calls will assume Row-Major Order
+   */
 
 public:
   f32 m[9]{};
@@ -86,10 +86,23 @@ public:
   void print();
 
 private:
+  static Matrix3 submatrix(i32 row, i32 col, const Matrix4 &m);
   const i32 SIZE = 16;
   const i32 SIZE_ROW = 4;
 };
 
-Matrix3 submatrix(i32 row, i32 col, const Matrix4 &m);
+// =============================================================================
+// 3D Graphics
+// =============================================================================
+Matrix4 perspectiveMatrix(f32 fov, f32 aspect, f32 zNear, f32 zFar);
+Matrix4 viewMatrix(const Vector3 &cameraPosition, const Vector3 &cameraTarget, const Vector3 &up);
+Matrix4 modelMatrix(const Vector3 &translation, const Vector3 &rotation, const Vector3 &scale);
 
+Matrix4 scale(const Matrix4 &m, const Vector3 &scale);
+Matrix4 translate(const Matrix4 &m, const Vector3 &scale);
+Matrix4 rotate(const Matrix4 &m, const Vector3 &scale);
+
+struct Quaternion {
+  
+};
 } // namespace Math

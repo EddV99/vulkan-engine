@@ -3,6 +3,9 @@
 
 namespace Math {
 
+// =============================================================================
+// Matrix 3x3
+// =============================================================================
 void Matrix3::print() {
   std::cout << this->m[0] << " ";
   std::cout << this->m[3] << " ";
@@ -131,6 +134,9 @@ void Matrix3::inverse() {
   (*this) = inverted * (1.0f / this->determinate());
 }
 
+// =============================================================================
+// Matrix 4x4
+// =============================================================================
 void Matrix4::print() {
   for (int r = 0; r < SIZE; r++) {
     for (int c = 0; c < SIZE; c++) {
@@ -268,7 +274,7 @@ void Matrix4::inverse() {
   (*this) = inverted * (1.0f / this->determinate());
 }
 
-Matrix3 submatrix(i32 row, i32 col, const Matrix4 &m) {
+Matrix3 Matrix4::submatrix(i32 row, i32 col, const Matrix4 &m) {
   Matrix3 value(0.0f);
 
   i32 indexRow = 0;
@@ -285,5 +291,17 @@ Matrix3 submatrix(i32 row, i32 col, const Matrix4 &m) {
 
   return value;
 }
+
+// =============================================================================
+// 3D Graphics
+// =============================================================================
+Matrix4 perspectiveMatrix(f32 fov, f32 aspect, f32 zNear, f32 zFar){}
+Matrix4 viewMatrix(const Vector3 &cameraPosition, const Vector3 &cameraTarget, const Vector3 &up){}
+Matrix4 modelMatrix(const Vector3 &translation, const Vector3 &rotation, const Vector3 &scale){}
+
+Matrix4 scale(const Matrix4 &m, const Vector3 &scale){}
+Matrix4 translate(const Matrix4 &m, const Vector3 &scale){}
+Matrix4 rotate(const Matrix4 &m, const Vector3 &scale){}
+
 
 }; // namespace Math
