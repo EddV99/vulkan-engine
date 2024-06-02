@@ -4,6 +4,7 @@
 
 #include "mesh.hpp"
 #include "../math/vector.hpp"
+#include <cstdlib>
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "../util/tiny_obj_loader.h"
 #include "../util/util.hpp"
@@ -14,6 +15,16 @@
 
 namespace Mesh {
 
+Mesh &Mesh::operator=(const Mesh &other) {
+  this->uv = other.uv;
+  this->normals = other.normals;
+  this->vertices = other.vertices;
+
+  this->_hasUV = other._hasUV;
+  this->_hasNormals = other._hasNormals;
+  return *this;
+}
+
 void Mesh::loadOBJFile(std::string filename) {
   tinyobj::attrib_t attrib;
   std::vector<tinyobj::shape_t> shapes;
@@ -21,13 +32,14 @@ void Mesh::loadOBJFile(std::string filename) {
   std::string warn, err;
 
   if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str())) {
-    std::string warnMessage{};
-    std::string errMessage{};
+    std::string warnMessage;
+    std::string errMessage;
     if (!warn.empty())
-      warnMessage = "WARNING: " + warn;
+      warnMessage = "Mesh::loadOBJFile Warning: " + warn;
 
     if (!err.empty())
-      errMessage = "ERROR: " + err;
+      errMessage = "Mesh::loadOBJFile Error: " + err;
+
     Util::Error(warnMessage + " " + errMessage);
   }
 
@@ -44,34 +56,30 @@ void Mesh::loadOBJFile(std::string filename) {
       vertex.z = attrib.vertices[3 * index.vertex_index + 2];
 
       if (uniqueVertices.count(vertex) == 0) {
-        uniqueVertices[vertex] = static_cast<uint32_t>(_vertices.size());
-        _vertices.push_back(vertex);
+        uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+        vertices.push_back(vertex);
 
-        if (index.normal_index > 0) {
+        if (index.normal_index >= 0) {
           _hasNormals = true;
           Math::Vector3 normal;
           normal.x = attrib.normals[3 * index.normal_index + 0];
           normal.y = attrib.normals[3 * index.normal_index + 1];
           normal.z = attrib.normals[3 * index.normal_index + 2];
-          _normals.push_back(normal);
+          normals.push_back(normal);
         }
-        if (index.texcoord_index > 0) {
+        if (index.texcoord_index >= 0) {
           _hasUV = true;
           Math::Vector2 tex;
           tex.x = attrib.texcoords[2 * index.texcoord_index + 0];
           tex.y = attrib.texcoords[2 * index.texcoord_index + 1];
-          _uv.push_back(tex);
+          uv.push_back(tex);
         }
       }
       indices.push_back(uniqueVertices[vertex]);
     }
   }
 
-  memcpy(vertices, _vertices.data(), sizeof(Math::Vector3) * _vertices.size());
-  if (_hasNormals)
-    memcpy(normals, _normals.data(), sizeof(Math::Vector3) * _normals.size());
-  if (_hasUV)
-    memcpy(uv, _uv.data(), sizeof(Math::Vector2) * _uv.size());
+  this->size = indices.size();
 }
 
 bool Mesh::hasNormals() { return _hasNormals; }

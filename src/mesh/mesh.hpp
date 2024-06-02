@@ -9,15 +9,16 @@
 #include "../math/vector.hpp"
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
 #include <vulkan/vulkan_core.h>
-
 namespace Mesh {
 class Mesh {
 public:
   Mesh() = default;
+  Mesh &operator=(const Mesh &other);
 
   void computeBoundingBox();
 
@@ -26,53 +27,50 @@ public:
 
   void loadOBJFile(std::string filename);
 
-  Math::Vector3 *vertices = nullptr;
+  uint32_t size = 0;
   std::vector<i32> indices;
-  Math::Vector3 *normals = nullptr;
-  Math::Vector3 *uv = nullptr;
+  std::vector<Math::Vector3> vertices;
+  std::vector<Math::Vector3> normals;
+  std::vector<Math::Vector2> uv;
 
   // VULKAN ONLY ----------------------------------------------
-  static VkVertexInputBindingDescription getBindingDescriptionVertex() {
-    VkVertexInputBindingDescription description;
-    description.binding = 0;
-    description.stride = sizeof(Math::Vector3);
-    description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-    return description;
+  VkVertexInputBindingDescription getBindingDescriptions() {
+    VkVertexInputBindingDescription result;
+    result.binding = 0;
+    result.stride = (sizeof(Math::Vector3) * 2) + sizeof(Math::Vector2);
+    result.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    return result;
   }
 
-  static VkVertexInputBindingDescription getBindingDescriptionNormal() {
-    VkVertexInputBindingDescription description;
-    description.binding = 1;
-    description.stride = sizeof(Math::Vector3);
-    description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-    return description;
+  std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
+    auto v = getAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0);
+    uint32_t offset = vertices.size();
+    auto n = getAttributeDescription(0, 1, VK_FORMAT_R32G32B32_SFLOAT, offset);
+    offset += normals.size();
+    auto u = getAttributeDescription(0, 2, VK_FORMAT_R32G32_SFLOAT, offset);
+    std::array<VkVertexInputAttributeDescription, 3> result = {v, n, u};
+    return result;
   }
+  // VULKAN ONLY END -----------------------------------------
 
-  static VkVertexInputBindingDescription getBindingDescriptionUV() {
-    VkVertexInputBindingDescription description;
-    description.binding = 2;
-    description.stride = sizeof(Math::Vector2);
-    description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-    return description;
-  }
-
-  static VkVertexInputAttributeDescription getAttributeDescription(uint32_t bind, uint32_t loc, VkFormat format) {
+private:
+  static VkVertexInputAttributeDescription getAttributeDescription(uint32_t bind, uint32_t loc, VkFormat format,
+                                                                   uint32_t offset) {
     VkVertexInputAttributeDescription attributeDescriptions{};
 
     attributeDescriptions.binding = bind;
     attributeDescriptions.location = loc;
     attributeDescriptions.format = format;
-    attributeDescriptions.offset = 0;
+    attributeDescriptions.offset = offset;
 
     return attributeDescriptions;
   }
   // VULKAN ONLY END -----------------------------------------
 
-private:
-  std::vector<Math::Vector3> _vertices;
-  std::vector<Math::Vector3> _normals;
-  std::vector<Math::Vector2> _uv;
   bool _hasNormals{};
   bool _hasUV{};
 };
+
+using Scene = std::vector<Mesh>;
+
 } // namespace Mesh
