@@ -20,52 +20,26 @@ void Matrix3::print() {
   std::cout << "\n";
 }
 
-Matrix3::Matrix3() {
-  m[0] = 1.0f;
-  m[1] = 0.0f;
-  m[2] = 0.0f;
+Matrix3::Matrix3()
+    : m{1.0f, 0.0f, 0.0f, //
+        0.0f, 1.0f, 0.0f, //
+        0.0f, 0.0f, 1.0f} {}
 
-  m[3] = 0.0f;
-  m[4] = 1.0f;
-  m[5] = 0.0f;
+Matrix3::Matrix3(f32 value)
+    : m{value, 0.0f,  0.0f, //
+        0.0f,  value, 0.0f, //
+        0.0f,  0.0f,  value} {}
 
-  m[6] = 0.0f;
-  m[7] = 0.0f;
-  m[8] = 1.0f;
-}
-Matrix3::Matrix3(f32 value) {
-  m[0] = value;
-  m[1] = 0.0f;
-  m[2] = 0.0f;
-
-  m[3] = 0.0f;
-  m[4] = value;
-  m[5] = 0.0f;
-
-  m[6] = 0.0f;
-  m[7] = 0.0f;
-  m[8] = value;
-}
+Matrix3::Matrix3(f32 v00, f32 v01, f32 v02, //
+                 f32 v10, f32 v11, f32 v12, //
+                 f32 v20, f32 v21, f32 v22)
+    : m{v00, v10, v20, //
+        v01, v11, v21, //
+        v02, v12, v22} {}
 
 Matrix3::Matrix3(Matrix3 const &copy) {
   for (int r = 0; r < SIZE; r++)
     this->m[r] = copy.m[r];
-}
-
-Matrix3::Matrix3(f32 v00, f32 v01, f32 v02, //
-                 f32 v10, f32 v11, f32 v12, //
-                 f32 v20, f32 v21, f32 v22) {
-  m[0] = v00;
-  m[1] = v10;
-  m[2] = v20;
-
-  m[3] = v01;
-  m[4] = v11;
-  m[5] = v21;
-
-  m[6] = v02;
-  m[7] = v12;
-  m[8] = v22;
 }
 
 void Matrix3::set(i32 row, i32 col, f32 value) { m[ROW_COL_TO_INDEX(row, col, SIZE_ROW)] = value; }
@@ -167,73 +141,26 @@ void Matrix4::print() {
   std::cout << "\n";
 }
 
-Matrix4::Matrix4() {
-  m[0] = 1.0f;
-  m[1] = 0.0f;
-  m[2] = 0.0f;
-  m[3] = 0.0f;
+Matrix4::Matrix4()
+    : m{1.0f, 0.0f, 0.0f, 0.0f, //
+        0.0f, 1.0f, 0.0f, 0.0f, //
+        0.0f, 0.0f, 1.0f, 0.0f, //
+        0.0f, 0.0f, 0.0f, 1.0f} {}
 
-  m[4] = 0.0f;
-  m[5] = 1.0f;
-  m[6] = 0.0f;
-  m[7] = 0.0f;
-
-  m[8] = 0.0f;
-  m[9] = 0.0f;
-  m[10] = 1.0f;
-  m[11] = 0.0f;
-
-  m[12] = 0.0f;
-  m[13] = 0.0f;
-  m[14] = 0.0f;
-  m[15] = 1.0f;
-}
-Matrix4::Matrix4(f32 value) {
-  m[0] = value;
-  m[1] = 0.0f;
-  m[2] = 0.0f;
-  m[3] = 0.0f;
-
-  m[4] = 0.0f;
-  m[5] = value;
-  m[6] = 0.0f;
-  m[7] = 0.0f;
-
-  m[8] = 0.0f;
-  m[9] = 0.0f;
-  m[10] = value;
-  m[11] = 0.0f;
-
-  m[12] = 0.0f;
-  m[13] = 0.0f;
-  m[14] = 0.0f;
-  m[15] = value;
-}
+Matrix4::Matrix4(f32 value)
+    : m{value, 0.0f,  0.0f,  0.0f, //
+        0.0f,  value, 0.0f,  0.0f, //
+        0.0f,  0.0f,  value, 0.0f, //
+        0.0f,  0.0f,  0.0f,  value} {}
 
 Matrix4::Matrix4(f32 v00, f32 v01, f32 v02, f32 v03, //
                  f32 v10, f32 v11, f32 v12, f32 v13, //
                  f32 v20, f32 v21, f32 v22, f32 v23, //
-                 f32 v30, f32 v31, f32 v32, f32 v33) {
-  m[0] = v00;
-  m[1] = v10;
-  m[2] = v20;
-  m[3] = v30;
-
-  m[4] = v01;
-  m[5] = v11;
-  m[6] = v21;
-  m[7] = v31;
-
-  m[8] = v02;
-  m[9] = v12;
-  m[10] = v22;
-  m[11] = v32;
-
-  m[12] = v03;
-  m[13] = v13;
-  m[14] = v23;
-  m[15] = v33;
-}
+                 f32 v30, f32 v31, f32 v32, f32 v33)
+    : m{v00, v10, v20, v30, //
+        v01, v11, v21, v31, //
+        v02, v12, v22, v32, //
+        v03, v13, v23, v33} {}
 
 Matrix4::Matrix4(Matrix4 const &copy) {
   for (int r = 0; r < SIZE; r++)
