@@ -35,6 +35,7 @@ public:
   void init(GLFWwindow *window);
   void createVertexBuffer(Mesh::Mesh mesh);
   void createVertexBuffer(std::vector<Mesh::Mesh> meshes);
+  void init(GLFWwindow *window, Mesh::Scene scene);
   void resize();
 
 private:
@@ -166,6 +167,7 @@ private:
   VkQueue presentQueue;
   uint32_t currentFrame = 0;
   bool resized = false;
+  Mesh::Scene scene;
 
   /**
    * Constants

@@ -48,10 +48,13 @@ RendererVulkan::~RendererVulkan() {
 //     Initialization
 // ====================================================================================================================
 void RendererVulkan::init(GLFWwindow *window) {
+void RendererVulkan::init(GLFWwindow *window, Mesh::Scene scene) {
   if (enableValidationLayers && !checkValidationLayerSupport())
     Util::Error("Validation layers requested, but failed to get");
 
+  this->scene = scene;
   this->window = window;
+
   createInstance();
   createSurface();
   pickPhysicalDevice();

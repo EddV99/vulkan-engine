@@ -10,11 +10,12 @@
 
 #include "renderer-core.hpp"
 #include "renderer-vulkan.hpp"
+#include "../mesh/mesh.hpp"
 
 namespace Renderer {
 class Renderer {
 public:
-  Renderer(int w, int h);
+  Renderer(int w, int h, Mesh::Scene scene);
   bool running();
   void poll();
   void draw();
