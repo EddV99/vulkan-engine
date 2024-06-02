@@ -44,11 +44,3 @@ target_link_libraries(vulkan-engine PUBLIC math
 
 
 #target_link_libraries(vulkan-engine glm::glm)
-
-# Add a custom target to run the executable
-add_custom_target(run
-    COMMAND vulkan-engine
-    DEPENDS vulkan-engine
-    WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
-    COMMENT "Running the executable..."
-)
