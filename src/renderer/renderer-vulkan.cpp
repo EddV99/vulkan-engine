@@ -6,7 +6,6 @@
 
 #include <GLFW/glfw3.h>
 #include <algorithm>
-#include <any>
 #include <climits>
 #include <cstdint>
 #include <cstring>
@@ -482,9 +481,7 @@ void RendererVulkan::createFrameBuffers() {
 }
 
 void RendererVulkan::createVertexBuffer() {
-  VkDeviceSize bufferSize = scene[0].vertices.size() * sizeof(Math::Vector3) + //
-                            scene[0].normals.size() * sizeof(Math::Vector3) +  //
-                            scene[0].uv.size() * sizeof(Math::Vector2);
+  VkDeviceSize bufferSize = scene[0].data.size() * sizeof(scene[0].data[0]);
 
   VkBuffer stagingBuffer;
   VkDeviceMemory stagingMemory;
@@ -495,11 +492,7 @@ void RendererVulkan::createVertexBuffer() {
 
   void *data;
   vkMapMemory(device, stagingMemory, 0, bufferSize, 0, &data);
-  std::vector<std::any> allData;
-  allData.insert(allData.end(), scene[0].vertices.begin(), scene[0].vertices.end());
-  allData.insert(allData.end(), scene[0].normals.begin(), scene[0].normals.end());
-  allData.insert(allData.end(), scene[0].uv.begin(), scene[0].uv.end());
-  memcpy(data, allData.data(), (size_t)bufferSize);
+  memcpy(data, scene[0].data.data(), (size_t)bufferSize);
   vkUnmapMemory(device, stagingMemory);
 
   createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
