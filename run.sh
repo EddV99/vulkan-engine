@@ -28,6 +28,7 @@ clean (){
     echo "cleaning!"
     find . ! -name 'CMakeLists.txt' -type d -exec rm -rf {} + 2> /dev/null
     find . ! -name 'CMakeLists.txt' -type f -exec rm -f {} + 2> /dev/null
+    rm ../src/shaders/*.spv
 }
 
 run (){
