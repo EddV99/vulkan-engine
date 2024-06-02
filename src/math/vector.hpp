@@ -16,11 +16,12 @@ public:
   f32 x, y, z;
 
   Vector3();
+  /* Vector3(Vector3&); */
   Vector3(f32 x, f32 y, f32 z);
 
   Vector3 operator+(Vector3 &right);
   Vector3 operator-(Vector3 &right);
-  Vector3 &operator=(Vector3 other) noexcept;
+  /* Vector3 &operator=(Vector3& other) noexcept; */
   bool operator==(const Vector3 &right) const;
 
   f32 dot(Vector3 &right);
@@ -57,13 +58,8 @@ public:
 
   Vector2 operator+(Vector2 &right);
   Vector2 operator-(Vector2 &right);
-  Vector2 &operator=(Vector2 other) noexcept;
-
-  f32 dot(Vector2 &right);
-  Vector2 cross(Vector2 &right);
-  f32 length();
-  void normalize();
-  Vector2 normal();
+  /* Vector2 &operator=(Vector2 other) noexcept; */
+  bool operator==(const Vector2 &right) const;
 };
 
 }; // namespace Math

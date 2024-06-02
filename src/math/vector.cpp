@@ -6,53 +6,50 @@ namespace Math {
 // =============================================================================
 // Vector 2
 // =============================================================================
-Vector2::Vector2() {
-  this->x = 0;
-  this->y = 0;
-}
+Vector2::Vector2() : x(0), y(0) {}
+Vector2::Vector2(f32 x, f32 y) : x(x), y(y) {}
 
-Vector2::Vector2(f32 x, f32 y) {
-  this->x = x;
-  this->y = y;
-}
+bool Vector2::operator==(const Vector2 &right) const { return (this->x == right.x) && (this->y == right.y); }
+
+Vector2 Vector2::operator+(Vector2 &right) { return Vector2(x + right.x, this->y + right.y); }
+
+Vector2 Vector2::operator-(Vector2 &right) { return Vector2(x - right.x, this->y - right.y); }
+
+/* Vector2 &Vector2::operator=(Vector2 other) noexcept { */
+/*   x = other.x; */
+/*   y = other.y; */
+/*   return *this; */
+/* } */
 
 // =============================================================================
 // Vector 3
 // =============================================================================
 Vector3::Vector3() : x(0), y(0), z(0) {}
+/* Vector3::Vector3(Vector3 &other) : x(other.x), y(other.y), z(other.z) {} */
 Vector3::Vector3(f32 x, f32 y, f32 z) : x(x), y(y), z(z) {}
 
 bool Vector3::operator==(const Vector3 &right) const {
   return (this->x == right.x) && (this->y == right.y) && (this->z == right.z);
 }
-Vector3 Vector3::operator+(Vector3 &right) {
-  return Vector3(x + right.x, this->y + right.y, this->z + right.z);
-}
+Vector3 Vector3::operator+(Vector3 &right) { return Vector3(x + right.x, this->y + right.y, this->z + right.z); }
 
-Vector3 Vector3::operator-(Vector3 &right) {
-  return Vector3(x - right.x, this->y - right.y, this->z - right.z);
-}
+Vector3 Vector3::operator-(Vector3 &right) { return Vector3(x - right.x, this->y - right.y, this->z - right.z); }
 
-Vector3 &Vector3::operator=(Vector3 other) noexcept {
-  x = other.x;
-  y = other.y;
-  z = other.z;
-  return *this;
-}
+/* Vector3 &Vector3::operator=(Vector3 &other) noexcept { */
+/*   x = other.x; */
+/*   y = other.y; */
+/*   z = other.z; */
+/*   return *this; */
+/* } */
 
-f32 Vector3::dot(Vector3 &right) {
-  return this->x * right.x + this->y * right.y + this->z * right.z;
-}
+f32 Vector3::dot(Vector3 &right) { return this->x * right.x + this->y * right.y + this->z * right.z; }
 
 Vector3 Vector3::cross(Vector3 &right) {
-  return Vector3(this->y * right.z - this->z * right.y,
-                 -(this->x * right.z - this->z * right.x),
+  return Vector3(this->y * right.z - this->z * right.y, -(this->x * right.z - this->z * right.x),
                  this->x * right.y - this->y * right.x);
 }
 
-f32 Vector3::length() {
-  return std::sqrt(this->x * this->x + this->y * this->y + this->z * this->z);
-}
+f32 Vector3::length() { return std::sqrt(this->x * this->x + this->y * this->y + this->z * this->z); }
 
 void Vector3::normalize() {
   f32 l = 1.0f / this->length();
