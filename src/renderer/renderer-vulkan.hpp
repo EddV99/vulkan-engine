@@ -88,7 +88,11 @@ private:
 
   void createFrameBuffers();
 
+  void createCommandPool();
+
   void createVertexBuffer();
+
+  void createIndexBuffer();
 
   void createCommandBuffer();
 
@@ -98,6 +102,11 @@ private:
    * Helper Methods
    */
   bool checkValidationLayerSupport();
+
+  void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer,
+                    VkDeviceMemory &memory);
+
+  void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
   QueueFamily setupQueueFamilies(VkPhysicalDevice physicalDevice);
 
@@ -164,6 +173,9 @@ private:
 
   VkBuffer meshBuffer;
   VkDeviceMemory meshMemory;
+
+  VkBuffer indexBuffer;
+  VkDeviceMemory indexMemory;
 
   /**
    * Constants

@@ -28,7 +28,7 @@ public:
   void loadOBJFile(std::string filename);
 
   uint32_t size = 0;
-  std::vector<i32> indices;
+  std::vector<u32> indices;
   std::vector<Math::Vector3> vertices;
   std::vector<Math::Vector3> normals;
   std::vector<Math::Vector2> uv;

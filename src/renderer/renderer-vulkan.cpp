@@ -27,6 +27,9 @@ RendererVulkan::~RendererVulkan() {
 
   cleanSwapchain();
 
+  vkDestroyBuffer(device, indexBuffer, nullptr);
+  vkFreeMemory(device, indexMemory, nullptr);
+
   vkDestroyBuffer(device, meshBuffer, nullptr);
   vkFreeMemory(device, meshMemory, nullptr);
 
@@ -67,17 +70,13 @@ void RendererVulkan::init(GLFWwindow *window, Mesh::Scene scene) {
   createSwapchain();
   createImageViews();
   createRenderPass();
-  // setupVertexBuffer();
   createGraphicsPipeline();
   createFrameBuffers();
+  createCommandPool();
   createVertexBuffer();
+  createIndexBuffer();
   createCommandBuffer();
   createSyncObjects();
-
-  // get graphics queue handle
-  vkGetDeviceQueue(device, queueFamily.graphics.value(), 0, &graphicsQueue);
-  // get present queue handle
-  vkGetDeviceQueue(device, queueFamily.present.value(), 0, &presentQueue);
 }
 
 void RendererVulkan::createInstance() {
@@ -177,6 +176,11 @@ void RendererVulkan::createDevice() {
 
   if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
     Util::Error("Failed to create logical device");
+
+  // get graphics queue handle
+  vkGetDeviceQueue(device, queueFamily.graphics.value(), 0, &graphicsQueue);
+  // get present queue handle
+  vkGetDeviceQueue(device, queueFamily.present.value(), 0, &presentQueue);
 }
 
 void RendererVulkan::createSwapchain() {
@@ -478,43 +482,60 @@ void RendererVulkan::createFrameBuffers() {
 }
 
 void RendererVulkan::createVertexBuffer() {
-  VkBufferCreateInfo bufferInfo{};
-  bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  bufferInfo.size = scene[0].vertices.size() * sizeof(Math::Vector3) + //
-                    scene[0].normals.size() * sizeof(Math::Vector3) +  //
-                    scene[0].uv.size() * sizeof(Math::Vector2);
-  bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-  bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  VkDeviceSize bufferSize = scene[0].vertices.size() * sizeof(Math::Vector3) + //
+                            scene[0].normals.size() * sizeof(Math::Vector3) +  //
+                            scene[0].uv.size() * sizeof(Math::Vector2);
 
-  if (vkCreateBuffer(device, &bufferInfo, nullptr, &meshBuffer) != VK_SUCCESS)
-    Util::Error("Failed to create vertex buffer");
+  VkBuffer stagingBuffer;
+  VkDeviceMemory stagingMemory;
 
-  VkMemoryRequirements mem;
-  vkGetBufferMemoryRequirements(device, meshBuffer, &mem);
-
-  VkMemoryAllocateInfo allocInfo{};
-  allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  allocInfo.allocationSize = mem.size;
-  allocInfo.memoryTypeIndex =
-      findMemoryType(mem.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-  if (vkAllocateMemory(device, &allocInfo, nullptr, &meshMemory))
-    Util::Error("Failed to allocate vertex buffer memory");
-
-  vkBindBufferMemory(device, meshBuffer, meshMemory, 0);
+  createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+               VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer,
+               stagingMemory);
 
   void *data;
-  vkMapMemory(device, meshMemory, 0, bufferInfo.size, 0, &data);
+  vkMapMemory(device, stagingMemory, 0, bufferSize, 0, &data);
   std::vector<std::any> allData;
   allData.insert(allData.end(), scene[0].vertices.begin(), scene[0].vertices.end());
   allData.insert(allData.end(), scene[0].normals.begin(), scene[0].normals.end());
   allData.insert(allData.end(), scene[0].uv.begin(), scene[0].uv.end());
-  memcpy(data, allData.data(), (size_t)bufferInfo.size);
-  vkUnmapMemory(device, meshMemory);
+  memcpy(data, allData.data(), (size_t)bufferSize);
+  vkUnmapMemory(device, stagingMemory);
+
+  createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+               VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, meshBuffer, meshMemory);
+
+  copyBuffer(stagingBuffer, meshBuffer, bufferSize);
+
+  vkDestroyBuffer(device, stagingBuffer, nullptr);
+  vkFreeMemory(device, stagingMemory, nullptr);
 }
 
-void RendererVulkan::createCommandBuffer() {
-  commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+void RendererVulkan::createIndexBuffer() {
+  VkDeviceSize bufferSize = sizeof(scene[0].indices[0]) * scene[0].indices.size();
+
+  VkBuffer stagingBuffer;
+  VkDeviceMemory stagingMemory;
+
+  createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+               VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer,
+               stagingMemory);
+
+  void *data;
+  vkMapMemory(device, stagingMemory, 0, bufferSize, 0, &data);
+  memcpy(data, scene[0].indices.data(), (size_t)bufferSize);
+  vkUnmapMemory(device, stagingMemory);
+
+  createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+               VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexMemory);
+
+  copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+
+  vkDestroyBuffer(device, stagingBuffer, nullptr);
+  vkFreeMemory(device, stagingMemory, nullptr);
+}
+
+void RendererVulkan::createCommandPool() {
   VkCommandPoolCreateInfo poolInfo{};
   poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
   poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
@@ -523,6 +544,9 @@ void RendererVulkan::createCommandBuffer() {
   if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
     Util::Error("Failed to create command pool");
   }
+}
+void RendererVulkan::createCommandBuffer() {
+  commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
   // command buffer allocation
   VkCommandBufferAllocateInfo allocInfo{};
@@ -564,6 +588,68 @@ void RendererVulkan::createSyncObjects() {
 // ====================================================================================================================
 // Helper Methods
 // ====================================================================================================================
+void RendererVulkan::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
+                                  VkBuffer &buffer, VkDeviceMemory &memory) {
+  VkBufferCreateInfo bufferInfo{};
+  bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  bufferInfo.size = size;
+  bufferInfo.usage = usage;
+  bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+  if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
+    Util::Error("Failed to create vertex buffer");
+
+  VkMemoryRequirements mem;
+  vkGetBufferMemoryRequirements(device, buffer, &mem);
+
+  VkMemoryAllocateInfo allocInfo{};
+  allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  allocInfo.allocationSize = mem.size;
+  allocInfo.memoryTypeIndex = findMemoryType(mem.memoryTypeBits, properties);
+
+  if (vkAllocateMemory(device, &allocInfo, nullptr, &memory) != VK_SUCCESS)
+    Util::Error("Failed to allocate vertex buffer memory");
+
+  vkBindBufferMemory(device, buffer, memory, 0);
+}
+
+void RendererVulkan::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
+  VkCommandBufferAllocateInfo allocInfo{};
+  allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+  allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+  allocInfo.commandPool = commandPool;
+  allocInfo.commandBufferCount = 1;
+
+  VkCommandBuffer commandBuffer;
+  vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
+
+  VkCommandBufferBeginInfo beginInfo{};
+  beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+  beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+  vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+  VkBufferCopy copyRegion{};
+  copyRegion.srcOffset = 0;
+  copyRegion.dstOffset = 0;
+  copyRegion.size = size;
+
+  vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+  vkEndCommandBuffer(commandBuffer);
+
+  VkSubmitInfo submitInfo{};
+  submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  submitInfo.commandBufferCount = 1;
+  submitInfo.pCommandBuffers = &commandBuffer;
+
+  vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+
+  vkQueueWaitIdle(graphicsQueue);
+
+  vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+}
+
 VkPresentModeKHR RendererVulkan::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &available) {
   for (const auto &presentMode : available) {
     if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
@@ -795,9 +881,11 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
 
   VkBuffer buffers[] = {meshBuffer};
   VkDeviceSize offsets[] = {0};
-  vkCmdBindVertexBuffers(commandBuffer, 0, 3, buffers, offsets);
+  vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
+  vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-  vkCmdDraw(commandBuffer, scene[0].size, 1, 0, 0);
+  // vkCmdDraw(commandBuffer, scene[0].size, 1, 0, 0);
+  vkCmdDrawIndexed(commandBuffer, (uint32_t)scene[0].indices.size(), 1, 0, 0, 0);
 
   vkCmdEndRenderPass(commandBuffer);
 
