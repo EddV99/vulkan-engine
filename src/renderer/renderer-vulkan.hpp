@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "../mesh/mesh.hpp"
 #include "renderer-core.hpp"
 
 namespace Renderer {
@@ -32,9 +33,6 @@ public:
 
   void drawFrame();
   void drawFrame(FrameData frame);
-  void init(GLFWwindow *window);
-  void createVertexBuffer(Mesh::Mesh mesh);
-  void createVertexBuffer(std::vector<Mesh::Mesh> meshes);
   void init(GLFWwindow *window, Mesh::Scene scene);
   void resize();
 
@@ -61,15 +59,6 @@ private:
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR> presentModes;
   } swapchainSupport;
-
-  struct VertexBuffers {
-    std::vector<VkVertexInputBindingDescription> bindingDescriptions;
-    union {
-      std::array<VkVertexInputAttributeDescription, 3> attributeThree;
-      std::array<VkVertexInputAttributeDescription, 2> attributeTwo;
-      std::array<VkVertexInputAttributeDescription, 1> attributeOne;
-    };
-  } vertexBuffers;
 
   /**
    * List of wanted validation layers
@@ -98,6 +87,8 @@ private:
   void createGraphicsPipeline();
 
   void createFrameBuffers();
+
+  void createVertexBuffer();
 
   void createCommandBuffer();
 
@@ -128,8 +119,8 @@ private:
 
   void cleanSwapchain();
 
-  void createShaders(std::string vertexFilePath, std::string fragmentFilePath,
-                     std::string tesselationFilePath = nullptr, std::string geometeryFilePath = nullptr);
+  void createShaders(std::string vertexFilePath, std::string fragmentFilePath, std::string tesselationFilePath = "",
+                     std::string geometeryFilePath = "");
 
   VkShaderModule createShaderModule(std::vector<char> &shader);
 
@@ -138,6 +129,8 @@ private:
   void createUniformBuffer();
 
   void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+
+  uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
   /**
    * Instance Variables
@@ -168,6 +161,9 @@ private:
   uint32_t currentFrame = 0;
   bool resized = false;
   Mesh::Scene scene;
+
+  VkBuffer meshBuffer;
+  VkDeviceMemory meshMemory;
 
   /**
    * Constants

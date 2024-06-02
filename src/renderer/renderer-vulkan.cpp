@@ -6,6 +6,9 @@
 
 #include <GLFW/glfw3.h>
 #include <algorithm>
+#include <any>
+#include <climits>
+#include <cstdint>
 #include <cstring>
 #include <iostream>
 #include <limits>
@@ -23,6 +26,9 @@ RendererVulkan::~RendererVulkan() {
   vkDeviceWaitIdle(device);
 
   cleanSwapchain();
+
+  vkDestroyBuffer(device, meshBuffer, nullptr);
+  vkFreeMemory(device, meshMemory, nullptr);
 
   for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
     vkDestroySemaphore(device, imageAvailableSem[i], nullptr);
@@ -47,7 +53,6 @@ RendererVulkan::~RendererVulkan() {
 // ====================================================================================================================
 //     Initialization
 // ====================================================================================================================
-void RendererVulkan::init(GLFWwindow *window) {
 void RendererVulkan::init(GLFWwindow *window, Mesh::Scene scene) {
   if (enableValidationLayers && !checkValidationLayerSupport())
     Util::Error("Validation layers requested, but failed to get");
@@ -62,8 +67,10 @@ void RendererVulkan::init(GLFWwindow *window, Mesh::Scene scene) {
   createSwapchain();
   createImageViews();
   createRenderPass();
+  // setupVertexBuffer();
   createGraphicsPipeline();
   createFrameBuffers();
+  createVertexBuffer();
   createCommandBuffer();
   createSyncObjects();
 
@@ -132,6 +139,7 @@ void RendererVulkan::pickPhysicalDevice() {
   std::cout << "Vendor ID: " << properties.vendorID << "\n";
   std::cout << "Max Width: " << properties.limits.maxFramebufferWidth << "\n";
   std::cout << "Max Height: " << properties.limits.maxFramebufferHeight << "\n";
+  std::cout << "----------------------------------------------------------\n";
 }
 
 void RendererVulkan::createDevice() {
@@ -224,7 +232,7 @@ void RendererVulkan::createSwapchain() {
 
 void RendererVulkan::createImageViews() {
   swapchainImageViews.resize(swapchainImages.size());
-  for (int i = 0; i < swapchainImages.size(); i++) {
+  for (size_t i = 0; i < swapchainImages.size(); i++) {
     VkImageViewCreateInfo viewImageCreateInfo{};
     viewImageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewImageCreateInfo.image = swapchainImages[i];
@@ -318,18 +326,15 @@ void RendererVulkan::createGraphicsPipeline() {
   dynamicState.pDynamicStates = dynamicStates.data();
 
   // vertex input
-  uint32_t count = vertexBuffers.bindingDescriptions.size();
+  auto attributeDescriptions = scene[0].getAttributeDescriptions();
+  auto bindingDescription = scene[0].getBindingDescriptions();
+
   VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
   vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-  vertexInputInfo.vertexBindingDescriptionCount = count;
-  vertexInputInfo.pVertexBindingDescriptions = vertexBuffers.bindingDescriptions.data();
-  vertexInputInfo.vertexAttributeDescriptionCount = count;
-  if (count == 1)
-    vertexInputInfo.pVertexAttributeDescriptions = vertexBuffers.attributeOne.data();
-  else if (count == 2)
-    vertexInputInfo.pVertexAttributeDescriptions = vertexBuffers.attributeTwo.data();
-  else if (count == 3)
-    vertexInputInfo.pVertexAttributeDescriptions = vertexBuffers.attributeThree.data();
+  vertexInputInfo.vertexBindingDescriptionCount = 1;
+  vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+  vertexInputInfo.vertexAttributeDescriptionCount = attributeDescriptions.size();
+  vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
   // input assembly
   VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
@@ -470,6 +475,42 @@ void RendererVulkan::createFrameBuffers() {
     }
     i++;
   }
+}
+
+void RendererVulkan::createVertexBuffer() {
+  VkBufferCreateInfo bufferInfo{};
+  bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  bufferInfo.size = scene[0].vertices.size() * sizeof(Math::Vector3) + //
+                    scene[0].normals.size() * sizeof(Math::Vector3) +  //
+                    scene[0].uv.size() * sizeof(Math::Vector2);
+  bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+  bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+  if (vkCreateBuffer(device, &bufferInfo, nullptr, &meshBuffer) != VK_SUCCESS)
+    Util::Error("Failed to create vertex buffer");
+
+  VkMemoryRequirements mem;
+  vkGetBufferMemoryRequirements(device, meshBuffer, &mem);
+
+  VkMemoryAllocateInfo allocInfo{};
+  allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  allocInfo.allocationSize = mem.size;
+  allocInfo.memoryTypeIndex =
+      findMemoryType(mem.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+  if (vkAllocateMemory(device, &allocInfo, nullptr, &meshMemory))
+    Util::Error("Failed to allocate vertex buffer memory");
+
+  vkBindBufferMemory(device, meshBuffer, meshMemory, 0);
+
+  void *data;
+  vkMapMemory(device, meshMemory, 0, bufferInfo.size, 0, &data);
+  std::vector<std::any> allData;
+  allData.insert(allData.end(), scene[0].vertices.begin(), scene[0].vertices.end());
+  allData.insert(allData.end(), scene[0].normals.begin(), scene[0].normals.end());
+  allData.insert(allData.end(), scene[0].uv.begin(), scene[0].uv.end());
+  memcpy(data, allData.data(), (size_t)bufferInfo.size);
+  vkUnmapMemory(device, meshMemory);
 }
 
 void RendererVulkan::createCommandBuffer() {
@@ -675,15 +716,27 @@ RendererVulkan::QueueFamily RendererVulkan::setupQueueFamilies(VkPhysicalDevice 
 void RendererVulkan::createShaders(std::string vertexFilePath, std::string fragmentFilePath,
                                    std::string tesselationFilePath, std::string geometeryFilePath) {
 
-  auto vertexShader = Util::readFile(vertexFilePath);
-  auto fragmentShader = Util::readFile(fragmentFilePath);
+  VkShaderModule vertex, fragment, tesselation, geometery;
 
-  VkShaderModule vertex, fragment;
+  std::vector<char> vertexShader = Util::readFile(vertexFilePath);
   vertex = createShaderModule(vertexShader);
-  fragment = createShaderModule(fragmentShader);
-
   shaders.vertex = vertex;
+
+  if (!tesselationFilePath.empty()) {
+    std::vector<char> tessShader = Util::readFile(tesselationFilePath);
+    tesselation = createShaderModule(tessShader);
+    shaders.tesselation = tesselation;
+  }
+
+  std::vector<char> fragmentShader = Util::readFile(fragmentFilePath);
+  fragment = createShaderModule(fragmentShader);
   shaders.fragment = fragment;
+
+  if (!geometeryFilePath.empty()) {
+    std::vector<char> geomShader = Util::readFile(geometeryFilePath);
+    geometery = createShaderModule(geomShader);
+    shaders.geometery = geometery;
+  }
 }
 
 VkShaderModule RendererVulkan::createShaderModule(std::vector<char> &shader) {
@@ -740,7 +793,11 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
   scissor.extent = swapchainExtent;
   vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-  vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+  VkBuffer buffers[] = {meshBuffer};
+  VkDeviceSize offsets[] = {0};
+  vkCmdBindVertexBuffers(commandBuffer, 0, 3, buffers, offsets);
+
+  vkCmdDraw(commandBuffer, scene[0].size, 1, 0, 0);
 
   vkCmdEndRenderPass(commandBuffer);
 
@@ -748,85 +805,11 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
     Util::Error("Failed to record command buffer");
 }
 
-void RendererVulkan::createVertexBuffer(Mesh::Mesh mesh) {
-  VkVertexInputBindingDescription vBindingDesc = Mesh::Mesh::getBindingDescriptionVertex();
-  vertexBuffers.bindingDescriptions.push_back(vBindingDesc);
-
-  if (mesh.hasNormals()) {
-    VkVertexInputBindingDescription nBindingDesc = Mesh::Mesh::getBindingDescriptionNormal();
-    vertexBuffers.bindingDescriptions.push_back(nBindingDesc);
-  }
-
-  if (mesh.hasUV()) {
-    VkVertexInputBindingDescription uBindingDesc = Mesh::Mesh::getBindingDescriptionUV();
-    vertexBuffers.bindingDescriptions.push_back(uBindingDesc);
-  }
-
-  if (!mesh.hasNormals() && !mesh.hasUV()) {
-    std::array<VkVertexInputAttributeDescription, 1> AttribDesc{};
-
-    auto vAttribDesc = Mesh::Mesh::getAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT);
-
-    AttribDesc[0].binding = vAttribDesc.binding;
-    AttribDesc[0].offset = vAttribDesc.offset;
-    AttribDesc[0].format = vAttribDesc.format;
-    AttribDesc[0].location = vAttribDesc.location;
-
-    vertexBuffers.attributeOne = AttribDesc;
-  }
-
-  if (mesh.hasNormals() && !mesh.hasUV()) {
-    std::array<VkVertexInputAttributeDescription, 2> AttribDesc{};
-
-    auto vAttribDesc = Mesh::Mesh::getAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT);
-    auto nAttribDesc = Mesh::Mesh::getAttributeDescription(1, 1, VK_FORMAT_R32G32B32_SFLOAT);
-
-    AttribDesc[0].binding = vAttribDesc.binding;
-    AttribDesc[0].offset = vAttribDesc.offset;
-    AttribDesc[0].format = vAttribDesc.format;
-    AttribDesc[0].location = vAttribDesc.location;
-
-    AttribDesc[1].binding = nAttribDesc.binding;
-    AttribDesc[1].offset = nAttribDesc.offset;
-    AttribDesc[1].format = nAttribDesc.format;
-    AttribDesc[1].location = nAttribDesc.location;
-
-    vertexBuffers.attributeTwo = AttribDesc;
-  }
-
-  if (mesh.hasNormals() && mesh.hasUV()) {
-    std::array<VkVertexInputAttributeDescription, 3> AttribDesc{};
-
-    auto vAttribDesc = Mesh::Mesh::getAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT);
-    auto nAttribDesc = Mesh::Mesh::getAttributeDescription(1, 1, VK_FORMAT_R32G32B32_SFLOAT);
-    auto uAttribDesc = Mesh::Mesh::getAttributeDescription(2, 2, VK_FORMAT_R32G32_SFLOAT);
-
-    AttribDesc[0].binding = vAttribDesc.binding;
-    AttribDesc[0].offset = vAttribDesc.offset;
-    AttribDesc[0].format = vAttribDesc.format;
-    AttribDesc[0].location = vAttribDesc.location;
-
-    AttribDesc[1].binding = nAttribDesc.binding;
-    AttribDesc[1].offset = nAttribDesc.offset;
-    AttribDesc[1].format = nAttribDesc.format;
-    AttribDesc[1].location = nAttribDesc.location;
-
-    AttribDesc[2].binding = uAttribDesc.binding;
-    AttribDesc[2].offset = uAttribDesc.offset;
-    AttribDesc[2].format = uAttribDesc.format;
-    AttribDesc[2].location = uAttribDesc.location;
-
-    vertexBuffers.attributeThree = AttribDesc;
-  }
-}
-
-void RendererVulkan::createVertexBuffer(std::vector<Mesh::Mesh> meshes) {}
-
 void RendererVulkan::createTexture() {}
 
 void RendererVulkan::createUniformBuffer() {}
 
-void RendererVulkan::drawFrame(FrameData frame) {}
+void RendererVulkan::drawFrame(FrameData frame) { (void)frame; }
 
 void RendererVulkan::drawFrame() {
   vkWaitForFences(device, 1, &inFlightFence[currentFrame], VK_TRUE, UINT64_MAX);
@@ -862,9 +845,8 @@ void RendererVulkan::drawFrame() {
   submitInfo.signalSemaphoreCount = 1;
   submitInfo.pSignalSemaphores = signalSemaphores;
 
-  if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFence[currentFrame]) != VK_SUCCESS) {
+  if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFence[currentFrame]) != VK_SUCCESS)
     Util::Error("Failed to submit draw command buffer");
-  }
 
   VkPresentInfoKHR presentInfo{};
   presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -917,4 +899,15 @@ void RendererVulkan::recreateSwapchain() {
 
 void RendererVulkan::resize() { resized = true; }
 
+uint32_t RendererVulkan::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+  VkPhysicalDeviceMemoryProperties mem;
+  vkGetPhysicalDeviceMemoryProperties(physicalDevice, &mem);
+
+  for (uint32_t i = 0; i < mem.memoryTypeCount; i++)
+    if (typeFilter & (1 << i) && (mem.memoryTypes[i].propertyFlags & properties) == properties)
+      return i;
+
+  Util::Error("Failed to find suitable memory type");
+  return UINT32_MAX;
+}
 } // namespace Renderer
