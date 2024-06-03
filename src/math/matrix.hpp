@@ -6,6 +6,7 @@
 #include "../util/defines.hpp"
 #include "vector.hpp"
 
+
 namespace Math {
 
 #define ROW_COL_TO_INDEX(R, C, S) (S * R) + C
@@ -91,18 +92,28 @@ private:
   const i32 SIZE_ROW = 4;
 };
 
-// =============================================================================
+// ===================================================================================================================
 // 3D Graphics
-// =============================================================================
+// ===================================================================================================================
 Matrix4 perspectiveMatrix(f32 fov, f32 aspect, f32 zNear, f32 zFar);
 Matrix4 viewMatrix(const Vector3 &cameraPosition, const Vector3 &cameraTarget, const Vector3 &up);
 Matrix4 modelMatrix(const Vector3 &translation, const Vector3 &rotation, const Vector3 &scale);
 
 Matrix4 scale(const Matrix4 &m, const Vector3 &scale);
-Matrix4 translate(const Matrix4 &m, const Vector3 &scale);
-Matrix4 rotate(const Matrix4 &m, const Vector3 &scale);
+Matrix4 translate(const Matrix4 &m, const Vector3 &translation);
+Matrix4 rotate(const Matrix4 &m, const Vector3 &rotation);
 
+// =============================================================================
+// Quaternions
+// =============================================================================
 struct Quaternion {
-  
+  Quaternion(f32 angle, const Vector3& axis); 
+  f32 w;
+  Vector3 v;
+  Quaternion operator*(const Quaternion &other);
+  Quaternion conjugate();
+  void normalize();
+  f32 length();
 };
+
 } // namespace Math

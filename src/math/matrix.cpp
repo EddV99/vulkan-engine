@@ -1,4 +1,5 @@
 #include "matrix.hpp"
+#include <cmath>
 #include <iostream>
 
 namespace Math {
@@ -292,16 +293,39 @@ Matrix3 Matrix4::submatrix(i32 row, i32 col, const Matrix4 &m) {
   return value;
 }
 
-// =============================================================================
+// ===================================================================================================================
 // 3D Graphics
+// ===================================================================================================================
+/* Matrix4 perspectiveMatrix(f32 fov, f32 aspect, f32 zNear, f32 zFar) {} */
+/* Matrix4 viewMatrix(const Vector3 &cameraPosition, const Vector3 &cameraTarget, const Vector3 &up) {} */
+/* Matrix4 modelMatrix(const Vector3 &translation, const Vector3 &rotation, const Vector3 &scale) {} */
+
+/* Matrix4 scale(const Matrix4 &m, const Vector3 &scale) {} */
+/* Matrix4 translate(const Matrix4 &m, const Vector3 &scale) {} */
+/* Matrix4 rotate(const Matrix4 &m, const Vector3 &scale) {} */
+
 // =============================================================================
-Matrix4 perspectiveMatrix(f32 fov, f32 aspect, f32 zNear, f32 zFar){}
-Matrix4 viewMatrix(const Vector3 &cameraPosition, const Vector3 &cameraTarget, const Vector3 &up){}
-Matrix4 modelMatrix(const Vector3 &translation, const Vector3 &rotation, const Vector3 &scale){}
+// Quaternions
+// =============================================================================
+Quaternion::Quaternion(f32 angle, const Vector3 &axis) {
+  f32 sinHalf = sinf(angle * 0.5);
+  f32 cosHalf = cosf(angle * 0.5);
 
-Matrix4 scale(const Matrix4 &m, const Vector3 &scale){}
-Matrix4 translate(const Matrix4 &m, const Vector3 &scale){}
-Matrix4 rotate(const Matrix4 &m, const Vector3 &scale){}
-
-
+  v.x = axis.x * sinHalf;
+  v.y = axis.y * sinHalf;
+  v.z = axis.z * sinHalf;
+  w = cosHalf;
+}
+Quaternion Quaternion::operator*(const Quaternion &other) {
+  return Quaternion(w * other.w - v.dot(other.v), (other.v * w) + (v * other.w) + v.cross(other.v));
+}
+f32 Quaternion::length() { return std::sqrt(w * w + v.dot(v)); }
+Quaternion Quaternion::conjugate() { return Quaternion{w, Vector3(v * -1.0f)}; }
+void Quaternion::normalize() {
+  f32 length = this->length();
+  this->w /= length;
+  this->v.x /= length;
+  this->v.y /= length;
+  this->v.z /= length;
+}
 }; // namespace Math
