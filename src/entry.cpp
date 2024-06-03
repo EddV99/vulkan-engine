@@ -13,9 +13,8 @@ int main(void) {
     mesh.loadOBJFile("../res/cube/cube.obj");
     scene.push_back(mesh);
     Renderer::Renderer renderer(800, 800, scene);
-    
-
     while (renderer.running()) {
+      renderer.FPS();
       renderer.draw();
 
       renderer.poll();

@@ -38,6 +38,17 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
     glfwSetWindowShouldClose(window, GLFW_TRUE);
   }
 }
+void Renderer::FPS() {
+  currTime = glfwGetTime();
+  double diff = currTime - prevTime;
+  frames++;
+  if (diff >= 1.0 / 30.0) {
+    std::string FPS = std::to_string((1.0 / diff) * frames);
+    glfwSetWindowTitle(window, FPS.c_str());
+    prevTime = currTime;
+    frames = 0;
+  }
+}
 
 void resizeCallback(GLFWwindow *window, int width, int height) {
   (void)width;

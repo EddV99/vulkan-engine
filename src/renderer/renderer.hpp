@@ -8,9 +8,9 @@
 
 #pragma once
 
+#include "../mesh/mesh.hpp"
 #include "renderer-core.hpp"
 #include "renderer-vulkan.hpp"
-#include "../mesh/mesh.hpp"
 
 namespace Renderer {
 class Renderer {
@@ -21,16 +21,20 @@ public:
   void draw();
   void draw(FrameData frame);
   void resize();
+  void FPS();
 
 private:
   RendererVulkan rendererbackend;
   std::vector<Mesh::Mesh> scene;
   GLFWwindow *window;
   int WIDTH, HEIGHT;
+
+  double prevTime = 0;
+  double currTime = 0;
+  uint32_t frames = 0;
 };
 
-void keyCallback(GLFWwindow *window, int key, int scancode, int action,
-                 int mods);
+void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 void resizeCallback(GLFWwindow *window, int width, int height);
 } // namespace Renderer
