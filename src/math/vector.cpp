@@ -13,6 +13,8 @@ bool Vector2::operator==(const Vector2 &right) const { return (this->x == right.
 
 Vector2 Vector2::operator+(Vector2 &right) { return Vector2(x + right.x, this->y + right.y); }
 
+Vector2 Vector2::operator*(f32 scalar) { return Vector2(x * scalar, y * scalar); }
+
 Vector2 Vector2::operator-(Vector2 &right) { return Vector2(x - right.x, this->y - right.y); }
 
 /* Vector2 &Vector2::operator=(Vector2 other) noexcept { */
@@ -31,9 +33,13 @@ Vector3::Vector3(f32 x, f32 y, f32 z) : x(x), y(y), z(z) {}
 bool Vector3::operator==(const Vector3 &right) const {
   return (this->x == right.x) && (this->y == right.y) && (this->z == right.z);
 }
-Vector3 Vector3::operator+(Vector3 &right) { return Vector3(x + right.x, this->y + right.y, this->z + right.z); }
+Vector3 Vector3::operator+(const Vector3 &right) { return Vector3(x + right.x, this->y + right.y, this->z + right.z); }
 
-Vector3 Vector3::operator-(Vector3 &right) { return Vector3(x - right.x, this->y - right.y, this->z - right.z); }
+Vector3 Vector3::operator*(f32 scalar) { return Vector3(x * scalar, y * scalar, z * scalar); }
+
+Vector3 Vector3::operator*(f32 scalar) const { return Vector3(x * scalar, y * scalar, z * scalar); }
+
+Vector3 Vector3::operator-(const Vector3 &right) { return Vector3(x - right.x, this->y - right.y, this->z - right.z); }
 
 /* Vector3 &Vector3::operator=(Vector3 &other) noexcept { */
 /*   x = other.x; */
@@ -42,9 +48,9 @@ Vector3 Vector3::operator-(Vector3 &right) { return Vector3(x - right.x, this->y
 /*   return *this; */
 /* } */
 
-f32 Vector3::dot(Vector3 &right) { return this->x * right.x + this->y * right.y + this->z * right.z; }
+f32 Vector3::dot(const Vector3 &right) { return this->x * right.x + this->y * right.y + this->z * right.z; }
 
-Vector3 Vector3::cross(Vector3 &right) {
+Vector3 Vector3::cross(const Vector3 &right) {
   return Vector3(this->y * right.z - this->z * right.y, -(this->x * right.z - this->z * right.x),
                  this->x * right.y - this->y * right.x);
 }
@@ -82,5 +88,7 @@ Vector4::Vector4(f32 x, f32 y, f32 z, f32 w) {
   this->z = z;
   this->w = w;
 }
+
+Vector4 Vector4::operator*(f32 scalar) { return Vector4(x * scalar, y * scalar, z * scalar, w * scalar); }
 
 }; // namespace Math

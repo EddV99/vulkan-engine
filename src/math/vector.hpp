@@ -19,13 +19,15 @@ public:
   /* Vector3(Vector3&); */
   Vector3(f32 x, f32 y, f32 z);
 
-  Vector3 operator+(Vector3 &right);
-  Vector3 operator-(Vector3 &right);
+  Vector3 operator+(const Vector3 &right);
+  Vector3 operator*(f32 scalar);
+  Vector3 operator*(f32 scalar) const;
+  Vector3 operator-(const Vector3 &right);
   /* Vector3 &operator=(Vector3& other) noexcept; */
   bool operator==(const Vector3 &right) const;
 
-  f32 dot(Vector3 &right);
-  Vector3 cross(Vector3 &right);
+  f32 dot(const Vector3 &right);
+  Vector3 cross(const Vector3 &right);
   f32 length();
   void normalize();
   Vector3 normal();
@@ -39,11 +41,12 @@ public:
   Vector4(f32 x, f32 y, f32 z, f32 w);
 
   Vector4 operator+(Vector4 &right);
+  Vector4 operator*(f32 scalar);
   Vector4 operator-(Vector4 &right);
   Vector4 &operator=(Vector4 other) noexcept;
 
-  f32 dot(Vector4 &right);
-  Vector4 cross(Vector4 &right);
+  f32 dot(const Vector4 &right);
+  Vector4 cross(const Vector4 &right);
   f32 length();
   void normalize();
   Vector4 normal();
@@ -57,6 +60,7 @@ public:
   Vector2(f32 x, f32 y);
 
   Vector2 operator+(Vector2 &right);
+  Vector2 operator*(f32 scalar);
   Vector2 operator-(Vector2 &right);
   /* Vector2 &operator=(Vector2 other) noexcept; */
   bool operator==(const Vector2 &right) const;
