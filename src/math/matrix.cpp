@@ -307,6 +307,8 @@ Matrix3 Matrix4::submatrix(i32 row, i32 col, const Matrix4 &m) {
 // =============================================================================
 // Quaternions
 // =============================================================================
+Quaternion::Quaternion(f32 w, f32 i, f32 j, f32 k) : w(w), v{i, j, k} {}
+
 Quaternion::Quaternion(f32 angle, const Vector3 &axis) {
   f32 sinHalf = sinf(angle * 0.5);
   f32 cosHalf = cosf(angle * 0.5);
@@ -316,8 +318,15 @@ Quaternion::Quaternion(f32 angle, const Vector3 &axis) {
   v.z = axis.z * sinHalf;
   w = cosHalf;
 }
+
 Quaternion Quaternion::operator*(const Quaternion &other) {
   return Quaternion(w * other.w - v.dot(other.v), (other.v * w) + (v * other.w) + v.cross(other.v));
+}
+Quaternion Quaternion::operator*(f32 scalar) {
+  return Quaternion(w * scalar, v.x * scalar, v.y * scalar, v.z * scalar);
+}
+Quaternion Quaternion::operator+(const Quaternion &other) {
+  return Quaternion(w + other.w, v.x + other.v.x, v.y + other.v.y, v.z + other.v.z);
 }
 f32 Quaternion::length() { return std::sqrt(w * w + v.dot(v)); }
 Quaternion Quaternion::conjugate() { return Quaternion{w, Vector3(v * -1.0f)}; }

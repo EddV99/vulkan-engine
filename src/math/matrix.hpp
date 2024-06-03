@@ -108,9 +108,12 @@ Matrix4 rotate(const Matrix4 &m, const Vector3 &rotation);
 // =============================================================================
 struct Quaternion {
   Quaternion(f32 angle, const Vector3& axis); 
+  Quaternion(f32 w, f32 i, f32 j, f32 k); 
   f32 w;
   Vector3 v;
   Quaternion operator*(const Quaternion &other);
+  Quaternion operator*(f32 scalar);
+  Quaternion operator+(const Quaternion &other);
   Quaternion conjugate();
   void normalize();
   f32 length();
