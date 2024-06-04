@@ -1,10 +1,11 @@
 #include "renderer.hpp"
+#include "../game/scene.hpp"
 #include "renderer-core.hpp"
 #include <GLFW/glfw3.h>
 
 namespace Renderer {
 
-Renderer::Renderer(int w, int h, Mesh::Scene scene) {
+Renderer::Renderer(int w, int h, Game::Scene scene) {
   WIDTH = w;
   HEIGHT = h;
 

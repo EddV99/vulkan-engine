@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "../game/scene.hpp"
 #include "../mesh/mesh.hpp"
 #include "renderer-core.hpp"
 #include "renderer-vulkan.hpp"
@@ -15,7 +16,7 @@
 namespace Renderer {
 class Renderer {
 public:
-  Renderer(int w, int h, Mesh::Scene scene);
+  Renderer(int w, int h, Game::Scene scene);
   bool running();
   void poll();
   void draw();

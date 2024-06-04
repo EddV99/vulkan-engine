@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "../game/scene.hpp"
 #include "../mesh/mesh.hpp"
 #include "renderer-core.hpp"
 
@@ -33,7 +34,7 @@ public:
 
   void drawFrame();
   void drawFrame(FrameData frame);
-  void init(GLFWwindow *window, Mesh::Scene scene);
+  void init(GLFWwindow *window, Game::Scene scene);
   void resize();
 
 private:
@@ -169,13 +170,15 @@ private:
   VkQueue presentQueue;
   uint32_t currentFrame = 0;
   bool resized = false;
-  Mesh::Scene scene;
+  Game::Scene scene;
 
   VkBuffer meshBuffer;
   VkDeviceMemory meshMemory;
 
   VkBuffer indexBuffer;
   VkDeviceMemory indexMemory;
+
+  Mesh::Mesh renderedMesh;
 
   /**
    * Constants

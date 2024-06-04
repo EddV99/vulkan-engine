@@ -55,12 +55,13 @@ RendererVulkan::~RendererVulkan() {
 // ====================================================================================================================
 //     Initialization
 // ====================================================================================================================
-void RendererVulkan::init(GLFWwindow *window, Mesh::Scene scene) {
+void RendererVulkan::init(GLFWwindow *window, Game::Scene scene) {
   if (enableValidationLayers && !checkValidationLayerSupport())
     Util::Error("Validation layers requested, but failed to get");
 
   this->scene = scene;
   this->window = window;
+  this->renderedMesh = scene.gameObjects[0].mesh;
 
   createInstance();
   createSurface();
@@ -329,8 +330,8 @@ void RendererVulkan::createGraphicsPipeline() {
   dynamicState.pDynamicStates = dynamicStates.data();
 
   // vertex input
-  auto attributeDescriptions = scene[0].getAttributeDescriptions();
-  auto bindingDescription = scene[0].getBindingDescriptions();
+  auto attributeDescriptions = renderedMesh.getAttributeDescriptions();
+  auto bindingDescription = renderedMesh.getBindingDescriptions();
 
   VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
   vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -481,7 +482,7 @@ void RendererVulkan::createFrameBuffers() {
 }
 
 void RendererVulkan::createVertexBuffer() {
-  VkDeviceSize bufferSize = scene[0].data.size() * sizeof(scene[0].data[0]);
+  VkDeviceSize bufferSize = renderedMesh.data.size() * sizeof(renderedMesh.data[0]);
 
   VkBuffer stagingBuffer;
   VkDeviceMemory stagingMemory;
@@ -492,7 +493,7 @@ void RendererVulkan::createVertexBuffer() {
 
   void *data;
   vkMapMemory(device, stagingMemory, 0, bufferSize, 0, &data);
-  memcpy(data, scene[0].data.data(), (size_t)bufferSize);
+  memcpy(data, renderedMesh.data.data(), (size_t)bufferSize);
   vkUnmapMemory(device, stagingMemory);
 
   createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -505,7 +506,7 @@ void RendererVulkan::createVertexBuffer() {
 }
 
 void RendererVulkan::createIndexBuffer() {
-  VkDeviceSize bufferSize = sizeof(scene[0].indices[0]) * scene[0].indices.size();
+  VkDeviceSize bufferSize = sizeof(renderedMesh.indices[0]) * renderedMesh.indices.size();
 
   VkBuffer stagingBuffer;
   VkDeviceMemory stagingMemory;
@@ -516,7 +517,7 @@ void RendererVulkan::createIndexBuffer() {
 
   void *data;
   vkMapMemory(device, stagingMemory, 0, bufferSize, 0, &data);
-  memcpy(data, scene[0].indices.data(), (size_t)bufferSize);
+  memcpy(data, renderedMesh.indices.data(), (size_t)bufferSize);
   vkUnmapMemory(device, stagingMemory);
 
   createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
@@ -877,8 +878,8 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
   vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
   vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-  // vkCmdDraw(commandBuffer, scene[0].size, 1, 0, 0);
-  vkCmdDrawIndexed(commandBuffer, (uint32_t)scene[0].indices.size(), 1, 0, 0, 0);
+  // vkCmdDraw(commandBuffer, renderedMesh.size, 1, 0, 0);
+  vkCmdDrawIndexed(commandBuffer, (uint32_t)renderedMesh.indices.size(), 1, 0, 0, 0);
 
   vkCmdEndRenderPass(commandBuffer);
 
