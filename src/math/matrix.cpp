@@ -42,19 +42,19 @@ Matrix3::Matrix3(f32 v00, f32 v01, f32 v02, //
         v02, v12, v22} {}
 
 Matrix3::Matrix3(Matrix3 const &copy) {
-  for (int r = 0; r < SIZE; r++)
+  for (int r = 0; r < 9; r++)
     this->m[r] = copy.m[r];
 }
 
-void Matrix3::set(i32 row, i32 col, f32 value) { m[ROW_COL_TO_INDEX(row, col, SIZE_ROW)] = value; }
+void Matrix3::set(i32 row, i32 col, f32 value) { m[ROW_COL_TO_INDEX(row, col, 3)] = value; }
 
-f32 Matrix3::operator()(i32 row, i32 col) { return this->m[ROW_COL_TO_INDEX(row, col, SIZE_ROW)]; }
-f32 Matrix3::operator()(i32 row, i32 col) const { return this->m[ROW_COL_TO_INDEX(row, col, SIZE_ROW)]; }
+f32 Matrix3::operator()(i32 row, i32 col) { return this->m[ROW_COL_TO_INDEX(row, col, 3)]; }
+f32 Matrix3::operator()(i32 row, i32 col) const { return this->m[ROW_COL_TO_INDEX(row, col, 3)]; }
 
 Matrix3 Matrix3::operator+(Matrix3 &right) {
   Matrix3 value(0.0f);
-  for (int r = 0; r < SIZE; r++) {
-    for (int c = 0; c < SIZE; c++) {
+  for (int r = 0; r < 3; r++) {
+    for (int c = 0; c < 3; c++) {
       value.set(r, c, (*this)(r, c) + right(r, c));
     }
   }
@@ -63,8 +63,8 @@ Matrix3 Matrix3::operator+(Matrix3 &right) {
 
 Matrix3 Matrix3::operator-(Matrix3 &right) {
   Matrix3 value(0.0f);
-  for (int r = 0; r < SIZE; r++) {
-    for (int c = 0; c < SIZE; c++) {
+  for (int r = 0; r < 3; r++) {
+    for (int c = 0; c < 3; c++) {
       value.set(r, c, (*this)(r, c) - right(r, c));
     }
   }
@@ -74,8 +74,8 @@ Matrix3 Matrix3::operator-(Matrix3 &right) {
 Matrix3 Matrix3::operator*(f32 scalar) {
   Matrix3 value((*this));
 
-  for (int r = 0; r < SIZE; r++)
-    for (int c = 0; c < SIZE; c++)
+  for (int r = 0; r < 3; r++)
+    for (int c = 0; c < 3; c++)
       value.set(r, c, value(r, c) * scalar);
 
   return value;
@@ -84,17 +84,17 @@ Matrix3 Matrix3::operator*(f32 scalar) {
 Matrix3 Matrix3::operator*(Matrix3 &right) {
   Matrix3 value(0.0f);
 
-  for (int r = 0; r < SIZE; r++)
-    for (int c = 0; c < SIZE; c++)
-      for (int i = 0; i < SIZE; i++)
+  for (int r = 0; r < 3; r++)
+    for (int c = 0; c < 3; c++)
+      for (int i = 0; i < 3; i++)
         value.set(r, c, value(r, c) + (*this)(r, i) * right(i, c));
 
   return value;
 }
 
 Matrix3 &Matrix3::operator=(Matrix3 other) noexcept {
-  for (int r = 0; r < SIZE; r++) {
-    for (int c = 0; c < SIZE; c++) {
+  for (int r = 0; r < 3; r++) {
+    for (int c = 0; c < 3; c++) {
       this->set(r, c, other(r, c));
     }
   }
@@ -102,8 +102,8 @@ Matrix3 &Matrix3::operator=(Matrix3 other) noexcept {
 }
 
 void Matrix3::transpose() {
-  for (int r = 0; r < SIZE; r++) {
-    for (int c = 0; c < SIZE; c++) {
+  for (int r = 0; r < 3; r++) {
+    for (int c = 0; c < 3; c++) {
       f32 temp = (*this)(r, c);
       this->set(r, c, (*this)(c, r));
       this->set(c, r, temp);
@@ -139,8 +139,8 @@ void Matrix3::inverse() {
 // Matrix 4x4
 // =============================================================================
 void Matrix4::print() {
-  for (int r = 0; r < SIZE; r++) {
-    for (int c = 0; c < SIZE; c++) {
+  for (int r = 0; r < 4; r++) {
+    for (int c = 0; c < 4; c++) {
       std::cout << (*this)(r, c) << " ";
     }
     std::cout << "\n";
@@ -170,11 +170,11 @@ Matrix4::Matrix4(f32 v00, f32 v01, f32 v02, f32 v03, //
         v03, v13, v23, v33} {}
 
 Matrix4::Matrix4(const Matrix4 &other) {
-  for (int r = 0; r < SIZE; r++)
+  for (int r = 0; r < 16; r++)
     this->m[r] = other.m[r];
 }
 Matrix4::Matrix4(Matrix4 &&other) noexcept {
-  for (int r = 0; r < SIZE; r++) {
+  for (int r = 0; r < 16; r++) {
     this->m[r] = other.m[r];
     other.m[r] = 0;
   }
@@ -184,7 +184,7 @@ Matrix4 &Matrix4::operator=(const Matrix4 &other) {
   if (this == &other)
     return *this;
 
-  for (int r = 0; r < SIZE; r++)
+  for (int r = 0; r < 16; r++)
     this->m[r] = other.m[r];
 
   return *this;
@@ -194,7 +194,7 @@ Matrix4 &Matrix4::operator=(Matrix4 &&other) noexcept {
   if (this == &other)
     return *this;
 
-  for (int r = 0; r < SIZE; r++) {
+  for (int r = 0; r < 16; r++) {
     this->m[r] = other.m[r];
     other.m[r] = 0;
   }
@@ -202,21 +202,21 @@ Matrix4 &Matrix4::operator=(Matrix4 &&other) noexcept {
   return *this;
 }
 
-void Matrix4::set(i32 row, i32 col, f32 value) { m[ROW_COL_TO_INDEX(row, col, SIZE_ROW)] = value; }
+void Matrix4::set(i32 row, i32 col, f32 value) { m[ROW_COL_TO_INDEX(row, col, 4)] = value; }
 
-f32 Matrix4::operator()(i32 row, i32 col) { return m[ROW_COL_TO_INDEX(row, col, SIZE_ROW)]; }
-f32 Matrix4::operator()(i32 row, i32 col) const { return m[ROW_COL_TO_INDEX(row, col, SIZE_ROW)]; }
+f32 Matrix4::operator()(i32 row, i32 col) { return m[ROW_COL_TO_INDEX(row, col, 4)]; }
+f32 Matrix4::operator()(i32 row, i32 col) const { return m[ROW_COL_TO_INDEX(row, col, 4)]; }
 
 Matrix4 Matrix4::operator+(Matrix4 &right) {
   Matrix4 value(0.0f);
-  for (int x = 0; x < SIZE; x++)
+  for (int x = 0; x < 16; x++)
     value.m[x] = this->m[x] + right.m[x];
   return value;
 }
 
 Matrix4 Matrix4::operator-(Matrix4 &right) {
   Matrix4 value(0.0f);
-  for (int x = 0; x < SIZE; x++)
+  for (int x = 0; x < 16; x++)
     value.m[x] = this->m[x] - right.m[x];
   return value;
 }
@@ -224,8 +224,8 @@ Matrix4 Matrix4::operator-(Matrix4 &right) {
 Matrix4 Matrix4::operator*(f32 scalar) {
   Matrix4 value((*this));
 
-  for (int r = 0; r < SIZE_ROW; r++)
-    for (int c = 0; c < SIZE_ROW; c++)
+  for (int r = 0; r < 4; r++)
+    for (int c = 0; c < 4; c++)
       value.set(r, c, value(r, c) * scalar);
 
   return value;
@@ -234,17 +234,17 @@ Matrix4 Matrix4::operator*(f32 scalar) {
 Matrix4 Matrix4::operator*(Matrix4 &right) {
   Matrix4 value(0.0f);
 
-  for (int r = 0; r < SIZE_ROW; r++)
-    for (int c = 0; c < SIZE_ROW; c++)
-      for (int i = 0; i < SIZE_ROW; i++)
+  for (int r = 0; r < 4; r++)
+    for (int c = 0; c < 4; c++)
+      for (int i = 0; i < 4; i++)
         value.set(r, c, value(r, c) + (*this)(r, i) * right(i, c));
 
   return value;
 }
 
 void Matrix4::transpose() {
-  for (int r = 0; r < SIZE_ROW; r++) {
-    for (int c = 0; c < SIZE_ROW; c++) {
+  for (int r = 0; r < 4; r++) {
+    for (int c = 0; c < 4; c++) {
       f32 temp = (*this)(r, c);
       this->set(r, c, (*this)(c, r));
       this->set(c, r, temp);

@@ -49,10 +49,6 @@ public:
   void inverse();
 
   void print();
-
-private:
-  const i32 SIZE = 9;
-  const i32 SIZE_ROW = 3;
 };
 
 // =============================================================================
@@ -90,8 +86,6 @@ public:
 
 private:
   static Matrix3 submatrix(i32 row, i32 col, const Matrix4 &m);
-  const i32 SIZE = 16;
-  const i32 SIZE_ROW = 4;
 };
 
 // ===================================================================================================================
