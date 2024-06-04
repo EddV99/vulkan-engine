@@ -10,12 +10,12 @@ find_package(glfw3 REQUIRED)
 find_package(Vulkan REQUIRED)
 find_package(glm REQUIRED)
 
+add_library(game ../src/game/camera.cpp ../src/game/scene.cpp ../src/game/object.cpp)
 add_library(math ../src/math/vector.cpp ../src/math/matrix.cpp)
 add_library(mesh ../src/mesh/mesh.cpp)
 
 add_library(networking ../src/networking/networking.cpp ../src/util/util.cpp)
 add_library(physics ../src/physics/physics.cpp ../src/util/util.cpp)
-add_library(scene ../src/scene/camera.cpp)
 add_library(threads ../src/threads/threads.cpp ../src/util/util.cpp)
 add_library(ui ../src/ui/ui.cpp ../src/util/util.cpp)
 
@@ -36,8 +36,8 @@ target_link_libraries(vulkan-engine PUBLIC math
                                            mesh 
                                            networking
                                            physics
-                                           scene 
                                            threads
+                                           game
                                            ui
                                            util
                                            renderer)

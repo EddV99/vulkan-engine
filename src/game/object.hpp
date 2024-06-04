@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../math/matrix.hpp"
 #include "../math/vector.hpp"
 #include "../mesh/mesh.hpp"
@@ -5,14 +7,19 @@
 namespace Game {
 class Object {
 private:
-  Mesh::Mesh mesh;
-  Math::Quaternion orientation;
   Math::Vector3 position;
+  Math::Quaternion orientation;
   Math::Vector3 scale;
 
 public:
-  Object(std::string meshFilename, Math::Vector3 p = {0.0, 0.0, 0.0}, Math::Quaternion o = {0.0, {0.0, 0.0, 1.0}},
-         Math::Vector3 s = {1.0, 1.0, 1.0});
+  Object() = delete;
+  Object(std::string meshFilename, Math::Vector3 p = {0, 0, 0}, Math::Quaternion o = {0, {0, 0, 0}},
+         Math::Vector3 s = {0, 0, 0});
+  ~Object() = default;
+  Object(const Object &other);
+  Object &operator=(const Object &other);
+  Object(Object &&other) noexcept;
+  Object &operator=(Object &&other) noexcept;
 
   void setPosition(Math::Vector3 p);
   void setPositionX(f32 x);
@@ -37,5 +44,7 @@ public:
   void scaleUniform(f32 s);
 
   Math::Matrix4 getModelMatrix();
+
+  Mesh::Mesh mesh;
 };
 } // namespace Game
