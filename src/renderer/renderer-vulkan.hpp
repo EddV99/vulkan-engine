@@ -105,6 +105,8 @@ private:
 
   void createUniformBuffers();
 
+  void createDescriptorPool();
+
   void createCommandBuffer();
 
   void createSyncObjects();
@@ -182,6 +184,7 @@ private:
   uint32_t currentFrame = 0;
   bool resized = false;
   Game::Scene scene;
+  VkDescriptorPool descriptorPool;
 
   VkBuffer meshBuffer;
   VkDeviceMemory meshMemory;
