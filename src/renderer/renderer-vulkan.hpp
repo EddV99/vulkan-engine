@@ -103,6 +103,8 @@ private:
 
   void createIndexBuffer();
 
+  void createUniformBuffers();
+
   void createCommandBuffer();
 
   void createSyncObjects();
@@ -144,8 +146,6 @@ private:
 
   void createTexture();
 
-  void createUniformBuffer();
-
   void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
   uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
@@ -186,6 +186,10 @@ private:
 
   VkBuffer indexBuffer;
   VkDeviceMemory indexMemory;
+
+  std::vector<VkBuffer> uniformBuffers;
+  std::vector<VkDeviceMemory> uniformBuffersMemory;
+  std::vector<void *> uniformBuffersMapped;
 
   Mesh::Mesh renderedMesh;
 

@@ -26,6 +26,11 @@ RendererVulkan::~RendererVulkan() {
 
   cleanSwapchain();
 
+  for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    vkDestroyBuffer(device, uniformBuffers[i], nullptr);
+    vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
+  }
+
   vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
   vkDestroyBuffer(device, indexBuffer, nullptr);
@@ -78,6 +83,7 @@ void RendererVulkan::init(GLFWwindow *window, Game::Scene scene) {
   createCommandPool();
   createVertexBuffer();
   createIndexBuffer();
+  createUniformBuffers();
   createCommandBuffer();
   createSyncObjects();
 }
@@ -548,6 +554,22 @@ void RendererVulkan::createIndexBuffer() {
   vkFreeMemory(device, stagingMemory, nullptr);
 }
 
+void RendererVulkan::createUniformBuffers() {
+  VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+
+  uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+  uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
+  uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
+
+  for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i],
+                 uniformBuffersMemory[i]);
+
+    vkMapMemory(device, uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
+  }
+}
+
 void RendererVulkan::createCommandPool() {
   VkCommandPoolCreateInfo poolInfo{};
   poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -907,8 +929,6 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
 }
 
 void RendererVulkan::createTexture() {}
-
-void RendererVulkan::createUniformBuffer() {}
 
 void RendererVulkan::drawFrame(FrameData frame) { (void)frame; }
 
