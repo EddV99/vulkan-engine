@@ -31,6 +31,7 @@ RendererVulkan::~RendererVulkan() {
     vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
   }
 
+  vkDestroyDescriptorPool(device, descriptorPool, nullptr);
   vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
   vkDestroyBuffer(device, indexBuffer, nullptr);
@@ -84,6 +85,8 @@ void RendererVulkan::init(GLFWwindow *window, Game::Scene scene) {
   createVertexBuffer();
   createIndexBuffer();
   createUniformBuffers();
+  createDescriptorPool();
+  createDescriptorSets();
   createCommandBuffer();
   createSyncObjects();
 }
@@ -581,10 +584,42 @@ void RendererVulkan::createDescriptorPool() {
   poolInfo.pPoolSizes = &poolSize;
   poolInfo.maxSets = (uint32_t)MAX_FRAMES_IN_FLIGHT;
 
-  if(vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
+  if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
     Util::Error("Failed to create descriptor pool");
 }
+void RendererVulkan::createDescriptorSets() {
+  std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
+  VkDescriptorSetAllocateInfo allocInfo{};
+  allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+  allocInfo.descriptorPool = descriptorPool;
+  allocInfo.descriptorSetCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+  allocInfo.pSetLayouts = layouts.data();
 
+  descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+
+  if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) != VK_SUCCESS)
+    Util::Error("Failed to allocate descriptor sets");
+
+  for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    VkDescriptorBufferInfo bufferInfo{};
+    bufferInfo.buffer = uniformBuffers[i];
+    bufferInfo.offset = 0;
+    bufferInfo.range = sizeof(UniformBufferObject);
+
+    VkWriteDescriptorSet descriptorWrite{};
+    descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrite.dstSet = descriptorSets[i];
+    descriptorWrite.dstBinding = 0;
+    descriptorWrite.dstArrayElement = 0;
+    descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorWrite.descriptorCount = 1;
+    descriptorWrite.pBufferInfo = &bufferInfo;
+    descriptorWrite.pImageInfo = nullptr;
+    descriptorWrite.pTexelBufferView = nullptr;
+
+    vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+  }
+}
 void RendererVulkan::createCommandPool() {
   VkCommandPoolCreateInfo poolInfo{};
   poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -933,6 +968,8 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
   VkDeviceSize offsets[] = {0};
   vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
   vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+  vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
+                          &descriptorSets[currentFrame], 0, nullptr);
 
   // vkCmdDraw(commandBuffer, renderedMesh.size, 1, 0, 0);
   vkCmdDrawIndexed(commandBuffer, (uint32_t)renderedMesh.indices.size(), 1, 0, 0, 0);
@@ -948,9 +985,20 @@ void RendererVulkan::createTexture() {}
 void RendererVulkan::drawFrame(FrameData frame) { (void)frame; }
 
 void RendererVulkan::updateUniformBuffer(uint32_t frame) {
-  ubo.model = {};
-  ubo.view = {};
-  ubo.proj = {};
+  ubo.model = {1, 0, 0, 0, //
+               0, 1, 0, 0, //
+               0, 0, 1, 0, //
+               0, 0, 0, 1};
+
+  ubo.view = {1, 0, 0, 0, //
+              0, 1, 0, 0, //
+              0, 0, 1, 0, //
+              0, 0, 0, 1};
+
+  ubo.proj = {1, 0, 0, 0, //
+              0, 1, 0, 0, //
+              0, 0, 1, 0, //
+              0, 0, 0, 1};
 
   memcpy(uniformBuffersMapped[frame], &ubo, sizeof(ubo));
 }

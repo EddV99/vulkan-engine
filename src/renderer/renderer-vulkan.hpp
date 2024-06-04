@@ -99,6 +99,8 @@ private:
 
   void createCommandPool();
 
+  void createDescriptorSets();
+
   void createVertexBuffer();
 
   void createIndexBuffer();
@@ -185,6 +187,7 @@ private:
   bool resized = false;
   Game::Scene scene;
   VkDescriptorPool descriptorPool;
+  std::vector<VkDescriptorSet> descriptorSets;
 
   VkBuffer meshBuffer;
   VkDeviceMemory meshMemory;
