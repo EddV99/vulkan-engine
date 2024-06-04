@@ -169,9 +169,37 @@ Matrix4::Matrix4(f32 v00, f32 v01, f32 v02, f32 v03, //
         v02, v12, v22, v32, //
         v03, v13, v23, v33} {}
 
-Matrix4::Matrix4(Matrix4 const &copy) {
+Matrix4::Matrix4(const Matrix4 &other) {
   for (int r = 0; r < SIZE; r++)
-    this->m[r] = copy.m[r];
+    this->m[r] = other.m[r];
+}
+Matrix4::Matrix4(Matrix4 &&other) noexcept {
+  for (int r = 0; r < SIZE; r++) {
+    this->m[r] = other.m[r];
+    other.m[r] = 0;
+  }
+}
+
+Matrix4 &Matrix4::operator=(const Matrix4 &other) {
+  if (this == &other)
+    return *this;
+
+  for (int r = 0; r < SIZE; r++)
+    this->m[r] = other.m[r];
+
+  return *this;
+}
+
+Matrix4 &Matrix4::operator=(Matrix4 &&other) noexcept {
+  if (this == &other)
+    return *this;
+
+  for (int r = 0; r < SIZE; r++) {
+    this->m[r] = other.m[r];
+    other.m[r] = 0;
+  }
+
+  return *this;
 }
 
 void Matrix4::set(i32 row, i32 col, f32 value) { m[ROW_COL_TO_INDEX(row, col, SIZE_ROW)] = value; }
@@ -181,29 +209,23 @@ f32 Matrix4::operator()(i32 row, i32 col) const { return m[ROW_COL_TO_INDEX(row,
 
 Matrix4 Matrix4::operator+(Matrix4 &right) {
   Matrix4 value(0.0f);
-  for (int r = 0; r < SIZE; r++) {
-    for (int c = 0; c < SIZE; c++) {
-      value.set(r, c, (*this)(r, c) + right(r, c));
-    }
-  }
+  for (int x = 0; x < SIZE; x++)
+    value.m[x] = this->m[x] + right.m[x];
   return value;
 }
 
 Matrix4 Matrix4::operator-(Matrix4 &right) {
   Matrix4 value(0.0f);
-  for (int r = 0; r < SIZE; r++) {
-    for (int c = 0; c < SIZE; c++) {
-      value.set(r, c, (*this)(r, c) - right(r, c));
-    }
-  }
+  for (int x = 0; x < SIZE; x++)
+    value.m[x] = this->m[x] - right.m[x];
   return value;
 }
 
 Matrix4 Matrix4::operator*(f32 scalar) {
   Matrix4 value((*this));
 
-  for (int r = 0; r < SIZE; r++)
-    for (int c = 0; c < SIZE; c++)
+  for (int r = 0; r < SIZE_ROW; r++)
+    for (int c = 0; c < SIZE_ROW; c++)
       value.set(r, c, value(r, c) * scalar);
 
   return value;
@@ -212,26 +234,17 @@ Matrix4 Matrix4::operator*(f32 scalar) {
 Matrix4 Matrix4::operator*(Matrix4 &right) {
   Matrix4 value(0.0f);
 
-  for (int r = 0; r < SIZE; r++)
-    for (int c = 0; c < SIZE; c++)
-      for (int i = 0; i < SIZE; i++)
+  for (int r = 0; r < SIZE_ROW; r++)
+    for (int c = 0; c < SIZE_ROW; c++)
+      for (int i = 0; i < SIZE_ROW; i++)
         value.set(r, c, value(r, c) + (*this)(r, i) * right(i, c));
 
   return value;
 }
 
-Matrix4 &Matrix4::operator=(Matrix4 other) noexcept {
-  for (int r = 0; r < SIZE; r++) {
-    for (int c = 0; c < SIZE; c++) {
-      this->set(r, c, other(r, c));
-    }
-  }
-  return *this;
-}
-
 void Matrix4::transpose() {
-  for (int r = 0; r < SIZE; r++) {
-    for (int c = 0; c < SIZE; c++) {
+  for (int r = 0; r < SIZE_ROW; r++) {
+    for (int c = 0; c < SIZE_ROW; c++) {
       f32 temp = (*this)(r, c);
       this->set(r, c, (*this)(c, r));
       this->set(c, r, temp);

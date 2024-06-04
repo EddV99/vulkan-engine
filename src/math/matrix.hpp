@@ -63,12 +63,16 @@ public:
   f32 m[16]{};
 
   Matrix4();
+  ~Matrix4() = default;
   Matrix4(f32 value);
-  Matrix4(Matrix4 const &copy);
   Matrix4(f32 v00, f32 v01, f32 v02, f32 v03, //
           f32 v10, f32 v11, f32 v12, f32 v13, //
           f32 v20, f32 v21, f32 v22, f32 v23, //
           f32 v30, f32 v31, f32 v32, f32 v33);
+  Matrix4(const Matrix4 &copy);
+  Matrix4(Matrix4 &&copy) noexcept;
+  Matrix4 &operator=(const Matrix4 &other);
+  Matrix4 &operator=(Matrix4 &&other) noexcept;
 
   void set(i32 row, i32 col, f32 value);
   f32 operator()(i32 row, i32 col);
@@ -77,7 +81,6 @@ public:
   Matrix4 operator-(Matrix4 &right);
   Matrix4 operator*(Matrix4 &right);
   Matrix4 operator*(f32 scalar);
-  Matrix4 &operator=(Matrix4 other) noexcept;
 
   f32 determinate();
   void transpose();
@@ -109,11 +112,10 @@ struct Quaternion {
   Quaternion() = delete;
   Quaternion(f32 angle, const Vector3 &axis);
   Quaternion(f32 w, f32 i, f32 j, f32 k);
-  Quaternion(const Quaternion& other);
-  Quaternion(Quaternion&& other) noexcept;
+  Quaternion(const Quaternion &other);
+  Quaternion(Quaternion &&other) noexcept;
   Quaternion &operator=(const Quaternion &other);
   Quaternion &operator=(Quaternion &&other) noexcept;
-
 
   Quaternion operator*(const Quaternion &other);
   Quaternion operator*(f32 scalar);
