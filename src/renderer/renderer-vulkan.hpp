@@ -61,6 +61,12 @@ private:
     std::vector<VkPresentModeKHR> presentModes;
   } swapchainSupport;
 
+  struct UniformBufferObject {
+    Math::Matrix4 model;
+    Math::Matrix4 view;
+    Math::Matrix4 proj;
+  } ubo;
+
   /**
    * List of wanted validation layers
    */
@@ -84,6 +90,8 @@ private:
   void createImageViews();
 
   void createRenderPass();
+
+  void createDescriptorSetLayout();
 
   void createGraphicsPipeline();
 
@@ -158,6 +166,7 @@ private:
   VkFormat swapchainImageFormat;
   VkRenderPass renderPass;
   VkExtent2D extent;
+  VkDescriptorSetLayout descriptorSetLayout;
   VkPipelineLayout pipelineLayout;
   VkPipeline graphicsPipeline;
   std::vector<VkFramebuffer> framebuffers;
