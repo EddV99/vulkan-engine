@@ -27,8 +27,45 @@ Vector2 Vector2::operator-(Vector2 &right) { return Vector2(x - right.x, this->y
 // Vector 3
 // =============================================================================
 Vector3::Vector3() : x(0), y(0), z(0) {}
-/* Vector3::Vector3(Vector3 &other) : x(other.x), y(other.y), z(other.z) {} */
+Vector3::~Vector3() {
+  this->x = 0;
+  this->y = 0;
+  this->z = 0;
+}
 Vector3::Vector3(f32 x, f32 y, f32 z) : x(x), y(y), z(z) {}
+
+Vector3::Vector3(const Vector3 &other) : x(other.x), y(other.y), z(other.z) {}
+
+Vector3 &Vector3::operator=(const Vector3 &other) {
+  if (this == &other)
+    return *this;
+
+  this->x = other.x;
+  this->y = other.y;
+  this->z = other.z;
+
+  return *this;
+}
+
+Vector3::Vector3(Vector3 &&other) noexcept : x(other.x), y(other.y), z(other.z) {
+  other.x = 0;
+  other.y = 0;
+  other.z = 0;
+}
+Vector3 &Vector3::operator=(Vector3 &&other) noexcept {
+  if (this == &other)
+    return *this;
+
+  this->x = other.x;
+  this->y = other.y;
+  this->z = other.z;
+
+  other.x = 0;
+  other.y = 0;
+  other.z = 0;
+
+  return *this;
+}
 
 bool Vector3::operator==(const Vector3 &right) const {
   return (this->x == right.x) && (this->y == right.y) && (this->z == right.z);
@@ -40,13 +77,6 @@ Vector3 Vector3::operator*(f32 scalar) { return Vector3(x * scalar, y * scalar, 
 Vector3 Vector3::operator*(f32 scalar) const { return Vector3(x * scalar, y * scalar, z * scalar); }
 
 Vector3 Vector3::operator-(const Vector3 &right) { return Vector3(x - right.x, this->y - right.y, this->z - right.z); }
-
-/* Vector3 &Vector3::operator=(Vector3 &other) noexcept { */
-/*   x = other.x; */
-/*   y = other.y; */
-/*   z = other.z; */
-/*   return *this; */
-/* } */
 
 f32 Vector3::dot(const Vector3 &right) { return this->x * right.x + this->y * right.y + this->z * right.z; }
 

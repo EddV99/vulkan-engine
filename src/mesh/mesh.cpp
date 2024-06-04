@@ -14,12 +14,57 @@
 #include <unordered_map>
 
 namespace Mesh {
+Mesh::~Mesh() {
+  _hasNormals = false;
+  _hasUV = false;
 
-Mesh &Mesh::operator=(const Mesh &other) {
+  size = 0;
+  indices.clear();
+  data.clear();
+}
+Mesh::Mesh(const Mesh &other)
+    : _hasNormals(other._hasNormals), _hasUV(other._hasUV), size(other.size), indices(other.indices), data(other.data) {
+}
+Mesh::Mesh(Mesh &&other) noexcept
+    : _hasNormals(other._hasNormals), _hasUV(other._hasUV), size(other.size), indices(other.indices), data(other.data) {
+  other._hasNormals = false;
+  other._hasUV = false;
+
+  other.size = 0;
+  other.indices.clear();
+  other.data.clear();
+}
+Mesh &Mesh::operator=(Mesh &&other) noexcept {
+  if (this == &other)
+    return *this;
+
+  this->_hasNormals = other._hasNormals;
+  this->_hasUV = other._hasUV;
+
+  this->size = other.size;
+  this->indices = other.indices;
   this->data = other.data;
 
-  this->_hasUV = other._hasUV;
+  other._hasNormals = false;
+  other._hasUV = false;
+
+  other.size = 0;
+  other.indices.clear();
+  other.data.clear();
+
+  return *this;
+}
+Mesh &Mesh::operator=(const Mesh &other) {
+  if (this == &other)
+    return *this;
+
   this->_hasNormals = other._hasNormals;
+  this->_hasUV = other._hasUV;
+
+  this->size = other.size;
+  this->indices = other.indices;
+  this->data = other.data;
+
   return *this;
 }
 
@@ -80,6 +125,8 @@ void Mesh::loadOBJFile(std::string filename) {
 
   this->size = indices.size();
 }
+
+void Mesh::computeBoundingBox() {}
 
 bool Mesh::hasNormals() { return _hasNormals; }
 bool Mesh::hasUV() { return _hasUV; }

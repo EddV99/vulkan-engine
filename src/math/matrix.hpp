@@ -6,7 +6,6 @@
 #include "../util/defines.hpp"
 #include "vector.hpp"
 
-
 namespace Math {
 
 #define ROW_COL_TO_INDEX(R, C, S) (S * R) + C
@@ -107,16 +106,24 @@ Matrix4 rotate(const Matrix4 &m, const Vector3 &rotation);
 // Quaternions
 // =============================================================================
 struct Quaternion {
-  Quaternion(f32 angle, const Vector3& axis); 
-  Quaternion(f32 w, f32 i, f32 j, f32 k); 
-  f32 w;
-  Vector3 v;
+  Quaternion() = delete;
+  Quaternion(f32 angle, const Vector3 &axis);
+  Quaternion(f32 w, f32 i, f32 j, f32 k);
+  Quaternion(const Quaternion& other);
+  Quaternion(Quaternion&& other) noexcept;
+  Quaternion &operator=(const Quaternion &other);
+  Quaternion &operator=(Quaternion &&other) noexcept;
+
+
   Quaternion operator*(const Quaternion &other);
   Quaternion operator*(f32 scalar);
   Quaternion operator+(const Quaternion &other);
   Quaternion conjugate();
   void normalize();
   f32 length();
+
+  f32 w;
+  Vector3 v;
 };
 
 } // namespace Math

@@ -15,15 +15,19 @@ class Vector3 {
 public:
   f32 x, y, z;
 
+  ~Vector3();
+
   Vector3();
-  /* Vector3(Vector3&); */
   Vector3(f32 x, f32 y, f32 z);
+  Vector3(Vector3 &&other) noexcept;
+  Vector3(const Vector3 &other);
+  Vector3 &operator=(const Vector3 &other);
+  Vector3 &operator=(Vector3 &&other) noexcept;
 
   Vector3 operator+(const Vector3 &right);
   Vector3 operator*(f32 scalar);
   Vector3 operator*(f32 scalar) const;
   Vector3 operator-(const Vector3 &right);
-  /* Vector3 &operator=(Vector3& other) noexcept; */
   bool operator==(const Vector3 &right) const;
 
   f32 dot(const Vector3 &right);

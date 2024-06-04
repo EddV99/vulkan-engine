@@ -318,6 +318,35 @@ Quaternion::Quaternion(f32 angle, const Vector3 &axis) {
   v.z = axis.z * sinHalf;
   w = cosHalf;
 }
+Quaternion::Quaternion(const Quaternion &other) : w(other.w), v(other.v) {}
+
+Quaternion::Quaternion(Quaternion &&other) noexcept : w(other.w), v(other.v) {
+  other.v = {0, 0, 0};
+  other.w = 0;
+}
+
+Quaternion &Quaternion::operator=(Quaternion &&other) noexcept {
+  if (this == &other)
+    return *this;
+
+  this->v = other.v;
+  this->w = other.w;
+
+  other.v = {0, 0, 0};
+  other.w = 0;
+
+  return *this;
+}
+
+Quaternion &Quaternion::operator=(const Quaternion &other) {
+  if (this == &other)
+    return *this;
+
+  this->v = other.v;
+  this->w = other.w;
+
+  return *this;
+}
 
 Quaternion Quaternion::operator*(const Quaternion &other) {
   return Quaternion(w * other.w - v.dot(other.v), (other.v * w) + (v * other.w) + v.cross(other.v));
@@ -328,6 +357,7 @@ Quaternion Quaternion::operator*(f32 scalar) {
 Quaternion Quaternion::operator+(const Quaternion &other) {
   return Quaternion(w + other.w, v.x + other.v.x, v.y + other.v.y, v.z + other.v.z);
 }
+
 f32 Quaternion::length() { return std::sqrt(w * w + v.dot(v)); }
 Quaternion Quaternion::conjugate() { return Quaternion{w, Vector3(v * -1.0f)}; }
 void Quaternion::normalize() {

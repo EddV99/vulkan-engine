@@ -42,7 +42,11 @@ private:
 
 public:
   Mesh() = default;
+  Mesh(const Mesh &other);
+  Mesh(Mesh &&other) noexcept;
+  ~Mesh();
   Mesh &operator=(const Mesh &other);
+  Mesh &operator=(Mesh &&other) noexcept;
 
   void computeBoundingBox();
 
