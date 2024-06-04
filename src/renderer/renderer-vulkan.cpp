@@ -932,6 +932,14 @@ void RendererVulkan::createTexture() {}
 
 void RendererVulkan::drawFrame(FrameData frame) { (void)frame; }
 
+void RendererVulkan::updateUniformBuffer(uint32_t frame) {
+  ubo.model = {};
+  ubo.view = {};
+  ubo.proj = {};
+
+  memcpy(uniformBuffersMapped[frame], &ubo, sizeof(ubo));
+}
+
 void RendererVulkan::drawFrame() {
   vkWaitForFences(device, 1, &inFlightFence[currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -949,6 +957,8 @@ void RendererVulkan::drawFrame() {
 
   vkResetCommandBuffer(commandBuffers[currentFrame], 0);
   recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
+
+  updateUniformBuffer(currentFrame);
 
   VkSubmitInfo submitInfo{};
   submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

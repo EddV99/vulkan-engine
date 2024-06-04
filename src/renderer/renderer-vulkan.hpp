@@ -112,6 +112,8 @@ private:
   /**
    * Helper Methods
    */
+
+  void updateUniformBuffer(uint32_t frame);
   bool checkValidationLayerSupport();
 
   void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer,
