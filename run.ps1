@@ -24,7 +24,7 @@ function build
 {
     Write-Output "building!"
     cmake . 
-    make -j10
+    cmake --build . --target vulkan-engine
 
     build_shaders
 }
@@ -33,9 +33,9 @@ function clean
 {
     Write-Output "cleaning!"
 
-    Get-ChildItem -Path "C:\Users\myname\Desktop\project1\english\" -File -Recurse |
-        Where-Object { $_.Name -ne "file1.txt" -and $_.Parent -notin ("folder1","folder2") } |
-        Remove-Item
+    Get-ChildItem -Path "." -File -Recurse |
+        Where-Object { $_.Name -ne "CMakeLists.txt" -and $_.Parent -notin ("folder1") } |
+        Remove-Item -Recurse -Force
 
     Remove-Item ../src/shaders/*.spv
 }
@@ -48,14 +48,17 @@ function run
 
 if($run)
 {
-    Write-Output "Running!"
-} elseif ($build) {
-    Write-Output "Building!"
-} elseif($clean) {
-    Write-Output "Cleaning!"
-} else {
-    Write-Output "Building!"
-    Write-Output "Running!"
+    run
+} elseif ($build)
+{
+    build
+} elseif($clean)
+{
+    clean
+} else
+{
+    build
+    run
 }
 
 Set-Location -Path ".."
