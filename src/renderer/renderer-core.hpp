@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../mesh/mesh.hpp"
+#define GLFW_INCLUDE_VULKAN
 
 namespace Renderer {
 // ====================================================================================================================

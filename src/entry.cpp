@@ -11,7 +11,7 @@
 int main(void) {
   try {
 
-    Game::Object obj("../res/cube/cube.obj");
+    Game::Object obj("../../../res/simple-ship.obj");
     std::vector<Game::Object> objs;
     objs.push_back(obj);
     Game::Scene scene(objs);
