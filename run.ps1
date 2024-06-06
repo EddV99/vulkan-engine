@@ -1,30 +1,34 @@
 param (
     [switch]$run = $false,
     [switch]$build = $false,
-    [switch]$clean = $false
+    [switch]$clean = $false,
+    [switch]$shaders = $false
 )
 # Assumes this script is in root directory
 
 # do everything in the build directory
-Set-Location -Path "build"
+#Set-Location -Path "build"
 
 function build_shaders ()
 {
     # go to shaders directory
-    Set-Location -Path "../src/shaders"
+    Set-Location -Path "src/shaders"
 
     glslc basic.vert -o vert.spv
     glslc basic.frag -o frag.spv
 
     # go back to build directory
-    Set-Location -Path "../../build"
+    Set-Location -Path "../.."
 }
 
 function build
 {
     Write-Output "building!"
-    cmake . 
+
+    Set-Location -Path "build"
+    cmake .. 
     cmake --build . --target vulkan-engine
+    Set-Location -Path ".."
 
     build_shaders
 }
@@ -33,11 +37,10 @@ function clean
 {
     Write-Output "cleaning!"
 
-    Get-ChildItem -Path "." -File -Recurse |
-        Where-Object { $_.Name -ne "CMakeLists.txt" -and $_.Parent -notin ("folder1") } |
-        Remove-Item -Recurse -Force
+    Remove-Item -Recurse -Force build
+    New-Item -Path "build" -ItemType Directory
 
-    Remove-Item ../src/shaders/*.spv
+    Remove-Item src/shaders/*.spv
 }
 
 function run
@@ -55,13 +58,16 @@ if($run)
 } elseif($clean)
 {
     clean
+} elseif($shaders)
+{
+    build_shaders
 } else
 {
     build
     run
 }
 
-Set-Location -Path ".."
+#Set-Location -Path ".."
 
 #if [[ $1 == "run" ]]; then
 #run

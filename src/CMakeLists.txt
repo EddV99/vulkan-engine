@@ -1,0 +1,10 @@
+add_subdirectory(game)
+add_subdirectory(math)
+add_subdirectory(mesh)
+add_subdirectory(networking)
+add_subdirectory(physics)
+add_subdirectory(renderer)
+add_subdirectory(threads)
+add_subdirectory(ui)
+add_subdirectory(util)
+
