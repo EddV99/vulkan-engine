@@ -3,37 +3,44 @@
 # Assumes this script is in root directory
 
 # do everything in the build directory
-cd build
+# cd build
 
 build_shaders () {
     # go to shaders directory
-    cd ../src/shaders
+    cd src/shaders
 
     glslc basic.vert -o vert.spv
     glslc basic.frag -o frag.spv
 
-    # go back to build directory
-    cd ../../build
+    # go back to build directory 
+    cd ../..
 }
 
 build (){
     echo "building!"
-    cmake . 
+    cd build
+    cmake ..
     make -j4
+    cd ..
 
     build_shaders
 }
 
 clean (){
+    cd build
     echo "cleaning!"
     find . ! -name 'CMakeLists.txt' -type d -exec rm -rf {} + 2> /dev/null
     find . ! -name 'CMakeLists.txt' -type f -exec rm -f {} + 2> /dev/null
-    rm ../src/shaders/*.spv
+    cd ..
+
+    rm src/shaders/*.spv
 }
 
 run (){
     echo "running!"
+    cd build
     ./vulkan-engine
+    cd ..
 }
 
 
