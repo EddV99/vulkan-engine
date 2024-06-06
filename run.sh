@@ -2,9 +2,6 @@
 
 # Assumes this script is in root directory
 
-# do everything in the build directory
-# cd build
-
 build_shaders () {
     # go to shaders directory
     cd src/shaders
@@ -12,12 +9,14 @@ build_shaders () {
     glslc basic.vert -o vert.spv
     glslc basic.frag -o frag.spv
 
-    # go back to build directory 
+    # go back to root directory 
     cd ../..
 }
 
 build (){
     echo "building!"
+
+    # go to build directory
     cd build
     cmake ..
     make -j4
@@ -38,9 +37,7 @@ clean (){
 
 run (){
     echo "running!"
-    cd build
-    ./vulkan-engine
-    cd ..
+    ./build/vulkan-engine
 }
 
 

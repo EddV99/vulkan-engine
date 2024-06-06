@@ -6,9 +6,6 @@ param (
 )
 # Assumes this script is in root directory
 
-# do everything in the build directory
-#Set-Location -Path "build"
-
 function build_shaders ()
 {
     # go to shaders directory
@@ -17,7 +14,6 @@ function build_shaders ()
     glslc basic.vert -o vert.spv
     glslc basic.frag -o frag.spv
 
-    # go back to build directory
     Set-Location -Path "../.."
 }
 
@@ -46,7 +42,7 @@ function clean
 function run
 {
     Write-Output "running!"
-    ./vulkan-engine
+    # ./build/vulkan-engine TODO: fix running executable in windows
 }
 
 if($run)

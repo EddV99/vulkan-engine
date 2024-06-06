@@ -332,8 +332,8 @@ void RendererVulkan::createDescriptorSetLayout() {
 }
 
 void RendererVulkan::createGraphicsPipeline() {
-  auto vertexShader = Util::readFile("../../../src/shaders/vert.spv");
-  auto fragmentShader = Util::readFile("../../../src/shaders/frag.spv");
+  auto vertexShader = Util::readFile("src/shaders/vert.spv");
+  auto fragmentShader = Util::readFile("src/shaders/frag.spv");
 
   VkShaderModule vertexShaderModule = createShaderModule(vertexShader);
   VkShaderModule fragmentShaderModule = createShaderModule(fragmentShader);
