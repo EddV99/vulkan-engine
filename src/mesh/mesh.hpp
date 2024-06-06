@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 #include <vulkan/vulkan_core.h>
+
 namespace Mesh {
 class Mesh {
 private:

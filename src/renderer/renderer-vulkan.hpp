@@ -8,7 +8,8 @@
 
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
+#include "renderer-core.hpp"
+
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
@@ -20,7 +21,6 @@
 
 #include "../game/scene.hpp"
 #include "../mesh/mesh.hpp"
-#include "renderer-core.hpp"
 
 namespace Renderer {
 // ====================================================================================================================

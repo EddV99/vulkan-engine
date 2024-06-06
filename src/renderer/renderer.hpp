@@ -8,10 +8,14 @@
 
 #pragma once
 
+
+#include "renderer-core.hpp"
+
+#include "renderer-vulkan.hpp"
+#include <GLFW/glfw3.h>
+
 #include "../game/scene.hpp"
 #include "../mesh/mesh.hpp"
-#include "renderer-core.hpp"
-#include "renderer-vulkan.hpp"
 
 namespace Renderer {
 class Renderer {

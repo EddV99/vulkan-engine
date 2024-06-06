@@ -1,10 +1,13 @@
 /**
  * @file renderer.cpp
  */
+
 #include "renderer-vulkan.hpp"
 #include "../util/util.hpp"
 
 #include <GLFW/glfw3.h>
+#include <vulkan/vulkan_core.h>
+
 #include <algorithm>
 #include <climits>
 #include <cstdint>
@@ -12,7 +15,6 @@
 #include <iostream>
 #include <limits>
 #include <set>
-#include <vulkan/vulkan_core.h>
 
 namespace Renderer {
 
@@ -330,8 +332,8 @@ void RendererVulkan::createDescriptorSetLayout() {
 }
 
 void RendererVulkan::createGraphicsPipeline() {
-  auto vertexShader = Util::readFile("../src/shaders/vert.spv");
-  auto fragmentShader = Util::readFile("../src/shaders/frag.spv");
+  auto vertexShader = Util::readFile("src/shaders/vert.spv");
+  auto fragmentShader = Util::readFile("src/shaders/frag.spv");
 
   VkShaderModule vertexShaderModule = createShaderModule(vertexShader);
   VkShaderModule fragmentShaderModule = createShaderModule(fragmentShader);
@@ -737,9 +739,12 @@ void RendererVulkan::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDevice
 
 VkPresentModeKHR RendererVulkan::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &available) {
   for (const auto &presentMode : available) {
-    if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+    if (presentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) 
       return presentMode;
-    }
+
+    if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR) 
+      return presentMode;
+    
   }
   return VK_PRESENT_MODE_FIFO_KHR;
 }

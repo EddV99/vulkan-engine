@@ -1,7 +1,8 @@
+#include <GLFW/glfw3.h>
+
 #include "renderer.hpp"
 #include "../game/scene.hpp"
 #include "renderer-core.hpp"
-#include <GLFW/glfw3.h>
 
 namespace Renderer {
 
