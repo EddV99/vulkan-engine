@@ -126,7 +126,36 @@ void Mesh::loadOBJFile(std::string filename) {
   this->size = indices.size();
 }
 
-void Mesh::computeBoundingBox() {}
+void Mesh::computeBoundingBox() {
+  Math::Vector3 v = data[0].vertex;
+  box.max = v;
+  box.min = v;
+  box.mid = {0, 0, 0};
+
+  for (Data d : data) {
+    v = d.vertex;
+
+    if (box.max.x < v.x)
+      box.max.x = v.x;
+
+    if (box.max.y < v.y)
+      box.max.y = v.y;
+
+    if (box.max.z < v.z)
+      box.max.z = v.z;
+
+    if (box.min.x > v.x)
+      box.min.x = v.x;
+
+    if (box.min.y > v.y)
+      box.min.y = v.y;
+
+    if (box.min.z > v.z)
+      box.min.z = v.z;
+  }
+
+  box.mid = (box.max + box.min) * 0.5;
+}
 
 bool Mesh::hasNormals() { return _hasNormals; }
 bool Mesh::hasUV() { return _hasUV; }

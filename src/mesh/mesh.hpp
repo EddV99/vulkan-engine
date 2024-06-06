@@ -24,6 +24,12 @@ private:
     Math::Vector2 uv;
   };
 
+  struct BoundingBox {
+    Math::Vector3 max;
+    Math::Vector3 min;
+    Math::Vector3 mid;
+  };
+
   // VULKAN ONLY ----------------------------------------------
   static VkVertexInputAttributeDescription getAttributeDescription(uint32_t bind, uint32_t loc, VkFormat format,
                                                                    uint32_t offset) {
@@ -59,6 +65,7 @@ public:
   uint32_t size = 0;
   std::vector<u32> indices;
   std::vector<Data> data;
+  BoundingBox box;
 
   // VULKAN ONLY ----------------------------------------------
   VkVertexInputBindingDescription getBindingDescriptions() {
@@ -79,7 +86,4 @@ public:
   }
   // VULKAN ONLY END -----------------------------------------
 };
-
-using Scene = std::vector<Mesh>;
-
 } // namespace Mesh
