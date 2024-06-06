@@ -1,4 +1,5 @@
-build/*
-!build/CMakeLists.txt
+build/
+.vs/
+out/
 **/*.spv
 res/
