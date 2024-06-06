@@ -91,7 +91,6 @@ private:
 // ===================================================================================================================
 // 3D Graphics
 // ===================================================================================================================
-Matrix4 perspectiveMatrix(f32 fov, f32 aspect, f32 zNear, f32 zFar);
 Matrix4 viewMatrix(const Vector3 &cameraPosition, const Vector3 &cameraTarget, const Vector3 &up);
 Matrix4 modelMatrix(const Vector3 &translation, const Vector3 &rotation, const Vector3 &scale);
 

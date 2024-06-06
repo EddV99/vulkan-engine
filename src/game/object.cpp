@@ -46,4 +46,10 @@ Object &Object::operator=(Object &&other) noexcept {
   return *this;
 }
 
+Math::Matrix4 Object::getModelMatrix() {
+  return Math::Matrix4(1.0, 0.0, 0.0, 0.0, //
+                       0.0, 1.0, 0.0, 0.0, //
+                       0.0, 0.0, 1.0, 0.0, //
+                       0.0, 0.0, 0.0, 1.0);
+}
 } // namespace Game

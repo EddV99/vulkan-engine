@@ -7,7 +7,11 @@
 
 #pragma once
 
+#include "../game/camera.hpp"
+#include "../math/matrix.hpp"
+#include "../math/vector.hpp"
 #include "object.hpp"
+
 #include <vector>
 
 namespace Game {
@@ -23,5 +27,8 @@ public:
   Scene &operator=(Scene &&other) noexcept;
 
   std::vector<Object> gameObjects;
+  Camera camera;
+
+  Math::Matrix4 viewMatrix(Math::Vector3 up);
 };
 } // namespace Game

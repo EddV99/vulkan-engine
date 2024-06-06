@@ -34,4 +34,20 @@ Scene &Scene::operator=(Scene &&other) noexcept {
   return *this;
 }
 
+Math::Matrix4 Scene::viewMatrix(Math::Vector3 up) {
+  Math::Vector3 forward = camera.target - camera.position;
+  forward.normalize();
+
+  Math::Vector3 right = up.cross(forward);
+  right.normalize();
+
+  Math::Vector3 cameraUp = forward.cross(right);
+  cameraUp.normalize();
+
+  return Math::Matrix4(right.x, cameraUp.x, forward.x, 0, //
+                       right.y, cameraUp.y, forward.y, 0, //
+                       right.z, cameraUp.z, forward.z, 0, //
+                       -camera.position.x, -camera.position.y, -camera.position.z, 1);
+}
+
 } // namespace Game

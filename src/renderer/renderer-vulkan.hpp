@@ -156,6 +156,11 @@ private:
 
   uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
+  // ===================
+  // Perspective Matrix
+  // ===================
+  Math::Matrix4 perspectiveMatrix(f32 fov, f32 aspect);
+
   /**
    * Instance Variables
    */
@@ -215,4 +220,5 @@ private:
   const bool enableValidationLayers = true;
 #endif
 };
+
 } // namespace Renderer

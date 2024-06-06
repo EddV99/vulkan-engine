@@ -739,12 +739,11 @@ void RendererVulkan::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDevice
 
 VkPresentModeKHR RendererVulkan::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &available) {
   for (const auto &presentMode : available) {
-    if (presentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) 
+    if (presentMode == VK_PRESENT_MODE_IMMEDIATE_KHR)
       return presentMode;
 
-    if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR) 
+    if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR)
       return presentMode;
-    
   }
   return VK_PRESENT_MODE_FIFO_KHR;
 }
@@ -994,16 +993,20 @@ void RendererVulkan::updateUniformBuffer(uint32_t frame) {
                0, 1, 0, 0, //
                0, 0, 1, 0, //
                0, 0, 0, 1};
+  ubo.model = scene.gameObjects[0].getModelMatrix();
 
   ubo.view = {1, 0, 0, 0, //
               0, 1, 0, 0, //
               0, 0, 1, 0, //
               0, 0, 0, 1};
+  ubo.view = scene.viewMatrix(Math::Vector3(0.0, 1.0, 0.0));
 
   ubo.proj = {1, 0, 0, 0, //
               0, 1, 0, 0, //
               0, 0, 1, 0, //
               0, 0, 0, 1};
+
+  ubo.proj = perspectiveMatrix(60, (f32)WIDTH / HEIGHT);
 
   memcpy(uniformBuffersMapped[frame], &ubo, sizeof(ubo));
 }
@@ -1109,4 +1112,13 @@ uint32_t RendererVulkan::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFla
   Util::Error("Failed to find suitable memory type");
   return UINT32_MAX;
 }
+
+Math::Matrix4 RendererVulkan::perspectiveMatrix(f32 fov, f32 aspect) {
+  f32 focalLength = 1 / std::tan(fov * 0.5);
+  return Math::Matrix4(focalLength / aspect, 0, 0, 0,           //
+                       0, -focalLength, 0, 0,                   //
+                       0, 0, n / (-f - n), (n * -f) / (-f - n), //
+                       0, 0, -1, 0);
+}
+
 } // namespace Renderer
