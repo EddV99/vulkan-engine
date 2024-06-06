@@ -21,6 +21,11 @@ namespace Renderer {
 RendererVulkan::RendererVulkan(uint32_t width, uint32_t height) {
   WIDTH = width;
   HEIGHT = height;
+  r = (f32)WIDTH / 2.0;
+  l = -r;
+
+  t = (f32)HEIGHT / 2.0;
+  b = -t;
 }
 
 RendererVulkan::~RendererVulkan() {
@@ -65,11 +70,11 @@ RendererVulkan::~RendererVulkan() {
 // ====================================================================================================================
 //     Initialization
 // ====================================================================================================================
-void RendererVulkan::init(GLFWwindow *window, Game::Scene scene) {
+void RendererVulkan::init(GLFWwindow *window, Game::Scene &scene) {
   if (enableValidationLayers && !checkValidationLayerSupport())
     Util::Error("Validation layers requested, but failed to get");
 
-  this->scene = scene;
+  this->scene = &scene;
   this->window = window;
   this->renderedMesh = scene.gameObjects[0].mesh;
 
@@ -457,9 +462,8 @@ void RendererVulkan::createGraphicsPipeline() {
   pipelineLayoutInfo.pushConstantRangeCount = 0;
   pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
-  if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+  if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
     Util::Error("Failed to create pipeline layout");
-  }
 
   // create the graphics pipeline object
   VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -480,9 +484,9 @@ void RendererVulkan::createGraphicsPipeline() {
   pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
   pipelineInfo.basePipelineIndex = -1;
 
-  if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+  if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
     Util::Error("Failed to create graphics pipeline");
-  }
+
   // destroy modules after setup
   vkDestroyShaderModule(device, vertexShaderModule, nullptr);
   vkDestroyShaderModule(device, fragmentShaderModule, nullptr);
@@ -660,15 +664,14 @@ void RendererVulkan::createSyncObjects() {
   fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
   for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSem[i]) != VK_SUCCESS) {
+    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSem[i]) != VK_SUCCESS)
       Util::Error("Failed to create semaphore");
-    }
-    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSem[i]) != VK_SUCCESS) {
+
+    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSem[i]) != VK_SUCCESS)
       Util::Error("Failed to create semaphore");
-    }
-    if (vkCreateFence(device, &fenceInfo, nullptr, &inFlightFence[i]) != VK_SUCCESS) {
+
+    if (vkCreateFence(device, &fenceInfo, nullptr, &inFlightFence[i]) != VK_SUCCESS)
       Util::Error("Failed to create fence");
-    }
   }
 }
 
@@ -873,15 +876,13 @@ RendererVulkan::QueueFamily RendererVulkan::setupQueueFamilies(VkPhysicalDevice 
   uint32_t i = 0;
   VkBool32 presentSupport = false;
   for (const auto &family : families) {
-    if (family.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+    if (family.queueFlags & VK_QUEUE_GRAPHICS_BIT)
       queue.graphics = i;
-    }
 
     presentSupport = false;
     vkGetPhysicalDeviceSurfaceSupportKHR(pDevice, i, surface, &presentSupport);
-    if (presentSupport) {
+    if (presentSupport)
       queue.present = i;
-    }
 
     i++;
   }
@@ -923,9 +924,8 @@ VkShaderModule RendererVulkan::createShaderModule(std::vector<char> &shader) {
 
   VkShaderModule module;
 
-  if (vkCreateShaderModule(device, &createInfo, nullptr, &module) != VK_SUCCESS) {
+  if (vkCreateShaderModule(device, &createInfo, nullptr, &module) != VK_SUCCESS)
     Util::Error("Failed to create shader module");
-  }
 
   return module;
 }
@@ -936,9 +936,8 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
   beginInfo.flags = 0;
   beginInfo.pInheritanceInfo = nullptr;
 
-  if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
+  if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
     Util::Error("Failed to begin recording command buffer");
-  }
 
   VkRenderPassBeginInfo renderPassInfo{};
   renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -989,23 +988,8 @@ void RendererVulkan::createTexture() {}
 void RendererVulkan::drawFrame(FrameData frame) { (void)frame; }
 
 void RendererVulkan::updateUniformBuffer(uint32_t frame) {
-  ubo.model = {1, 0, 0, 0, //
-               0, 1, 0, 0, //
-               0, 0, 1, 0, //
-               0, 0, 0, 1};
-  ubo.model = scene.gameObjects[0].getModelMatrix();
-
-  ubo.view = {1, 0, 0, 0, //
-              0, 1, 0, 0, //
-              0, 0, 1, 0, //
-              0, 0, 0, 1};
-  ubo.view = scene.viewMatrix(Math::Vector3(0.0, 1.0, 0.0));
-
-  ubo.proj = {1, 0, 0, 0, //
-              0, 1, 0, 0, //
-              0, 0, 1, 0, //
-              0, 0, 0, 1};
-
+  ubo.model = scene->gameObjects[0].getModelMatrix();
+  ubo.view = scene->viewMatrix(Math::Vector3(0.0, 1.0, 0.0));
   ubo.proj = perspectiveMatrix(60, (f32)WIDTH / HEIGHT);
 
   memcpy(uniformBuffersMapped[frame], &ubo, sizeof(ubo));
@@ -1013,6 +997,9 @@ void RendererVulkan::updateUniformBuffer(uint32_t frame) {
 
 void RendererVulkan::drawFrame() {
   vkWaitForFences(device, 1, &inFlightFence[currentFrame], VK_TRUE, UINT64_MAX);
+
+  // std::cout << "X: " << scene->camera.position.x << "\n";
+  // std::cout << "Z: " << scene->camera.position.z << "\n";
 
   uint32_t imageIndex;
   VkResult result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, imageAvailableSem[currentFrame],
@@ -1114,11 +1101,18 @@ uint32_t RendererVulkan::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFla
 }
 
 Math::Matrix4 RendererVulkan::perspectiveMatrix(f32 fov, f32 aspect) {
-  f32 focalLength = 1 / std::tan(fov * 0.5);
-  return Math::Matrix4(focalLength / aspect, 0, 0, 0,           //
-                       0, -focalLength, 0, 0,                   //
-                       0, 0, n / (-f - n), (n * -f) / (-f - n), //
+  f32 fovy = M_PI * fov / 180.0;
+  f32 focalLength = (f32)1.0 / std::tan(fovy * 0.5);
+  f32 A = f / (-f + n);
+  f32 B = (f * n) / (-f + n);
+  return Math::Matrix4(focalLength / aspect, 0, 0, 0, //
+                       0, -focalLength, 0, 0,         //
+                       0, 0, A, B,                    //
                        0, 0, -1, 0);
+  /* return Math::Matrix4(focalLength / aspect, 0, 0, 0,          // */
+  /*                      0, -focalLength, 0, 0,                  // */
+  /*                      0, 0, n / (f - n), (n * f) / (f - n), // */
+  /*                      0, 0, -1, 0); */
 }
 
 } // namespace Renderer

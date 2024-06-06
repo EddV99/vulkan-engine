@@ -34,7 +34,7 @@ public:
 
   void drawFrame();
   void drawFrame(FrameData frame);
-  void init(GLFWwindow *window, Game::Scene scene);
+  void init(GLFWwindow *window, Game::Scene &scene);
   void resize();
 
 private:
@@ -159,6 +159,15 @@ private:
   // ===================
   // Perspective Matrix
   // ===================
+
+  f32 f = 100;
+  f32 n = 0.1;
+
+  f32 t = 400;
+  f32 b = -400;
+
+  f32 r = 400;
+  f32 l = -400;
   Math::Matrix4 perspectiveMatrix(f32 fov, f32 aspect);
 
   /**
@@ -190,7 +199,7 @@ private:
   VkQueue presentQueue;
   uint32_t currentFrame = 0;
   bool resized = false;
-  Game::Scene scene;
+  Game::Scene *scene;
   VkDescriptorPool descriptorPool;
   std::vector<VkDescriptorSet> descriptorSets;
 
