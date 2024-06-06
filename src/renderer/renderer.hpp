@@ -15,12 +15,11 @@
 #include <GLFW/glfw3.h>
 
 #include "../game/scene.hpp"
-#include "../mesh/mesh.hpp"
 
 namespace Renderer {
 class Renderer {
 public:
-  Renderer(int w, int h, Game::Scene scene);
+  Renderer(int w, int h, Game::Scene &scene);
   bool running();
   void poll();
   void draw();
@@ -29,9 +28,12 @@ public:
   void FPS();
 
 private:
+  static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
+  static void resizeCallback(GLFWwindow *window, int width, int height);
+
   RendererVulkan rendererbackend;
-  std::vector<Mesh::Mesh> scene;
   GLFWwindow *window;
+  Game::Scene scene;
   int WIDTH, HEIGHT;
 
   double prevTime = 0;
@@ -39,7 +41,4 @@ private:
   uint32_t frames = 0;
 };
 
-void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
-
-void resizeCallback(GLFWwindow *window, int width, int height);
 } // namespace Renderer
