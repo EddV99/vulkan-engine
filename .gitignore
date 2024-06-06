@@ -2,4 +2,3 @@ build/
 .vs/
 out/
 **/*.spv
-res/

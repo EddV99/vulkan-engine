@@ -9,9 +9,13 @@
 #include <iostream>
 
 int main(void) {
+  //std::string meshFilePath = "res/cube/cube.obj";
+  //std::string meshFilePath = "res/teapot/teapot.obj";
+  std::string meshFilePath = "res/sphere/sphere.obj";
+
   try {
 
-    Game::Object obj("res/cube/cube.obj");
+    Game::Object obj(meshFilePath);
     std::vector<Game::Object> objs;
     objs.push_back(obj);
     Game::Scene scene(objs);
