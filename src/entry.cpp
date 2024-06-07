@@ -9,9 +9,9 @@
 #include <iostream>
 
 int main(void) {
-  //std::string meshFilePath = "res/cube/cube.obj";
-  //std::string meshFilePath = "res/teapot/teapot.obj";
-  std::string meshFilePath = "res/sphere/sphere.obj";
+  /* std::string meshFilePath = "res/cube/cube.obj"; */
+  std::string meshFilePath = "res/teapot/teapot.obj";
+  /* std::string meshFilePath = "res/sphere/sphere.obj"; */
 
   try {
 
@@ -20,7 +20,7 @@ int main(void) {
     objs.push_back(obj);
     Game::Scene scene(objs);
 
-    Renderer::Renderer renderer(800, 800, scene);
+    Renderer::Renderer renderer(1000, 800, scene);
     while (renderer.running()) {
       renderer.FPS();
       renderer.draw();

@@ -47,9 +47,25 @@ Object &Object::operator=(Object &&other) noexcept {
 }
 
 Math::Matrix4 Object::getModelMatrix() {
-  return Math::Matrix4(1.0, 0.0, 0.0, 0.0, //
-                       0.0, 1.0, 0.0, 0.0, //
-                       0.0, 0.0, 1.0, 0.0, //
-                       0.0, 0.0, 0.0, 1.0);
+  Math::Matrix4 model(1.0, 0.0, 0.0, 0.0, //
+                      0.0, 1.0, 0.0, 0.0, //
+                      0.0, 0.0, 1.0, 0.0, //
+                      0.0, 0.0, 0.0, 1.0);
+
+  model = getTranslationMatrix(mesh.box.mid * -1) * model;
+  model = getScaleMatrix(scale) * model;
+  return model;
+}
+Math::Matrix4 Object::getTranslationMatrix(Math::Vector3 t) {
+  return Math::Matrix4(1, 0, 0, t.x, //
+                       0, 1, 0, t.y, //
+                       0, 0, 1, t.z, //
+                       0, 0, 0, 1);
+}
+Math::Matrix4 Object::getScaleMatrix(Math::Vector3 s) {
+  return Math::Matrix4(s.x, 0, 0, 0, //
+                       0, s.y, 0, 0, //
+                       0, 0, s.z, 0, //
+                       0, 0, 0, 1);
 }
 } // namespace Game

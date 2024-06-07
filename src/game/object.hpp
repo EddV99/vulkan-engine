@@ -11,10 +11,13 @@ private:
   Math::Quaternion orientation;
   Math::Vector3 scale;
 
+  Math::Matrix4 getTranslationMatrix(Math::Vector3 t);
+  Math::Matrix4 getScaleMatrix(Math::Vector3 s);
+
 public:
   Object() = delete;
   Object(std::string meshFilename, Math::Vector3 p = {0, 0, 0}, Math::Quaternion o = {0, {0, 0, 0}},
-         Math::Vector3 s = {0, 0, 0});
+         Math::Vector3 s = {1, 1, 1});
   ~Object() = default;
   Object(const Object &other);
   Object &operator=(const Object &other);
