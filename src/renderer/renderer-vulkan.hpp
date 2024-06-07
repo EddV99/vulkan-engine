@@ -99,6 +99,8 @@ private:
 
   void createCommandPool();
 
+  void createTextureImage();
+
   void createDescriptorSets();
 
   void createVertexBuffer();
@@ -116,8 +118,19 @@ private:
   /**
    * Helper Methods
    */
+  void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
+  void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+
+  VkCommandBuffer beginSingleTimeCommands();
+
+  void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+
+  void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
+                   VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &imageMemor);
 
   void updateUniformBuffer(uint32_t frame);
+
   bool checkValidationLayerSupport();
 
   void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer,
@@ -212,6 +225,9 @@ private:
   std::vector<VkBuffer> uniformBuffers;
   std::vector<VkDeviceMemory> uniformBuffersMemory;
   std::vector<void *> uniformBuffersMapped;
+
+  VkImage textureImage;
+  VkDeviceMemory textureImageMemory;
 
   Mesh::Mesh renderedMesh;
 
