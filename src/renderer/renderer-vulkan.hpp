@@ -101,6 +101,10 @@ private:
 
   void createTextureImage();
 
+  void createTextureImageView();
+
+  void createTextureSampler();
+
   void createDescriptorSets();
 
   void createVertexBuffer();
@@ -118,6 +122,8 @@ private:
   /**
    * Helper Methods
    */
+  VkImageView createImageView(VkImage image, VkFormat format);
+
   void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
   void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
@@ -230,8 +236,10 @@ private:
   VkDeviceMemory textureImageMemory;
   bool madeTextureImage = false;
 
-  Mesh::Mesh renderedMesh;
+  VkImageView textureImageView;
+  VkSampler textureSampler;
 
+  Mesh::Mesh renderedMesh;
 
   /**
    * Constants
