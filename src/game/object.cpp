@@ -1,11 +1,23 @@
 #include "object.hpp"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "../util/stb_image.h"
+
+#include "../util/util.hpp"
+
 namespace Game {
-Object::Object(std::string meshFilename, Math::Vector3 p, Math::Quaternion o, Math::Vector3 s)
+Object::Object(std::string meshFilename, std::string textureFileName, Math::Vector3 p, Math::Quaternion o,
+               Math::Vector3 s)
     : position(p), orientation(o), scale(s) {
   mesh.loadOBJFile(meshFilename);
   mesh.computeBoundingBox();
+
+  if (!textureFileName.empty()) {
+    loadTexture(textureFileName);
+    textureLoaded = true;
+  }
 }
+
 Object::Object(const Object &other)
     : position(other.position), orientation(other.orientation), scale(other.scale), mesh(other.mesh) {}
 
@@ -68,4 +80,25 @@ Math::Matrix4 Object::getScaleMatrix(Math::Vector3 s) {
                        0, 0, s.z, 0, //
                        0, 0, 0, 1);
 }
+
+void Object::loadTexture(std::string fileName) {
+  int width, height, channels;
+
+  texture.pixels = stbi_load(fileName.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+  if (!texture.pixels)
+    Util::Error("Failed to load texture image: " + fileName);
+
+  texture.width = width;
+  texture.height = height;
+  texture.channels = channels;
+}
+bool Object::hasTexture() { return textureLoaded; }
+
+void Object::removeTexture() {
+  if (texture.pixels)
+    stbi_image_free(texture.pixels);
+
+  textureLoaded = false;
+}
+
 } // namespace Game

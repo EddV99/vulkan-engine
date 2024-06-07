@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../util/stb_image.h"
+
 #include "../math/matrix.hpp"
 #include "../math/vector.hpp"
 #include "../mesh/mesh.hpp"
@@ -7,6 +9,13 @@
 namespace Game {
 class Object {
 private:
+  struct TextureData {
+    stbi_uc *pixels;
+    int width, height, channels;
+  };
+  void loadTexture(std::string fileName);
+  bool textureLoaded = false;
+
   Math::Vector3 position;
   Math::Quaternion orientation;
   Math::Vector3 scale;
@@ -16,8 +25,8 @@ private:
 
 public:
   Object() = delete;
-  Object(std::string meshFilename, Math::Vector3 p = {0, 0, 0}, Math::Quaternion o = {0, {0, 0, 0}},
-         Math::Vector3 s = {1, 1, 1});
+  Object(std::string meshFilename, std::string textureFileName = "", Math::Vector3 p = {0, 0, 0},
+         Math::Quaternion o = {0, {0, 0, 0}}, Math::Vector3 s = {1, 1, 1});
   ~Object() = default;
   Object(const Object &other);
   Object &operator=(const Object &other);
@@ -46,8 +55,12 @@ public:
 
   void scaleUniform(f32 s);
 
+  void removeTexture();
+  bool hasTexture();
+
   Math::Matrix4 getModelMatrix();
 
   Mesh::Mesh mesh;
+  TextureData texture;
 };
 } // namespace Game
