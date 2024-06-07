@@ -64,10 +64,10 @@ void Renderer::keyCallback(GLFWwindow *window, int key, int scancode, int action
     state->scene.camera.movePositionZ(-1.0 * speed);
   }
   if (key == GLFW_KEY_D && action == GLFW_PRESS) {
-    state->scene.camera.movePositionX(-1.0 * speed);
+    state->scene.camera.movePositionX(1.0 * speed);
   }
   if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-    state->scene.camera.movePositionX(1.0 * speed);
+    state->scene.camera.movePositionX(-1.0 * speed);
   }
 }
 
