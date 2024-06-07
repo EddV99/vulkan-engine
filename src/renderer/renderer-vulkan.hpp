@@ -228,8 +228,10 @@ private:
 
   VkImage textureImage;
   VkDeviceMemory textureImageMemory;
+  bool madeTextureImage = false;
 
   Mesh::Mesh renderedMesh;
+
 
   /**
    * Constants

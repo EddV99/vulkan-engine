@@ -33,7 +33,7 @@ RendererVulkan::~RendererVulkan() {
 
   cleanSwapchain();
 
-  if (textureImage) {
+  if (madeTextureImage) {
     vkDestroyImage(device, textureImage, nullptr);
     vkFreeMemory(device, textureImageMemory, nullptr);
   }
@@ -644,6 +644,7 @@ void RendererVulkan::createCommandPool() {
 }
 
 void RendererVulkan::createTextureImage() {
+  madeTextureImage = true;
   int imageWidth = scene->gameObjects[0].texture.width;
   int imageHeight = scene->gameObjects[0].texture.height;
   VkDeviceSize imageSize = imageWidth * imageHeight * 4;
