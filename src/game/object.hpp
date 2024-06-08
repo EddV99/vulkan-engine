@@ -11,7 +11,7 @@ class Object {
 private:
   struct TextureData {
     stbi_uc *pixels;
-    int width, height, channels;
+    int width=1, height=1, channels;
   };
   void loadTexture(std::string fileName);
   bool textureLoaded = false;
