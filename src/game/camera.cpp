@@ -1,7 +1,7 @@
 #include "camera.hpp"
 
 namespace Game {
-Camera::Camera() : position{-20, 0, 0}, target{0, 0, 0}, up(0, 1, 0) {}
+Camera::Camera() : position{0, 0, 50}, target{0, 0, 0}, up(0, 1, 0) {}
 
 Camera::Camera(const Camera &other) : position(other.position), target(other.target), up(other.up) {}
 
