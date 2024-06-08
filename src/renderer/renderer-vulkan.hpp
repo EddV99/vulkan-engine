@@ -99,6 +99,8 @@ private:
 
   void createCommandPool();
 
+  void createDepthResources();
+
   void createTextureImage();
 
   void createTextureImageView();
@@ -122,7 +124,13 @@ private:
   /**
    * Helper Methods
    */
-  VkImageView createImageView(VkImage image, VkFormat format);
+  bool hasStencilComponent(VkFormat format);
+
+  VkFormat findDepthFormat();
+
+  VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
+                               VkFormatFeatureFlags features);
+  VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
   void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
@@ -232,12 +240,15 @@ private:
   std::vector<VkDeviceMemory> uniformBuffersMemory;
   std::vector<void *> uniformBuffersMapped;
 
+  bool madeTextureImage = false;
   VkImage textureImage;
   VkDeviceMemory textureImageMemory;
-  bool madeTextureImage = false;
-
   VkImageView textureImageView;
   VkSampler textureSampler;
+
+  VkImage depthImage;
+  VkDeviceMemory depthImageMemory;
+  VkImageView depthImageView;
 
   Mesh::Mesh renderedMesh;
 
