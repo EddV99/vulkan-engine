@@ -249,6 +249,8 @@ private:
 
   const int MAX_FRAMES_IN_FLIGHT = 2;
 
+  const unsigned char DEFAULT_IMAGE[4] = {0, 0, 0, 0};
+
 #ifdef NDEBUG
   const bool enableValidationLayers = false;
 #else
