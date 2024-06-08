@@ -1402,7 +1402,7 @@ uint32_t RendererVulkan::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFla
 }
 
 Math::Matrix4 RendererVulkan::perspectiveMatrix(f32 fov, f32 aspect) {
-  f32 fovy = M_PI * fov / 180.0;
+  f32 fovy = MATH_PI * fov / 180.0;
   f32 focalLength = (f32)1.0 / std::tan(fovy * 0.5);
   f32 A = f / (-f + n);
   f32 B = (f * n) / (-f + n);
