@@ -8,7 +8,6 @@
 
 #pragma once
 
-
 #include "renderer-core.hpp"
 
 #include "renderer-vulkan.hpp"

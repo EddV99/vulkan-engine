@@ -3,6 +3,7 @@
  */
 
 #include "renderer-vulkan.hpp"
+#include "../util/defines.hpp"
 #include "../util/util.hpp"
 
 #include <GLFW/glfw3.h>
@@ -85,6 +86,7 @@ void RendererVulkan::init(GLFWwindow *window, Game::Scene &scene) {
   this->scene = &scene;
   this->window = window;
   this->renderedMesh = scene.gameObjects[0].mesh;
+
   createInstance();
   createSurface();
   pickPhysicalDevice();
@@ -136,9 +138,8 @@ void RendererVulkan::createInstance() {
     createInfo.enabledLayerCount = 0;
   }
 
-  if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
+  if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
     Util::Error("Failed to create instance");
-  }
 }
 
 void RendererVulkan::pickPhysicalDevice() {
@@ -426,7 +427,7 @@ void RendererVulkan::createGraphicsPipeline() {
   rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
   rasterizer.lineWidth = 1.0f;
   rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-  // rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+  /* rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE; */
   rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
   rasterizer.depthBiasEnable = VK_FALSE;
   rasterizer.depthBiasConstantFactor = 0.0f;
