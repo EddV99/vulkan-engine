@@ -38,8 +38,8 @@ Scene &Scene::operator=(Scene &&other) noexcept {
 }
 
 Math::Matrix4 Scene::viewMatrix(Math::Vector3 up) {
-  Math::Vector3 forward = camera.target - camera.position;
-  //Math::Vector3 forward = camera.position - camera.target;
+  // Math::Vector3 forward = camera.target - camera.position;
+  Math::Vector3 forward = camera.position - camera.target;
   forward.normalize();
 
   Math::Vector3 right = up.cross(forward);
