@@ -22,7 +22,7 @@ function build
     Write-Output "building!"
 
     Set-Location -Path "build"
-    cmake .. 
+    cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 .. -G Ninja
     cmake --build . --target vulkan-engine
     Set-Location -Path ".."
 
@@ -42,7 +42,7 @@ function clean
 function run
 {
     Write-Output "running!"
-    # ./build/vulkan-engine TODO: fix running executable in windows
+    ./build/vulkan-engine 
 }
 
 if($run)
