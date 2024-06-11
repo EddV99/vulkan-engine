@@ -183,10 +183,9 @@ private:
 
   uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
-  // ===================
-  // Perspective Matrix
-  // ===================
-
+  /**
+   * Perspective Matrix
+   */
   f32 f = 100;
   f32 n = 0.1;
 

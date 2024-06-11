@@ -62,17 +62,3 @@ if($run)
     build
     run
 }
-
-#Set-Location -Path ".."
-
-#if [[ $1 == "run" ]]; then
-#run
-#elif [[ $1 == "build" ]]; then
-#build
-#elif [[ $1 == "clean" ]]; then
-#clean
-#else
-#build
-#run
-#fi
-
