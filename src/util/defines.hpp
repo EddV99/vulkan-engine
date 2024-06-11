@@ -15,3 +15,4 @@ using f32 = float;
 using f64 = double;
 
 #define MATH_PI 3.14159265358979323846
+#define TO_RADIANS(d) d * MATH_PI / 180.0
