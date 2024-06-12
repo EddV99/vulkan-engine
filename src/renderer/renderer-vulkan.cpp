@@ -10,7 +10,6 @@
 #include <vulkan/vulkan_core.h>
 
 #include <algorithm>
-#include <climits>
 #include <cstdint>
 #include <cstring>
 #include <iostream>
@@ -679,9 +678,8 @@ void RendererVulkan::createCommandPool() {
   poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
   poolInfo.queueFamilyIndex = queueFamily.graphics.value();
 
-  if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+  if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
     Util::Error("Failed to create command pool");
-  }
 }
 
 void RendererVulkan::createDepthResources() {
@@ -1273,7 +1271,6 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
   vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
                           &descriptorSets[currentFrame], 0, nullptr);
 
-  // vkCmdDraw(commandBuffer, renderedMesh.size, 1, 0, 0);
   vkCmdDrawIndexed(commandBuffer, (uint32_t)renderedMesh.indices.size(), 1, 0, 0, 0);
 
   vkCmdEndRenderPass(commandBuffer);
@@ -1284,7 +1281,66 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
 
 void RendererVulkan::createTexture() {}
 
-void RendererVulkan::drawFrame(FrameData frame) { (void)frame; }
+void RendererVulkan::drawScene() {
+  vkWaitForFences(device, 1, &inFlightFence[currentFrame], VK_TRUE, UINT64_MAX);
+
+  uint32_t imageIndex;
+  VkResult result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, imageAvailableSem[currentFrame],
+                                          VK_NULL_HANDLE, &imageIndex);
+
+  if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+    recreateSwapchain();
+    return;
+  } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+    Util::Error("Failed to acquire swap chain image");
+
+  vkResetFences(device, 1, &inFlightFence[currentFrame]);
+
+  vkResetCommandBuffer(commandBuffers[currentFrame], 0);
+
+  recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
+
+  updateUniformBuffer(currentFrame);
+
+  VkSubmitInfo submitInfo{};
+  submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+  VkSemaphore waitSemaphores[] = {imageAvailableSem[currentFrame]};
+  VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+
+  submitInfo.waitSemaphoreCount = 1;
+  submitInfo.pWaitSemaphores = waitSemaphores;
+  submitInfo.pWaitDstStageMask = waitStages;
+  submitInfo.commandBufferCount = 1;
+  submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
+
+  VkSemaphore signalSemaphores[] = {renderFinishedSem[currentFrame]};
+  submitInfo.signalSemaphoreCount = 1;
+  submitInfo.pSignalSemaphores = signalSemaphores;
+
+  if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFence[currentFrame]) != VK_SUCCESS)
+    Util::Error("Failed to submit draw command buffer");
+
+  VkPresentInfoKHR presentInfo{};
+  presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+  presentInfo.waitSemaphoreCount = 1;
+  presentInfo.pWaitSemaphores = signalSemaphores;
+
+  VkSwapchainKHR swapchains[] = {swapchain};
+  presentInfo.swapchainCount = 1;
+  presentInfo.pSwapchains = swapchains;
+  presentInfo.pImageIndices = &imageIndex;
+  presentInfo.pResults = nullptr;
+
+  result = vkQueuePresentKHR(presentQueue, &presentInfo);
+  if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || resized) {
+    resized = false;
+    recreateSwapchain();
+  } else if (result != VK_SUCCESS)
+    Util::Error("Failed to present swap chain image");
+
+  currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+}
 
 void RendererVulkan::updateUniformBuffer(uint32_t frame) {
   ubo.model = scene->gameObjects[0].getModelMatrix();

@@ -33,7 +33,7 @@ public:
   ~RendererVulkan();
 
   void drawFrame();
-  void drawFrame(FrameData frame);
+  void drawScene();
   void init(GLFWwindow *window, Game::Scene &scene);
   void resize();
 
@@ -229,6 +229,12 @@ private:
   VkDescriptorPool descriptorPool;
   std::vector<VkDescriptorSet> descriptorSets;
 
+  // depth
+  VkImage depthImage;
+  VkDeviceMemory depthImageMemory;
+  VkImageView depthImageView;
+
+  // mesh(s) 
   VkBuffer meshBuffer;
   VkDeviceMemory meshMemory;
 
@@ -244,10 +250,6 @@ private:
   VkDeviceMemory textureImageMemory;
   VkImageView textureImageView;
   VkSampler textureSampler;
-
-  VkImage depthImage;
-  VkDeviceMemory depthImageMemory;
-  VkImageView depthImageView;
 
   Mesh::Mesh renderedMesh;
 

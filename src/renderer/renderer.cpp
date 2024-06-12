@@ -27,8 +27,6 @@ Renderer::Renderer(int w, int h, Game::Scene &scene) {
 }
 void Renderer::draw() { rendererbackend.drawFrame(); }
 
-void Renderer::draw(FrameData frame) { rendererbackend.drawFrame(frame); }
-
 void Renderer::poll() { glfwPollEvents(); }
 
 bool Renderer::running() { return !glfwWindowShouldClose(window); }
