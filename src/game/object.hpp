@@ -11,8 +11,9 @@ class Object {
 private:
   struct TextureData {
     stbi_uc *pixels;
-    int width=1, height=1, channels;
+    int width = 1, height = 1, channels;
   };
+
   void loadTexture(std::string fileName);
   bool textureLoaded = false;
 
@@ -23,15 +24,19 @@ private:
   Math::Matrix4 getTranslationMatrix(Math::Vector3 t);
   Math::Matrix4 getScaleMatrix(Math::Vector3 s);
 
+  Mesh::Mesh mesh;
+  TextureData texture;
+
 public:
   Object() = delete;
-  Object(std::string meshFilename, std::string textureFileName = "", Math::Vector3 p = {0, 0, 0},
-         Math::Quaternion o = {0, {0, 0, 0}}, Math::Vector3 s = {1, 1, 1});
+  Object(Math::Vector3 p = {0, 0, 0}, Math::Quaternion o = {0, {0, 0, 0}}, Math::Vector3 s = {1, 1, 1});
   ~Object() = default;
   Object(const Object &other);
   Object &operator=(const Object &other);
   Object(Object &&other) noexcept;
   Object &operator=(Object &&other) noexcept;
+
+  void init(std::string meshPath, std::string texturePath = "");
 
   void setPosition(Math::Vector3 p);
   void setPositionX(f32 x);
@@ -59,8 +64,8 @@ public:
   bool hasTexture();
 
   Math::Matrix4 getModelMatrix();
-
-  Mesh::Mesh mesh;
-  TextureData texture;
+  
+  const TextureData& getTextureData();
+  const Mesh::Mesh& getMesh();
 };
 } // namespace Game

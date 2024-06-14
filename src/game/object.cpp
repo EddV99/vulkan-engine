@@ -6,17 +6,7 @@
 #include "../util/util.hpp"
 
 namespace Game {
-Object::Object(std::string meshFilename, std::string textureFileName, Math::Vector3 p, Math::Quaternion o,
-               Math::Vector3 s)
-    : position(p), orientation(o), scale(s) {
-  mesh.loadOBJFile(meshFilename);
-  mesh.computeBoundingBox();
-
-  if (!textureFileName.empty()) {
-    loadTexture(textureFileName);
-    textureLoaded = true;
-  }
-}
+Object::Object(Math::Vector3 p, Math::Quaternion o, Math::Vector3 s) : position(p), orientation(o), scale(s) {}
 
 Object::Object(const Object &other)
     : position(other.position), orientation(other.orientation), scale(other.scale), mesh(other.mesh) {}
@@ -34,8 +24,6 @@ Object &Object::operator=(const Object &other) {
 Object::Object(Object &&other) noexcept
     : position(other.position), orientation(other.orientation), scale(other.scale), mesh(other.mesh) {
 
-  other.mesh.data.clear();
-  other.mesh.size = 0;
   other.orientation = {0, {0, 0, 0}};
   other.position = {0, 0, 0};
   other.scale = {0, 0, 0};
@@ -49,8 +37,6 @@ Object &Object::operator=(Object &&other) noexcept {
   this->position = other.position;
   this->scale = other.scale;
 
-  other.mesh.data.clear();
-  other.mesh.size = 0;
   other.orientation = {0, {0, 0, 0}};
   other.position = {0, 0, 0};
   other.scale = {0, 0, 0};
@@ -58,13 +44,19 @@ Object &Object::operator=(Object &&other) noexcept {
   return *this;
 }
 
+void Object::init(std::string meshPath, std::string texturePath) {
+  mesh.init(meshPath);
+
+  if (!texturePath.empty())
+    loadTexture(texturePath);
+}
 Math::Matrix4 Object::getModelMatrix() {
   Math::Matrix4 model(1.0, 0.0, 0.0, 0.0, //
                       0.0, 1.0, 0.0, 0.0, //
                       0.0, 0.0, 1.0, 0.0, //
                       0.0, 0.0, 0.0, 1.0);
 
-  model = getTranslationMatrix(mesh.box.mid * -1) * model;
+  model = getTranslationMatrix(mesh.getBoundingBox().mid * -1) * model;
   model = getScaleMatrix(scale) * model;
   return model;
 }
@@ -91,14 +83,20 @@ void Object::loadTexture(std::string fileName) {
   texture.width = width;
   texture.height = height;
   texture.channels = channels;
+
+  textureLoaded = true;
 }
 bool Object::hasTexture() { return textureLoaded; }
 
 void Object::removeTexture() {
-  if (texture.pixels)
+  if (texture.pixels) {
     stbi_image_free(texture.pixels);
-
-  textureLoaded = false;
+    texture.pixels = nullptr;
+    textureLoaded = false;
+  }
 }
+
+const Object::TextureData &Object::getTextureData() { return texture; }
+const Mesh::Mesh &Object::getMesh() { return mesh; }
 
 } // namespace Game
