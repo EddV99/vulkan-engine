@@ -1,4 +1,6 @@
 #include "matrix.hpp"
+#include "../util/defines.hpp"
+#include "vector.hpp"
 #include <cmath>
 #include <iostream>
 
@@ -312,6 +314,7 @@ Matrix3 Matrix4::submatrix(i32 row, i32 col, const Matrix4 &m) {
 Quaternion::Quaternion(f32 w, f32 i, f32 j, f32 k) : w(w), v{i, j, k} {}
 
 Quaternion::Quaternion(f32 angle, const Vector3 &axis) {
+  angle = TO_RADIANS(angle);
   f32 sinHalf = sinf(angle * 0.5);
   f32 cosHalf = cosf(angle * 0.5);
 
@@ -360,6 +363,48 @@ Quaternion Quaternion::operator+(const Quaternion &other) {
   return Quaternion(w + other.w, v.x + other.v.x, v.y + other.v.y, v.z + other.v.z);
 }
 
+void Quaternion::rotate(Vector3 r) {
+  rotateX(r.x);
+  rotateY(r.y);
+  rotateZ(r.z);
+}
+
+void Quaternion::rotateX(f32 a) {
+  Quaternion x(a, {1, 0, 0});
+  *this = *this * x;
+}
+
+void Quaternion::rotateY(f32 a) {
+  Quaternion y(a, {0, 1, 0});
+  *this = *this * y;
+}
+
+void Quaternion::rotateZ(f32 a) {
+  Quaternion z(a, {0, 0, 1});
+  *this = *this * z;
+}
+
+void Quaternion::setRotate(Vector3 r) {
+  setRotateX(r.x);
+  rotateY(r.y);
+  rotateZ(r.z);
+}
+
+void Quaternion::setRotateX(f32 a) {
+  Quaternion x(a, {1, 0, 0});
+  *this = x;
+}
+
+void Quaternion::setRotateY(f32 a) {
+  Quaternion y(a, {0, 1, 0});
+  *this = y;
+}
+
+void Quaternion::setRotateZ(f32 a) {
+  Quaternion z(a, {0, 0, 1});
+  *this = z;
+}
+
 f32 Quaternion::length() { return std::sqrt(w * w + v.dot(v)); }
 Quaternion Quaternion::conjugate() { return Quaternion{w, Vector3(v * -1.0f)}; }
 void Quaternion::normalize() {
@@ -368,5 +413,13 @@ void Quaternion::normalize() {
   this->v.x /= length;
   this->v.y /= length;
   this->v.z /= length;
+}
+
+Matrix4 Quaternion::toRotationMatrix() {
+  this->normalize();
+  return Matrix4(2 * (w * w + v.x * v.x) - 1, 2 * (v.x * v.y - w * v.z), 2 * (v.x * v.z + w * v.y), 0, //
+                 2 * (v.x * v.y + w * v.z), 2 * (w * w + v.y * v.y) - 1, 2 * (v.y * v.z - w * v.x), 0, //
+                 2 * (v.x * v.z - w * v.y), 2 * (v.y * v.z + w * v.x), 2 * (w * w + v.z * v.z) - 1, 0, //
+                 0, 0, 0, 1);
 }
 }; // namespace Math
