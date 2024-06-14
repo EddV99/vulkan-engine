@@ -84,7 +84,6 @@ void RendererVulkan::init(GLFWwindow *window, Game::Scene &scene) {
 
   this->scene = &scene;
   this->window = window;
-  this->renderedMesh = scene.gameObjects[0].mesh;
 
   createInstance();
   createSurface();
@@ -98,11 +97,14 @@ void RendererVulkan::init(GLFWwindow *window, Game::Scene &scene) {
   createCommandPool();
   createDepthResources();
   createFrameBuffers();
+
   createTextureImage();
   createTextureImageView();
   createTextureSampler();
+
   createVertexBuffer();
   createIndexBuffer();
+
   createUniformBuffers();
   createDescriptorPool();
   createDescriptorSets();
@@ -382,8 +384,8 @@ void RendererVulkan::createGraphicsPipeline() {
   dynamicState.pDynamicStates = dynamicStates.data();
 
   // vertex input
-  auto attributeDescriptions = renderedMesh.getAttributeDescriptions();
-  auto bindingDescription = renderedMesh.getBindingDescriptions();
+  auto attributeDescriptions = Mesh::Mesh::getAttributeDescriptions();
+  auto bindingDescription = Mesh::Mesh::getBindingDescriptions();
 
   VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
   vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -542,8 +544,8 @@ void RendererVulkan::createFrameBuffers() {
   }
 }
 
-void RendererVulkan::createVertexBuffer() {
-  VkDeviceSize bufferSize = renderedMesh.data.size() * sizeof(renderedMesh.data[0]);
+void RendererVulkan::createVertexBuffer(void *vertexData, size_t size) {
+  VkDeviceSize bufferSize = size;
 
   VkBuffer stagingBuffer;
   VkDeviceMemory stagingMemory;
@@ -554,7 +556,7 @@ void RendererVulkan::createVertexBuffer() {
 
   void *data;
   vkMapMemory(device, stagingMemory, 0, bufferSize, 0, &data);
-  memcpy(data, renderedMesh.data.data(), (size_t)bufferSize);
+  memcpy(data, vertexData, (size_t)bufferSize);
   vkUnmapMemory(device, stagingMemory);
 
   createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -566,8 +568,8 @@ void RendererVulkan::createVertexBuffer() {
   vkFreeMemory(device, stagingMemory, nullptr);
 }
 
-void RendererVulkan::createIndexBuffer() {
-  VkDeviceSize bufferSize = sizeof(renderedMesh.indices[0]) * renderedMesh.indices.size();
+void RendererVulkan::createIndexBuffer(void *indexData, size_t size) {
+  VkDeviceSize bufferSize = size;
 
   VkBuffer stagingBuffer;
   VkDeviceMemory stagingMemory;
@@ -578,7 +580,7 @@ void RendererVulkan::createIndexBuffer() {
 
   void *data;
   vkMapMemory(device, stagingMemory, 0, bufferSize, 0, &data);
-  memcpy(data, renderedMesh.indices.data(), (size_t)bufferSize);
+  memcpy(data, indexData, (size_t)bufferSize);
   vkUnmapMemory(device, stagingMemory);
 
   createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
@@ -692,11 +694,11 @@ void RendererVulkan::createDepthResources() {
                         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 }
 
-void RendererVulkan::createTextureImage() {
+void RendererVulkan::createTextureImage(void *textureData, int width, int height) {
   madeTextureImage = true;
 
-  int imageWidth = scene->gameObjects[0].texture.width;
-  int imageHeight = scene->gameObjects[0].texture.height;
+  int imageWidth = width;
+  int imageHeight = height;
 
   VkDeviceSize imageSize = imageWidth * imageHeight * 4;
 
@@ -710,15 +712,9 @@ void RendererVulkan::createTextureImage() {
   void *data;
   vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
 
-  if (!scene->gameObjects[0].hasTexture())
-    memcpy(data, DEFAULT_IMAGE, (size_t)imageSize);
-  else
-    memcpy(data, scene->gameObjects[0].texture.pixels, (size_t)imageSize);
+  memcpy(data, textureData, (size_t)imageSize);
 
   vkUnmapMemory(device, stagingBufferMemory);
-
-  if (scene->gameObjects[0].hasTexture())
-    scene->gameObjects[0].removeTexture();
 
   createImage(imageWidth, imageHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
               VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
@@ -1225,7 +1221,8 @@ VkShaderModule RendererVulkan::createShaderModule(std::vector<char> &shader) {
   return module;
 }
 
-void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, uint32_t indexCount,
+                                         uint32_t indexOffset, int32_t vertexOffset) {
   VkCommandBufferBeginInfo beginInfo{};
   beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   beginInfo.flags = 0;
@@ -1264,6 +1261,7 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
   scissor.extent = swapchainExtent;
   vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
+  // assuming, we are combining all objects into one huge mesh/index buffer
   VkBuffer buffers[] = {meshBuffer};
   VkDeviceSize offsets[] = {0};
   vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
@@ -1271,7 +1269,7 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
   vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
                           &descriptorSets[currentFrame], 0, nullptr);
 
-  vkCmdDrawIndexed(commandBuffer, (uint32_t)renderedMesh.indices.size(), 1, 0, 0, 0);
+  vkCmdDrawIndexed(commandBuffer, indexCount, 1, indexOffset, vertexOffset, 0);
 
   vkCmdEndRenderPass(commandBuffer);
 
@@ -1297,8 +1295,7 @@ void RendererVulkan::drawScene() {
   vkResetFences(device, 1, &inFlightFence[currentFrame]);
 
   vkResetCommandBuffer(commandBuffers[currentFrame], 0);
-
-  recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
+  recordCommandBuffer(commandBuffers[currentFrame], imageIndex, 0, 0, 0);
 
   updateUniformBuffer(currentFrame);
 
@@ -1343,74 +1340,11 @@ void RendererVulkan::drawScene() {
 }
 
 void RendererVulkan::updateUniformBuffer(uint32_t frame) {
-  ubo.model = scene->gameObjects[0].getModelMatrix();
+  ubo.model = scene->objects[0].getModelMatrix();
   ubo.view = scene->viewMatrix(Math::Vector3(0.0, 1.0, 0.0));
   ubo.proj = perspectiveMatrix(60, (f32)WIDTH / HEIGHT);
 
   memcpy(uniformBuffersMapped[frame], &ubo, sizeof(ubo));
-}
-
-void RendererVulkan::drawFrame() {
-  vkWaitForFences(device, 1, &inFlightFence[currentFrame], VK_TRUE, UINT64_MAX);
-
-  // std::cout << "X: " << scene->camera.position.x << "\n";
-  // std::cout << "Z: " << scene->camera.position.z << "\n";
-
-  uint32_t imageIndex;
-  VkResult result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, imageAvailableSem[currentFrame],
-                                          VK_NULL_HANDLE, &imageIndex);
-
-  if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-    recreateSwapchain();
-    return;
-  } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-    Util::Error("Failed to acquire swap chain image");
-
-  vkResetFences(device, 1, &inFlightFence[currentFrame]);
-
-  vkResetCommandBuffer(commandBuffers[currentFrame], 0);
-  recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
-
-  updateUniformBuffer(currentFrame);
-
-  VkSubmitInfo submitInfo{};
-  submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-  VkSemaphore waitSemaphores[] = {imageAvailableSem[currentFrame]};
-  VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-
-  submitInfo.waitSemaphoreCount = 1;
-  submitInfo.pWaitSemaphores = waitSemaphores;
-  submitInfo.pWaitDstStageMask = waitStages;
-  submitInfo.commandBufferCount = 1;
-  submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
-
-  VkSemaphore signalSemaphores[] = {renderFinishedSem[currentFrame]};
-  submitInfo.signalSemaphoreCount = 1;
-  submitInfo.pSignalSemaphores = signalSemaphores;
-
-  if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFence[currentFrame]) != VK_SUCCESS)
-    Util::Error("Failed to submit draw command buffer");
-
-  VkPresentInfoKHR presentInfo{};
-  presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-  presentInfo.waitSemaphoreCount = 1;
-  presentInfo.pWaitSemaphores = signalSemaphores;
-
-  VkSwapchainKHR swapchains[] = {swapchain};
-  presentInfo.swapchainCount = 1;
-  presentInfo.pSwapchains = swapchains;
-  presentInfo.pImageIndices = &imageIndex;
-  presentInfo.pResults = nullptr;
-
-  result = vkQueuePresentKHR(presentQueue, &presentInfo);
-  if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || resized) {
-    resized = false;
-    recreateSwapchain();
-  } else if (result != VK_SUCCESS)
-    Util::Error("Failed to present swap chain image");
-
-  currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 void RendererVulkan::cleanSwapchain() {

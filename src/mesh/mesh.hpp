@@ -76,7 +76,7 @@ public:
   size_t getIndexDataSize();
 
   // VULKAN ONLY ----------------------------------------------
-  VkVertexInputBindingDescription getBindingDescriptions() {
+  static VkVertexInputBindingDescription getBindingDescriptions() {
     VkVertexInputBindingDescription result;
     result.binding = 0;
     result.stride = sizeof(Vertex);
@@ -84,7 +84,7 @@ public:
     return result;
   }
 
-  std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
+  static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
     auto v = getAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position));
     auto n = getAttributeDescription(0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal));
     auto u = getAttributeDescription(0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv));

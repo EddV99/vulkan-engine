@@ -32,7 +32,6 @@ public:
   RendererVulkan(uint32_t width, uint32_t height);
   ~RendererVulkan();
 
-  void drawFrame();
   void drawScene();
   void init(GLFWwindow *window, Game::Scene &scene);
   void resize();
@@ -101,7 +100,7 @@ private:
 
   void createDepthResources();
 
-  void createTextureImage();
+  void createTextureImage(void *textureData, int width, int height);
 
   void createTextureImageView();
 
@@ -109,9 +108,9 @@ private:
 
   void createDescriptorSets();
 
-  void createVertexBuffer();
+  void createVertexBuffer(void *vertexData, size_t size);
 
-  void createIndexBuffer();
+  void createIndexBuffer(void *indexData, size_t size);
 
   void createUniformBuffers();
 
@@ -179,7 +178,8 @@ private:
 
   void createTexture();
 
-  void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+  void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, uint32_t indexCount,
+                           uint32_t indexOffset, int32_t vertexOffset);
 
   uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
@@ -234,7 +234,7 @@ private:
   VkDeviceMemory depthImageMemory;
   VkImageView depthImageView;
 
-  // mesh(s) 
+  // mesh(s)
   VkBuffer meshBuffer;
   VkDeviceMemory meshMemory;
 
@@ -250,8 +250,6 @@ private:
   VkDeviceMemory textureImageMemory;
   VkImageView textureImageView;
   VkSampler textureSampler;
-
-  Mesh::Mesh renderedMesh;
 
   /**
    * Constants
