@@ -18,7 +18,7 @@ private:
   bool textureLoaded = false;
 
   Math::Vector3 position;
-  Math::Quaternion orientation;
+  Math::Quaternion rotation;
   Math::Vector3 scale;
 
   Math::Matrix4 getTranslationMatrix(Math::Vector3 t);
