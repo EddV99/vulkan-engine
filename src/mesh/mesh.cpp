@@ -2,37 +2,30 @@
  * @file mesh.cpp
  */
 
-#include "mesh.hpp"
-#include "../math/vector.hpp"
-#include <cstdlib>
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "../util/tiny_obj_loader.h"
-#include "../util/util.hpp"
 
-#include <cstring>
+#include "../math/vector.hpp"
+#include "../util/util.hpp"
+#include "mesh.hpp"
+
 #include <string>
 #include <unordered_map>
 
 namespace Mesh {
 Mesh::~Mesh() {
-  _hasNormals = false;
-  _hasUV = false;
-
-  size = 0;
   indices.clear();
-  data.clear();
+  vertexData.clear();
 }
 Mesh::Mesh(const Mesh &other)
-    : _hasNormals(other._hasNormals), _hasUV(other._hasUV), size(other.size), indices(other.indices), data(other.data) {
-}
+    : _hasNormals(other._hasNormals), _hasUV(other._hasUV), indices(other.indices), vertexData(other.vertexData) {}
 Mesh::Mesh(Mesh &&other) noexcept
-    : _hasNormals(other._hasNormals), _hasUV(other._hasUV), size(other.size), indices(other.indices), data(other.data) {
+    : _hasNormals(other._hasNormals), _hasUV(other._hasUV), indices(other.indices), vertexData(other.vertexData) {
   other._hasNormals = false;
   other._hasUV = false;
 
-  other.size = 0;
   other.indices.clear();
-  other.data.clear();
+  other.vertexData.clear();
 }
 Mesh &Mesh::operator=(Mesh &&other) noexcept {
   if (this == &other)
@@ -41,16 +34,11 @@ Mesh &Mesh::operator=(Mesh &&other) noexcept {
   this->_hasNormals = other._hasNormals;
   this->_hasUV = other._hasUV;
 
-  this->size = other.size;
   this->indices = other.indices;
-  this->data = other.data;
+  this->vertexData = other.vertexData;
 
-  other._hasNormals = false;
-  other._hasUV = false;
-
-  other.size = 0;
   other.indices.clear();
-  other.data.clear();
+  other.vertexData.clear();
 
   return *this;
 }
@@ -61,11 +49,15 @@ Mesh &Mesh::operator=(const Mesh &other) {
   this->_hasNormals = other._hasNormals;
   this->_hasUV = other._hasUV;
 
-  this->size = other.size;
   this->indices = other.indices;
-  this->data = other.data;
+  this->vertexData = other.vertexData;
 
   return *this;
+}
+
+void Mesh::init(std::string meshPath) {
+  loadOBJFile(meshPath);
+  computeBoundingBox();
 }
 
 void Mesh::loadOBJFile(std::string filename) {
@@ -91,14 +83,14 @@ void Mesh::loadOBJFile(std::string filename) {
   _hasUV = false;
   for (const auto &shape : shapes) {
     for (const auto &index : shape.mesh.indices) {
-      Data d;
+      Vertex d;
       Math::Vector3 vertex;
       vertex.x = attrib.vertices[3 * index.vertex_index + 0];
       vertex.y = attrib.vertices[3 * index.vertex_index + 1];
       vertex.z = attrib.vertices[3 * index.vertex_index + 2];
       if (uniqueVertices.count(vertex) == 0) {
-        uniqueVertices[vertex] = static_cast<uint32_t>(data.size());
-        d.vertex = vertex;
+        uniqueVertices[vertex] = static_cast<uint32_t>(vertexData.size());
+        d.position = vertex;
         if (index.normal_index >= 0) {
           _hasNormals = true;
           Math::Vector3 normal;
@@ -117,23 +109,24 @@ void Mesh::loadOBJFile(std::string filename) {
           d.uv = tex;
         }
 
-        data.push_back(d);
+        vertexData.push_back(d);
       }
       indices.push_back(uniqueVertices[vertex]);
     }
   }
-
-  this->size = indices.size();
+  vertexCount = indices.size();
+  vertexDataSize = vertexData.size() * sizeof(vertexData[0]);
+  indexDataSize = indices.size() * sizeof(indices[0]);
 }
 
 void Mesh::computeBoundingBox() {
-  Math::Vector3 v = data[0].vertex;
+  Math::Vector3 v = vertexData[0].position;
   box.max = v;
   box.min = v;
   box.mid = {0, 0, 0};
 
-  for (Data d : data) {
-    v = d.vertex;
+  for (Vertex d : vertexData) {
+    v = d.position;
 
     if (box.max.x < v.x)
       box.max.x = v.x;
@@ -159,4 +152,13 @@ void Mesh::computeBoundingBox() {
 
 bool Mesh::hasNormals() { return _hasNormals; }
 bool Mesh::hasUV() { return _hasUV; }
+
+const std::vector<u32> &Mesh::getIndices() { return indices; }
+const std::vector<Mesh::Vertex> &Mesh::getVertexData() { return vertexData; }
+const Mesh::BoundingBox &Mesh::getBoundingBox() { return box; }
+
+size_t Mesh::getVertexCount() { return vertexCount; }
+size_t Mesh::getVertexDataSize() { return vertexDataSize; }
+size_t Mesh::getIndexDataSize() { return indexDataSize; }
+
 } // namespace Mesh
