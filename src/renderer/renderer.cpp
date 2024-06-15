@@ -18,6 +18,7 @@ Renderer::Renderer(int w, int h, Game::Scene &scene) {
 
   this->window = glfwCreateWindow(WIDTH, HEIGHT, "Beast Gohan", nullptr, nullptr);
   this->scene = scene;
+  this->scene.init();
 
   glfwSetWindowUserPointer(window, this);
   glfwSetKeyCallback(window, keyCallback);
@@ -25,7 +26,7 @@ Renderer::Renderer(int w, int h, Game::Scene &scene) {
 
   rendererbackend.init(this->window, this->scene);
 }
-void Renderer::draw() { rendererbackend.drawFrame(); }
+void Renderer::draw() { rendererbackend.drawScene(); }
 
 void Renderer::poll() { glfwPollEvents(); }
 
@@ -51,7 +52,7 @@ void Renderer::keyCallback(GLFWwindow *window, int key, int scancode, int action
 
   Renderer *state = static_cast<Renderer *>(glfwGetWindowUserPointer(window));
   f32 speed = 0.7;
-  
+
   if (key == GLFW_KEY_Q && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GLFW_TRUE);
 

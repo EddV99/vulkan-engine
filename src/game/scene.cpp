@@ -11,14 +11,18 @@ Scene::~Scene() { objects.clear(); }
 
 Scene::Scene(const std::vector<ModelInfo> &models) : models(models) { camera = Camera(); }
 
-Scene::Scene(const Scene &other) : objects(other.objects) { camera = other.camera; }
+Scene::Scene(const Scene &other) : models(other.models), objects(other.objects), camera(other.camera) {}
 
-Scene::Scene(Scene &&other) noexcept : objects(other.objects) { other.objects.clear(); }
+Scene::Scene(Scene &&other) noexcept : models(other.models), objects(other.objects), camera(other.camera) {
+  other.models.clear();
+  other.objects.clear();
+}
 
 Scene &Scene::operator=(const Scene &other) {
   if (this == &other)
     return *this;
 
+  this->models = other.models;
   this->objects = other.objects;
   this->camera = other.camera;
 
@@ -29,20 +33,23 @@ Scene &Scene::operator=(Scene &&other) noexcept {
   if (this == &other)
     return *this;
 
+  this->models = other.models;
   this->objects = other.objects;
-  other.objects.clear();
-
   this->camera = other.camera;
+
+  other.models.clear();
+  other.objects.clear();
 
   return *this;
 }
 
-const Mesh::Mesh &Scene::operator[](int32_t index) { return objects[index].getMesh(); }
+const Object &Scene::operator[](int32_t index) { return objects[index]; }
 
 void Scene::init() {
   for (const auto &modelInfo : models) {
     Object obj(modelInfo.position, {0, {0, 0, 0}}, modelInfo.scale);
     obj.init(modelInfo.meshFilePath, modelInfo.textureFilePath);
+    objects.push_back(obj);
   }
 }
 

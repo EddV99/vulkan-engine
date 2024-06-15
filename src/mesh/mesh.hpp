@@ -16,14 +16,13 @@
 #include <vulkan/vulkan_core.h>
 
 namespace Mesh {
+struct Vertex {
+  Math::Vector3 position;
+  Math::Vector3 normal;
+  Math::Vector2 uv;
+};
 class Mesh {
 private:
-  struct Vertex {
-    Math::Vector3 position;
-    Math::Vector3 normal;
-    Math::Vector2 uv;
-  };
-
   struct BoundingBox {
     Math::Vector3 max;
     Math::Vector3 min;
@@ -67,13 +66,13 @@ public:
   bool hasNormals();
   bool hasUV();
 
-  const std::vector<u32> &getIndices();
-  const std::vector<Vertex> &getVertexData();
-  const BoundingBox &getBoundingBox();
+  const std::vector<u32> &getIndices() const;
+  const std::vector<Vertex> &getVertexData() const;
+  const BoundingBox &getBoundingBox() const;
 
-  size_t getVertexCount();
-  size_t getVertexDataSize();
-  size_t getIndexDataSize();
+  size_t getVertexCount() const;
+  size_t getVertexDataSize() const;
+  size_t getIndexDataSize() const;
 
   // VULKAN ONLY ----------------------------------------------
   static VkVertexInputBindingDescription getBindingDescriptions() {

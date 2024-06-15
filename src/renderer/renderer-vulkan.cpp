@@ -98,12 +98,31 @@ void RendererVulkan::init(GLFWwindow *window, Game::Scene &scene) {
   createDepthResources();
   createFrameBuffers();
 
-  createTextureImage();
+  createTextureImage(DEFAULT_IMAGE, 1, 1);
   createTextureImageView();
   createTextureSampler();
 
-  createVertexBuffer();
-  createIndexBuffer();
+  size_t vertexDataSize = 0;
+  size_t indexDataSize = 0;
+  std::vector<Mesh::Vertex> vertexData;
+  std::vector<u32> indexData;
+  for (auto &obj : scene.objects) {
+    auto v = obj.getMesh().getVertexData();
+    auto i = obj.getMesh().getIndices();
+
+    vertexData.insert(vertexData.end(), v.begin(), v.end());
+    indexData.insert(indexData.end(), i.begin(), i.end());
+
+    dataOffsets.push_back(vertexDataSize);
+    vertexDataSize += obj.getMesh().getVertexDataSize();
+
+    indexOffsets.push_back(indexDataSize);
+    indexCount.push_back(obj.getMesh().getVertexCount());
+    indexDataSize += obj.getMesh().getIndexDataSize();
+  }
+
+  createVertexBuffer(vertexData.data(), vertexDataSize);
+  createIndexBuffer(indexData.data(), indexDataSize);
 
   createUniformBuffers();
   createDescriptorPool();
@@ -1295,7 +1314,7 @@ void RendererVulkan::drawScene() {
   vkResetFences(device, 1, &inFlightFence[currentFrame]);
 
   vkResetCommandBuffer(commandBuffers[currentFrame], 0);
-  recordCommandBuffer(commandBuffers[currentFrame], imageIndex, 0, 0, 0);
+  recordCommandBuffer(commandBuffers[currentFrame], imageIndex, indexCount[0], indexOffsets[0], dataOffsets[0]);
 
   updateUniformBuffer(currentFrame);
 

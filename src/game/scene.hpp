@@ -15,16 +15,16 @@
 #include <vector>
 
 namespace Game {
+struct ModelInfo {
+  std::string meshFilePath;
+  std::string textureFilePath;
+  Math::Vector3 position;
+  Math::Vector3 rotation;
+  Math::Vector3 scale;
+};
+
 class Scene {
 private:
-  struct ModelInfo {
-    std::string meshFilePath;
-    std::string textureFilePath;
-    Math::Vector3 position;
-    Math::Vector3 rotation;
-    Math::Vector3 scale;
-  };
-
   std::vector<ModelInfo> models;
 
 public:
@@ -35,7 +35,7 @@ public:
   Scene(Scene &&other) noexcept;
   Scene &operator=(const Scene &other);
   Scene &operator=(Scene &&other) noexcept;
-  const Mesh::Mesh &operator[](int32_t index);
+  const Object &operator[](int32_t index);
 
   void init();
 

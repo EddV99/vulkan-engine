@@ -20,7 +20,6 @@
 #include <vector>
 
 #include "../game/scene.hpp"
-#include "../mesh/mesh.hpp"
 
 namespace Renderer {
 // ====================================================================================================================
@@ -251,6 +250,10 @@ private:
   VkImageView textureImageView;
   VkSampler textureSampler;
 
+  std::vector<size_t> dataOffsets;
+  std::vector<size_t> indexOffsets;
+  std::vector<size_t> indexCount;
+
   /**
    * Constants
    */
@@ -259,7 +262,7 @@ private:
 
   const int MAX_FRAMES_IN_FLIGHT = 2;
 
-  const unsigned char DEFAULT_IMAGE[4] = {0, 0, 0, 0};
+  unsigned char DEFAULT_IMAGE[4] = {0, 0, 0, 0};
 
 #ifdef NDEBUG
   const bool enableValidationLayers = false;

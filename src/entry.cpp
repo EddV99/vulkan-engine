@@ -14,11 +14,16 @@ int main(void) {
   /* std::string meshFilePath = "res/sphere/sphere.obj"; */
 
   try {
+    std::vector<Game::ModelInfo> models;
+    Game::ModelInfo model;
+    model.meshFilePath = meshFilePath;
+    model.scale = {1.0, 1.0, 1.0};
+    model.position = {0.0, 0.0, 0.0};
+    model.rotation = {0.0, 0.0, 0.0};
+    model.textureFilePath = "";
+    models.push_back(model);
 
-    Game::Object obj(meshFilePath);
-    std::vector<Game::Object> objs;
-    objs.push_back(obj);
-    Game::Scene scene(objs);
+    Game::Scene scene(models);
 
     Renderer::Renderer renderer(1000, 800, scene);
     while (renderer.running()) {

@@ -18,11 +18,14 @@ Mesh::~Mesh() {
   vertexData.clear();
 }
 Mesh::Mesh(const Mesh &other)
-    : _hasNormals(other._hasNormals), _hasUV(other._hasUV), indices(other.indices), vertexData(other.vertexData) {}
+    : _hasNormals(other._hasNormals), _hasUV(other._hasUV), vertexCount(other.vertexCount),
+      vertexDataSize(other.vertexDataSize), indexDataSize(other.indexDataSize), indices(other.indices),
+      vertexData(other.vertexData), box(other.box) {}
+
 Mesh::Mesh(Mesh &&other) noexcept
-    : _hasNormals(other._hasNormals), _hasUV(other._hasUV), indices(other.indices), vertexData(other.vertexData) {
-  other._hasNormals = false;
-  other._hasUV = false;
+    : _hasNormals(other._hasNormals), _hasUV(other._hasUV), vertexCount(other.vertexCount),
+      vertexDataSize(other.vertexDataSize), indexDataSize(other.indexDataSize), indices(other.indices),
+      vertexData(other.vertexData), box(other.box) {
 
   other.indices.clear();
   other.vertexData.clear();
@@ -34,6 +37,9 @@ Mesh &Mesh::operator=(Mesh &&other) noexcept {
   this->_hasNormals = other._hasNormals;
   this->_hasUV = other._hasUV;
 
+  this->vertexCount = other.vertexCount;
+  this->vertexDataSize = other.vertexDataSize;
+  this->indexDataSize = other.indexDataSize;
   this->indices = other.indices;
   this->vertexData = other.vertexData;
 
@@ -49,6 +55,9 @@ Mesh &Mesh::operator=(const Mesh &other) {
   this->_hasNormals = other._hasNormals;
   this->_hasUV = other._hasUV;
 
+  this->vertexCount = other.vertexCount;
+  this->vertexDataSize = other.vertexDataSize;
+  this->indexDataSize = other.indexDataSize;
   this->indices = other.indices;
   this->vertexData = other.vertexData;
 
@@ -153,12 +162,12 @@ void Mesh::computeBoundingBox() {
 bool Mesh::hasNormals() { return _hasNormals; }
 bool Mesh::hasUV() { return _hasUV; }
 
-const std::vector<u32> &Mesh::getIndices() { return indices; }
-const std::vector<Mesh::Vertex> &Mesh::getVertexData() { return vertexData; }
-const Mesh::BoundingBox &Mesh::getBoundingBox() { return box; }
+const std::vector<u32> &Mesh::getIndices() const { return indices; }
+const std::vector<Vertex> &Mesh::getVertexData() const { return vertexData; }
+const Mesh::BoundingBox &Mesh::getBoundingBox() const { return box; }
 
-size_t Mesh::getVertexCount() { return vertexCount; }
-size_t Mesh::getVertexDataSize() { return vertexDataSize; }
-size_t Mesh::getIndexDataSize() { return indexDataSize; }
+size_t Mesh::getVertexCount() const { return vertexCount; }
+size_t Mesh::getVertexDataSize() const { return vertexDataSize; }
+size_t Mesh::getIndexDataSize() const { return indexDataSize; }
 
 } // namespace Mesh
