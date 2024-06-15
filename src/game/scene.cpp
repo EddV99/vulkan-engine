@@ -47,7 +47,9 @@ const Object &Scene::operator[](int32_t index) { return objects[index]; }
 
 void Scene::init() {
   for (const auto &modelInfo : models) {
-    Object obj(modelInfo.position, {0, {0, 0, 0}}, modelInfo.scale);
+    Math::Quaternion q = {0, {0, 0, 0}};
+    q.setRotate(modelInfo.rotation);
+    Object obj(modelInfo.position, q, modelInfo.scale);
     obj.init(modelInfo.meshFilePath, modelInfo.textureFilePath);
     objects.push_back(obj);
   }

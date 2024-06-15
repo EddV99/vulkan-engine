@@ -98,10 +98,12 @@ void RendererVulkan::init(GLFWwindow *window, Game::Scene &scene) {
   createDepthResources();
   createFrameBuffers();
 
+  // TODO: should be able to load every objects texture
   createTextureImage(DEFAULT_IMAGE, 1, 1);
   createTextureImageView();
   createTextureSampler();
 
+  // combine all object(s) data into one buffer
   size_t vertexDataSize = 0;
   size_t indexDataSize = 0;
   std::vector<Mesh::Vertex> vertexData;

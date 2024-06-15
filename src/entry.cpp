@@ -4,6 +4,7 @@
 #include "game/object.hpp"
 #include "game/scene.hpp"
 #include "renderer/renderer.hpp"
+#include "util/defines.hpp"
 
 #include <exception>
 #include <iostream>
@@ -19,7 +20,7 @@ int main(void) {
     model.meshFilePath = meshFilePath;
     model.scale = {1.0, 1.0, 1.0};
     model.position = {0.0, 0.0, 0.0};
-    model.rotation = {0.0, 0.0, 0.0};
+    model.rotation = {0.0, MATH_PI / 2, 0.0};
     model.textureFilePath = "";
     models.push_back(model);
 
