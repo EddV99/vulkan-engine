@@ -325,10 +325,7 @@ Quaternion::Quaternion(f32 angle, const Vector3 &axis) {
 }
 Quaternion::Quaternion(const Quaternion &other) : w(other.w), v(other.v) {}
 
-Quaternion::Quaternion(Quaternion &&other) noexcept : w(other.w), v(other.v) {
-  other.v = {0, 0, 0};
-  other.w = 0;
-}
+Quaternion::Quaternion(Quaternion &&other) noexcept : w(other.w), v(other.v) {}
 
 Quaternion &Quaternion::operator=(Quaternion &&other) noexcept {
   if (this == &other)
@@ -336,9 +333,6 @@ Quaternion &Quaternion::operator=(Quaternion &&other) noexcept {
 
   this->v = other.v;
   this->w = other.w;
-
-  other.v = {0, 0, 0};
-  other.w = 0;
 
   return *this;
 }
@@ -364,49 +358,35 @@ Quaternion Quaternion::operator+(const Quaternion &other) {
 }
 
 void Quaternion::rotate(Vector3 r) {
-  rotateX(r.x);
-  rotateY(r.y);
-  rotateZ(r.z);
-}
+  f32 x0 = std::cos(TO_RADIANS(r.x) / 2.0f);
+  f32 x1 = std::sin(TO_RADIANS(r.x) / 2.0f);
 
-void Quaternion::rotateX(f32 a) {
-  Quaternion x(a, {1, 0, 0});
-  *this = *this * x;
-}
+  f32 y0 = std::cos(TO_RADIANS(r.y) / 2.0f);
+  f32 y1 = std::sin(TO_RADIANS(r.y) / 2.0f);
 
-void Quaternion::rotateY(f32 a) {
-  Quaternion y(a, {0, 1, 0});
-  *this = *this * y;
-}
+  f32 z0 = std::cos(TO_RADIANS(r.z) / 2.0f);
+  f32 z1 = std::sin(TO_RADIANS(r.z) / 2.0f);
 
-void Quaternion::rotateZ(f32 a) {
-  Quaternion z(a, {0, 0, 1});
-  *this = *this * z;
+  f32 q0 = x0 * y0 * z0 + x1 * y1 * z1;
+  f32 q1 = x1 * y0 * z0 - x0 * y1 * z1;
+  f32 q2 = x0 * y1 * z0 + x1 * y0 * z1;
+  f32 q3 = x0 * y0 * z1 - x1 * y1 * z0;
+
+  this->w = q0;
+  this->v = {q1, q2, q3};
 }
 
 void Quaternion::setRotate(Vector3 r) {
-  setRotateX(r.x);
-  rotateY(r.y);
-  rotateZ(r.z);
+  Quaternion x = {r.x, {1, 0, 0}};
+  Quaternion y = {r.y, {0, 1, 0}};
+  Quaternion z = {r.z, {0, 0, 1}};
+  *this = z * y * x;
 }
 
-void Quaternion::setRotateX(f32 a) {
-  Quaternion x(a, {1, 0, 0});
-  *this = x;
-}
+f32 Quaternion::length() { return std::sqrt(w * w + v.x * v.x + v.y * v.y + v.z * v.z); }
 
-void Quaternion::setRotateY(f32 a) {
-  Quaternion y(a, {0, 1, 0});
-  *this = y;
-}
-
-void Quaternion::setRotateZ(f32 a) {
-  Quaternion z(a, {0, 0, 1});
-  *this = z;
-}
-
-f32 Quaternion::length() { return std::sqrt(w * w + v.dot(v)); }
 Quaternion Quaternion::conjugate() { return Quaternion{w, Vector3(v * -1.0f)}; }
+
 void Quaternion::normalize() {
   f32 length = this->length();
   this->w /= length;
@@ -417,9 +397,23 @@ void Quaternion::normalize() {
 
 Matrix4 Quaternion::toRotationMatrix() {
   this->normalize();
-  return Matrix4(2 * (w * w + v.x * v.x) - 1, 2 * (v.x * v.y - w * v.z), 2 * (v.x * v.z + w * v.y), 0, //
-                 2 * (v.x * v.y + w * v.z), 2 * (w * w + v.y * v.y) - 1, 2 * (v.y * v.z - w * v.x), 0, //
-                 2 * (v.x * v.z - w * v.y), 2 * (v.y * v.z + w * v.x), 2 * (w * w + v.z * v.z) - 1, 0, //
+  /* return Matrix4(2 * (w * w + v.x * v.x) - 1, 2 * (v.x * v.y - w * v.z), 2 * (v.x * v.z + w * v.y), 0, // */
+  /*                2 * (v.x * v.y + w * v.z), 2 * (w * w + v.y * v.y) - 1, 2 * (v.y * v.z - w * v.x), 0, // */
+  /*                2 * (v.x * v.z - w * v.y), 2 * (v.y * v.z + w * v.x), 2 * (w * w + v.z * v.z) - 1, 0, // */
+  /*                0, 0, 0, 1); */
+
+  f32 ww = w * w;
+  f32 xx = v.x * v.x;
+  f32 yy = v.y * v.y;
+  f32 zz = v.z * v.z;
+
+  f32 x = v.x;
+  f32 y = v.y;
+  f32 z = v.z;
+
+  return Matrix4(ww + xx - yy - zz, 2 * x * y - 2 * w * z, 2 * x * z + 2 * w * y, 0, //
+                 2 * x * y + 2 * w * z, ww - xx + yy - zz, 2 * y * z - 2 * w * x, 0, //
+                 2 * x * z - 2 * w * y, 2 * y * z + 2 * w * x, ww - xx - yy + zz, 0, //
                  0, 0, 0, 1);
 }
 }; // namespace Math

@@ -117,15 +117,10 @@ struct Quaternion {
   void normalize();
   f32 length();
 
-  void setRotate(Vector3 r);
-  void setRotateX(f32 a);
-  void setRotateY(f32 a);
-  void setRotateZ(f32 a);
+  Quaternion rotateEuler();
 
+  void setRotate(Vector3 r);
   void rotate(Vector3 r);
-  void rotateX(f32 a);
-  void rotateY(f32 a);
-  void rotateZ(f32 a);
 
   Matrix4 toRotationMatrix();
 

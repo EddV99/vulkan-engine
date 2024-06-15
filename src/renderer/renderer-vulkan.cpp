@@ -1361,6 +1361,9 @@ void RendererVulkan::drawScene() {
 }
 
 void RendererVulkan::updateUniformBuffer(uint32_t frame) {
+  scene->objects[0].moveRotation({0, 0, dt});
+  dt+= 0.2;
+
   ubo.model = scene->objects[0].getModelMatrix();
   ubo.view = scene->viewMatrix(Math::Vector3(0.0, 1.0, 0.0));
   ubo.proj = perspectiveMatrix(60, (f32)WIDTH / HEIGHT);

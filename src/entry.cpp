@@ -20,7 +20,7 @@ int main(void) {
     model.meshFilePath = meshFilePath;
     model.scale = {1.0, 1.0, 1.0};
     model.position = {0.0, 0.0, 0.0};
-    model.rotation = {0.0, MATH_PI / 2, 0.0};
+    model.rotation = {30, MATH_PI / 2, 0.0};
     model.textureFilePath = "";
     models.push_back(model);
 
