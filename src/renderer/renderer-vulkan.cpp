@@ -106,8 +106,11 @@ void RendererVulkan::init(GLFWwindow *window, Game::Scene &scene) {
   // combine all object(s) data into one buffer
   size_t vertexDataSize = 0;
   size_t indexDataSize = 0;
+  uint32_t offsetCount = 0;
+  int32_t vertexCount = 0;
   std::vector<Mesh::Vertex> vertexData;
   std::vector<u32> indexData;
+
   for (auto &obj : scene.objects) {
     auto v = obj.getMesh().getVertexData();
     auto i = obj.getMesh().getIndices();
@@ -115,12 +118,15 @@ void RendererVulkan::init(GLFWwindow *window, Game::Scene &scene) {
     vertexData.insert(vertexData.end(), v.begin(), v.end());
     indexData.insert(indexData.end(), i.begin(), i.end());
 
-    dataOffsets.push_back(vertexDataSize);
-    vertexDataSize += obj.getMesh().getVertexDataSize();
+    vertexDataSize += obj.getMesh().getVertexDataSize(); //
+    indexDataSize += obj.getMesh().getIndexDataSize();   //
 
-    indexOffsets.push_back(indexDataSize);
-    indexCount.push_back(obj.getMesh().getVertexCount());
-    indexDataSize += obj.getMesh().getIndexDataSize();
+    indexOffsets.push_back(offsetCount);
+    indexCount.push_back((uint32_t)obj.getMesh().getVertexCount());
+    offsetCount += (uint32_t)obj.getMesh().getVertexCount();
+
+    vertexOffsets.push_back(vertexCount);
+    vertexCount += (int32_t)v.size();
   }
 
   createVertexBuffer(vertexData.data(), vertexDataSize);
@@ -1242,8 +1248,7 @@ VkShaderModule RendererVulkan::createShaderModule(std::vector<char> &shader) {
   return module;
 }
 
-void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, uint32_t indexCount,
-                                         uint32_t indexOffset, int32_t vertexOffset) {
+void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
   VkCommandBufferBeginInfo beginInfo{};
   beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   beginInfo.flags = 0;
@@ -1290,15 +1295,14 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
   vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
                           &descriptorSets[currentFrame], 0, nullptr);
 
-  vkCmdDrawIndexed(commandBuffer, indexCount, 1, indexOffset, vertexOffset, 0);
+  for (size_t i = 0; i < scene->objects.size(); i++)
+    vkCmdDrawIndexed(commandBuffer, indexCount[i], 1, indexOffsets[i], vertexOffsets[i], 0);
 
   vkCmdEndRenderPass(commandBuffer);
 
   if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
     Util::Error("Failed to record command buffer");
 }
-
-void RendererVulkan::createTexture() {}
 
 void RendererVulkan::drawScene() {
   vkWaitForFences(device, 1, &inFlightFence[currentFrame], VK_TRUE, UINT64_MAX);
@@ -1316,7 +1320,8 @@ void RendererVulkan::drawScene() {
   vkResetFences(device, 1, &inFlightFence[currentFrame]);
 
   vkResetCommandBuffer(commandBuffers[currentFrame], 0);
-  recordCommandBuffer(commandBuffers[currentFrame], imageIndex, indexCount[0], indexOffsets[0], dataOffsets[0]);
+
+  recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
 
   updateUniformBuffer(currentFrame);
 

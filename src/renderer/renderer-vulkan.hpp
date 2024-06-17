@@ -175,10 +175,7 @@ private:
 
   VkShaderModule createShaderModule(std::vector<char> &shader);
 
-  void createTexture();
-
-  void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, uint32_t indexCount,
-                           uint32_t indexOffset, int32_t vertexOffset);
+  void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
   uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
@@ -252,9 +249,9 @@ private:
   VkImageView textureImageView;
   VkSampler textureSampler;
 
-  std::vector<size_t> dataOffsets;
-  std::vector<size_t> indexOffsets;
-  std::vector<size_t> indexCount;
+  std::vector<int32_t> vertexOffsets;
+  std::vector<uint32_t> indexOffsets;
+  std::vector<uint32_t> indexCount;
 
   /**
    * Constants

@@ -1,7 +1,6 @@
 /**
  * @brief Entry point of the program
  */
-#include "game/object.hpp"
 #include "game/scene.hpp"
 #include "renderer/renderer.hpp"
 #include "util/defines.hpp"
@@ -10,19 +9,28 @@
 #include <iostream>
 
 int main(void) {
-  /* std::string meshFilePath = "res/cube/cube.obj"; */
-  std::string meshFilePath = "res/teapot/teapot.obj";
-  /* std::string meshFilePath = "res/sphere/sphere.obj"; */
+  std::string cubePath = "res/cube/cube.obj";
+  std::string teapotPath = "res/teapot/teapot.obj";
+  std::string spherePath = "res/sphere/sphere.obj";
 
   try {
     std::vector<Game::ModelInfo> models;
-    Game::ModelInfo model;
-    model.meshFilePath = meshFilePath;
-    model.scale = {1.0, 1.0, 1.0};
-    model.position = {0.0, 0.0, 0.0};
-    model.rotation = {30, MATH_PI / 2, 0.0};
-    model.textureFilePath = "";
-    models.push_back(model);
+    Game::ModelInfo sphere;
+    sphere.meshFilePath = spherePath;
+    sphere.scale = {1.0, 1.0, 1.0};
+    sphere.position = {0.0, 0.0, 0.0};
+    sphere.rotation = {0.0, 0, 0.0};
+    sphere.textureFilePath = "";
+
+    Game::ModelInfo teapot;
+    teapot.meshFilePath = teapotPath;
+    teapot.scale = {1.0, 1.0, 1.0};
+    teapot.position = {0.0, 0.0, 0.0};
+    teapot.rotation = {0.0, 0, 0.0};
+    teapot.textureFilePath = "";
+
+    models.push_back(sphere);
+    models.push_back(teapot);
 
     Game::Scene scene(models);
 

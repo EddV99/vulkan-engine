@@ -87,7 +87,8 @@ void Mesh::loadOBJFile(std::string filename) {
     Util::Error(warnMessage + " " + errMessage);
   }
 
-  std::unordered_map<Math::Vector3, i32> uniqueVertices{};
+  std::unordered_map<Math::Vector3, u32> uniqueVertices{};
+
   _hasNormals = false;
   _hasUV = false;
   for (const auto &shape : shapes) {
@@ -124,7 +125,7 @@ void Mesh::loadOBJFile(std::string filename) {
     }
   }
   vertexCount = indices.size();
-  vertexDataSize = vertexData.size() * sizeof(vertexData[0]);
+  vertexDataSize = vertexData.size() * sizeof(Vertex);
   indexDataSize = indices.size() * sizeof(indices[0]);
 }
 
