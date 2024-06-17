@@ -27,6 +27,8 @@ private:
   Mesh::Mesh mesh;
   TextureData texture;
 
+  f32 pitch = 0, yaw = 0, roll = 0;
+
 public:
   Object() = delete;
   Object(Math::Vector3 p = {0, 0, 0}, Math::Quaternion o = {0, {0, 0, 0}}, Math::Vector3 s = {1, 1, 1});
@@ -64,8 +66,8 @@ public:
   bool hasTexture();
 
   Math::Matrix4 getModelMatrix();
-  
-  const TextureData& getTextureData();
-  const Mesh::Mesh& getMesh();
+
+  const TextureData &getTextureData();
+  const Mesh::Mesh &getMesh();
 };
 } // namespace Game

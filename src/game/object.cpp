@@ -105,15 +105,48 @@ void Object::removeTexture() {
 const Object::TextureData &Object::getTextureData() { return texture; }
 const Mesh::Mesh &Object::getMesh() { return mesh; }
 
-void Object::setRotation(Math::Vector3 r) { rotation.setRotate(r); }
-/* void Object::setRotationX(f32 x) { rotation.setRotateX(x); } */
-/* void Object::setRotationY(f32 y) { rotation.setRotateY(y); } */
-/* void Object::setRotationZ(f32 z) { rotation.setRotateZ(z); } */
+void Object::setRotation(Math::Vector3 r) {
+  pitch = r.x;
+  yaw = r.y;
+  roll = r.z;
+  rotation.rotate(r);
+}
 
-void Object::moveRotation(Math::Vector3 dr) { rotation.rotate(dr); }
-/* void Object::moveRotationX(f32 dx) { rotation.rotateX(dx); } */
-/* void Object::moveRotationY(f32 dy) { rotation.rotateY(dy); } */
-/* void Object::moveRotationZ(f32 dz) { rotation.rotateZ(dz); } */
+void Object::setRotationX(f32 x) {
+  pitch = x;
+  rotation.rotate({pitch, yaw, roll});
+}
+
+void Object::setRotationY(f32 y) {
+  yaw = y;
+  rotation.rotate({pitch, yaw, roll});
+}
+
+void Object::setRotationZ(f32 z) {
+  roll = z;
+  rotation.rotate({pitch, yaw, roll});
+}
+
+void Object::moveRotation(Math::Vector3 dr) {
+  pitch += dr.x;
+  yaw += dr.y;
+  roll += dr.z;
+  rotation.rotate({pitch, yaw, roll});
+}
+void Object::moveRotationX(f32 dx) {
+  pitch += dx;
+  rotation.rotate({pitch, yaw, roll});
+}
+
+void Object::moveRotationY(f32 dy) {
+  yaw += dy;
+  rotation.rotate({pitch, yaw, roll});
+}
+
+void Object::moveRotationZ(f32 dz) {
+  roll += dz;
+  rotation.rotate({pitch, yaw, roll});
+}
 
 void Object::setPosition(Math::Vector3 p) { position = p; }
 void Object::setPositionX(f32 x) { position.x = x; }

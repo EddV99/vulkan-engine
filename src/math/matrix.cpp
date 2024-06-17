@@ -376,13 +376,6 @@ void Quaternion::rotate(Vector3 r) {
   this->v = {q1, q2, q3};
 }
 
-void Quaternion::setRotate(Vector3 r) {
-  Quaternion x = {r.x, {1, 0, 0}};
-  Quaternion y = {r.y, {0, 1, 0}};
-  Quaternion z = {r.z, {0, 0, 1}};
-  *this = z * y * x;
-}
-
 f32 Quaternion::length() { return std::sqrt(w * w + v.x * v.x + v.y * v.y + v.z * v.z); }
 
 Quaternion Quaternion::conjugate() { return Quaternion{w, Vector3(v * -1.0f)}; }

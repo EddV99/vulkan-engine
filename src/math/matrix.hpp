@@ -119,7 +119,6 @@ struct Quaternion {
 
   Quaternion rotateEuler();
 
-  void setRotate(Vector3 r);
   void rotate(Vector3 r);
 
   Matrix4 toRotationMatrix();
