@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include "renderer-core.hpp"
-
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
@@ -63,7 +62,7 @@ private:
     alignas(16) Math::Matrix4 model;
     alignas(16) Math::Matrix4 view;
     alignas(16) Math::Matrix4 proj;
-  } ubo[2];
+  };
 
   /**
    * List of wanted validation layers
@@ -259,6 +258,9 @@ private:
 
   VkDeviceSize alignment;
   VkDeviceSize dynamicUniformBufferSize;
+
+  std::vector<UniformBufferObject> ubos;
+
   /**
    * Constants
    */

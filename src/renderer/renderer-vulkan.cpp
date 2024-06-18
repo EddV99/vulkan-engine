@@ -15,6 +15,7 @@
 #include <iostream>
 #include <limits>
 #include <set>
+#include <cmath>
 
 namespace Renderer {
 
@@ -85,6 +86,7 @@ void RendererVulkan::init(GLFWwindow *window, Game::Scene &scene) {
   this->scene = &scene;
   this->window = window;
   OBJECT_COUNT = scene.objects.size();
+  ubos.resize(OBJECT_COUNT);
 
   createInstance();
   createSurface();
@@ -622,7 +624,6 @@ void RendererVulkan::createIndexBuffer(void *indexData, size_t size) {
 }
 
 void RendererVulkan::createUniformBuffers() {
-  /* VkDeviceSize bufferSize = sizeof(UniformBufferObject); */
   alignment = getUniformBufferAlignment(sizeof(UniformBufferObject), getMinUniformBufferOffsetAlignment());
   dynamicUniformBufferSize = OBJECT_COUNT * alignment;
 
@@ -631,9 +632,6 @@ void RendererVulkan::createUniformBuffers() {
   uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
 
   for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-    /* createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, */
-    /*              VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], */
-    /*              uniformBuffersMemory[i]); */
     createBuffer(dynamicUniformBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
                  uniformBuffers[i], uniformBuffersMemory[i]);
 
@@ -643,7 +641,6 @@ void RendererVulkan::createUniformBuffers() {
 
 void RendererVulkan::createDescriptorPool() {
   std::array<VkDescriptorPoolSize, 2> poolSizes{};
-  /* poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; */
   poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
   poolSizes[0].descriptorCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
 
@@ -688,7 +685,6 @@ void RendererVulkan::createDescriptorSets() {
     descriptorWrites[0].dstSet = descriptorSets[i];
     descriptorWrites[0].dstBinding = 0;
     descriptorWrites[0].dstArrayElement = 0;
-    /* descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; */
     descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     descriptorWrites[0].descriptorCount = 1;
     descriptorWrites[0].pBufferInfo = &bufferInfo;
@@ -1300,11 +1296,6 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
   VkDeviceSize offsets[] = {0};
   vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
   vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-  /* vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, */
-  /*                         &descriptorSets[currentFrame], 0, nullptr); */
-
-  /* for (size_t i = 0; i < OBJECT_COUNT; i++) */
-  /*   vkCmdDrawIndexed(commandBuffer, indexCount[i], 1, indexOffsets[i], vertexOffsets[i], 0); */
 
   for (size_t i = 0; i < OBJECT_COUNT; i++) {
     uint32_t dOffset = (uint32_t)i * (uint32_t)alignment;
@@ -1382,24 +1373,15 @@ void RendererVulkan::drawScene() {
 }
 
 void RendererVulkan::updateUniformBuffer(uint32_t frame) {
-  /* ubo.model = scene->objects[0].getModelMatrix(); */
-  /* ubo.view = scene->viewMatrix(Math::Vector3(0.0, 1.0, 0.0)); */
-  /* ubo.proj = perspectiveMatrix(60, (f32)WIDTH / HEIGHT); */
-
-  /* memcpy(uniformBuffersMapped[frame], &ubo, sizeof(ubo)); */
-
   Math::Matrix4 proj = perspectiveMatrix(60, (f32)WIDTH / HEIGHT);
   Math::Matrix4 view = scene->viewMatrix(Math::Vector3(0.0, 1.0, 0.0));
-  ubo[0].view = view;
-  ubo[0].proj = proj;
+  for (size_t i = 0; i < OBJECT_COUNT; i++) {
+    ubos[i].view = view;
+    ubos[i].proj = proj;
+    ubos[i].model = scene->objects[i].getModelMatrix();
+  }
 
-  ubo[1].view = view;
-  ubo[1].proj = proj;
-
-  for (int i = 0; i < OBJECT_COUNT; i++) 
-    ubo[i].model = scene->objects[i].getModelMatrix();
-  
-  memcpy(uniformBuffersMapped[frame], &ubo, dynamicUniformBufferSize);
+  memcpy(uniformBuffersMapped[frame], ubos.data(), dynamicUniformBufferSize);
 
   VkMappedMemoryRange memoryRange{};
   memoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
@@ -1486,10 +1468,6 @@ Math::Matrix4 RendererVulkan::perspectiveMatrix(f32 fov, f32 aspect) {
                        0, -focalLength, 0, 0,         //
                        0, 0, A, B,                    //
                        0, 0, -1, 0);
-  /* return Math::Matrix4(focalLength / aspect, 0, 0, 0,          // */
-  /*                      0, -focalLength, 0, 0,                  // */
-  /*                      0, 0, n / (f - n), (n * f) / (f - n), // */
-  /*                      0, 0, -1, 0); */
 }
 
 } // namespace Renderer

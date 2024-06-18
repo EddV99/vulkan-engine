@@ -3,12 +3,12 @@
  */
 #include "game/scene.hpp"
 #include "renderer/renderer.hpp"
-#include "util/defines.hpp"
 
 #include <exception>
 #include <iostream>
 
 int main(void) {
+
   std::string cubePath = "res/cube/cube.obj";
   std::string teapotPath = "res/teapot/teapot.obj";
   std::string spherePath = "res/sphere/sphere.obj";
@@ -18,19 +18,27 @@ int main(void) {
     Game::ModelInfo sphere;
     sphere.meshFilePath = spherePath;
     sphere.scale = {0.5, 0.5, 0.5};
-    sphere.position = {-10.0, 0.0, 0.0};
+    sphere.position = {0.0, 40.0, 0.0};
     sphere.rotation = {0.0, 0, 0.0};
     sphere.textureFilePath = "";
 
+    Game::ModelInfo cube;
+    cube.meshFilePath = cubePath;
+    cube.scale = {18.5, 18.5, 18.5};
+    cube.position = {0.0, 0.0, 0.0};
+    cube.rotation = {0.0, 0, 0.0};
+    cube.textureFilePath = "";
+
     Game::ModelInfo teapot;
     teapot.meshFilePath = teapotPath;
-    teapot.scale = {0.2, 0.2, 0.2};
-    teapot.position = {0.0, 0.0, 0.0};
+    teapot.scale = {0.4, 0.4, 0.4};
+    teapot.position = {0.0, -40.0, 0.0};
     teapot.rotation = {0.0, 0, 0.0};
     teapot.textureFilePath = "";
 
     models.push_back(sphere);
     models.push_back(teapot);
+    models.push_back(cube);
 
     Game::Scene scene(models);
 

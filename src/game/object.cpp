@@ -58,10 +58,10 @@ Math::Matrix4 Object::getModelMatrix() {
                       0.0, 0.0, 1.0, 0.0, //
                       0.0, 0.0, 0.0, 1.0);
 
-  model = rotation.toRotationMatrix() * model;
-  model = getTranslationMatrix(mesh.getBoundingBox().mid * -1) * model;
-  model = getTranslationMatrix(position) * model;
   model = getScaleMatrix(scale) * model;
+  model = getTranslationMatrix(mesh.getBoundingBox().mid * -1*scale.x) * model;
+  model = rotation.toRotationMatrix() * model;
+  model = getTranslationMatrix(position) * model;
   return model;
 }
 
