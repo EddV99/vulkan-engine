@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include "renderer-core.hpp"
-
 #include "renderer-vulkan.hpp"
 #include <GLFW/glfw3.h>
 
@@ -22,7 +20,6 @@ public:
   bool running();
   void poll();
   void draw();
-  void draw(FrameData frame);
   void resize();
   void FPS();
 
