@@ -63,7 +63,7 @@ private:
     alignas(16) Math::Matrix4 model;
     alignas(16) Math::Matrix4 view;
     alignas(16) Math::Matrix4 proj;
-  } ubo;
+  } ubo[2];
 
   /**
    * List of wanted validation layers
@@ -179,6 +179,10 @@ private:
 
   uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
+  VkDeviceSize getMinUniformBufferOffsetAlignment();
+
+  VkDeviceSize getUniformBufferAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment);
+
   /**
    * Perspective Matrix
    */
@@ -253,11 +257,15 @@ private:
   std::vector<uint32_t> indexOffsets;
   std::vector<uint32_t> indexCount;
 
+  VkDeviceSize alignment;
+  VkDeviceSize dynamicUniformBufferSize;
   /**
    * Constants
    */
   uint32_t WIDTH = 500;
   uint32_t HEIGHT = 500;
+
+  size_t OBJECT_COUNT = 0;
 
   const int MAX_FRAMES_IN_FLIGHT = 2;
 

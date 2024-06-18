@@ -84,6 +84,7 @@ void RendererVulkan::init(GLFWwindow *window, Game::Scene &scene) {
 
   this->scene = &scene;
   this->window = window;
+  OBJECT_COUNT = scene.objects.size();
 
   createInstance();
   createSurface();
@@ -118,8 +119,8 @@ void RendererVulkan::init(GLFWwindow *window, Game::Scene &scene) {
     vertexData.insert(vertexData.end(), v.begin(), v.end());
     indexData.insert(indexData.end(), i.begin(), i.end());
 
-    vertexDataSize += obj.getMesh().getVertexDataSize(); //
-    indexDataSize += obj.getMesh().getIndexDataSize();   //
+    vertexDataSize += obj.getMesh().getVertexDataSize();
+    indexDataSize += obj.getMesh().getIndexDataSize();
 
     indexOffsets.push_back(offsetCount);
     indexCount.push_back((uint32_t)obj.getMesh().getVertexCount());
@@ -359,7 +360,8 @@ void RendererVulkan::createRenderPass() {
 void RendererVulkan::createDescriptorSetLayout() {
   VkDescriptorSetLayoutBinding uboLayoutBinding{};
   uboLayoutBinding.binding = 0;
-  uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  /* uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; */
+  uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
   uboLayoutBinding.descriptorCount = 1;
   uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
   uboLayoutBinding.pImmutableSamplers = nullptr;
@@ -620,24 +622,29 @@ void RendererVulkan::createIndexBuffer(void *indexData, size_t size) {
 }
 
 void RendererVulkan::createUniformBuffers() {
-  VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+  /* VkDeviceSize bufferSize = sizeof(UniformBufferObject); */
+  alignment = getUniformBufferAlignment(sizeof(UniformBufferObject), getMinUniformBufferOffsetAlignment());
+  dynamicUniformBufferSize = OBJECT_COUNT * alignment;
 
   uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
   uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
   uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
 
   for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-    createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i],
-                 uniformBuffersMemory[i]);
+    /* createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, */
+    /*              VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], */
+    /*              uniformBuffersMemory[i]); */
+    createBuffer(dynamicUniformBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                 uniformBuffers[i], uniformBuffersMemory[i]);
 
-    vkMapMemory(device, uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
+    vkMapMemory(device, uniformBuffersMemory[i], 0, dynamicUniformBufferSize, 0, &uniformBuffersMapped[i]);
   }
 }
 
 void RendererVulkan::createDescriptorPool() {
   std::array<VkDescriptorPoolSize, 2> poolSizes{};
-  poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  /* poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; */
+  poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
   poolSizes[0].descriptorCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
 
   poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -681,7 +688,8 @@ void RendererVulkan::createDescriptorSets() {
     descriptorWrites[0].dstSet = descriptorSets[i];
     descriptorWrites[0].dstBinding = 0;
     descriptorWrites[0].dstArrayElement = 0;
-    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    /* descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; */
+    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     descriptorWrites[0].descriptorCount = 1;
     descriptorWrites[0].pBufferInfo = &bufferInfo;
     descriptorWrites[0].pImageInfo = nullptr;
@@ -1292,11 +1300,19 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
   VkDeviceSize offsets[] = {0};
   vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
   vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-  vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
-                          &descriptorSets[currentFrame], 0, nullptr);
+  /* vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, */
+  /*                         &descriptorSets[currentFrame], 0, nullptr); */
 
-  for (size_t i = 0; i < scene->objects.size(); i++)
+  /* for (size_t i = 0; i < OBJECT_COUNT; i++) */
+  /*   vkCmdDrawIndexed(commandBuffer, indexCount[i], 1, indexOffsets[i], vertexOffsets[i], 0); */
+
+  for (size_t i = 0; i < OBJECT_COUNT; i++) {
+    uint32_t dOffset = (uint32_t)i * (uint32_t)alignment;
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
+                            &descriptorSets[currentFrame], 1, &dOffset);
+
     vkCmdDrawIndexed(commandBuffer, indexCount[i], 1, indexOffsets[i], vertexOffsets[i], 0);
+  }
 
   vkCmdEndRenderPass(commandBuffer);
 
@@ -1366,11 +1382,33 @@ void RendererVulkan::drawScene() {
 }
 
 void RendererVulkan::updateUniformBuffer(uint32_t frame) {
-  ubo.model = scene->objects[0].getModelMatrix();
-  ubo.view = scene->viewMatrix(Math::Vector3(0.0, 1.0, 0.0));
-  ubo.proj = perspectiveMatrix(60, (f32)WIDTH / HEIGHT);
+  /* ubo.model = scene->objects[0].getModelMatrix(); */
+  /* ubo.view = scene->viewMatrix(Math::Vector3(0.0, 1.0, 0.0)); */
+  /* ubo.proj = perspectiveMatrix(60, (f32)WIDTH / HEIGHT); */
 
-  memcpy(uniformBuffersMapped[frame], &ubo, sizeof(ubo));
+  /* memcpy(uniformBuffersMapped[frame], &ubo, sizeof(ubo)); */
+
+  Math::Matrix4 proj = perspectiveMatrix(60, (f32)WIDTH / HEIGHT);
+  Math::Matrix4 view = scene->viewMatrix(Math::Vector3(0.0, 1.0, 0.0));
+  ubo[0].view = view;
+  ubo[0].proj = proj;
+
+  ubo[1].view = view;
+  ubo[1].proj = proj;
+
+  for (int i = 0; i < OBJECT_COUNT; i++) 
+    ubo[i].model = scene->objects[i].getModelMatrix();
+  
+  memcpy(uniformBuffersMapped[frame], &ubo, dynamicUniformBufferSize);
+
+  VkMappedMemoryRange memoryRange{};
+  memoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+  memoryRange.memory = uniformBuffersMemory[frame];
+  memoryRange.size = dynamicUniformBufferSize;
+  memoryRange.offset = 0;
+  memoryRange.pNext = nullptr;
+
+  vkFlushMappedMemoryRanges(device, 1, &memoryRange);
 }
 
 void RendererVulkan::cleanSwapchain() {
@@ -1413,6 +1451,19 @@ void RendererVulkan::recreateSwapchain() {
 }
 
 void RendererVulkan::resize() { resized = true; }
+
+VkDeviceSize RendererVulkan::getMinUniformBufferOffsetAlignment() {
+  VkPhysicalDeviceProperties prop;
+  vkGetPhysicalDeviceProperties(physicalDevice, &prop);
+  return prop.limits.minUniformBufferOffsetAlignment;
+}
+
+VkDeviceSize RendererVulkan::getUniformBufferAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment) {
+  if (minOffsetAlignment > 0)
+    return (instanceSize + minOffsetAlignment - 1) & ~(minOffsetAlignment - 1);
+
+  return instanceSize;
+}
 
 uint32_t RendererVulkan::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
   VkPhysicalDeviceMemoryProperties mem;

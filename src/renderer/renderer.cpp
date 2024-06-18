@@ -13,8 +13,8 @@ Renderer::Renderer(int w, int h, Game::Scene &scene) {
   glfwInit();
 
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-  // glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+  /* glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); */
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
   this->window = glfwCreateWindow(WIDTH, HEIGHT, "Beast Gohan", nullptr, nullptr);
   this->scene = scene;

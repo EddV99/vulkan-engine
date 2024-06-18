@@ -17,14 +17,14 @@ int main(void) {
     std::vector<Game::ModelInfo> models;
     Game::ModelInfo sphere;
     sphere.meshFilePath = spherePath;
-    sphere.scale = {1.0, 1.0, 1.0};
-    sphere.position = {0.0, 0.0, 0.0};
+    sphere.scale = {0.5, 0.5, 0.5};
+    sphere.position = {-10.0, 0.0, 0.0};
     sphere.rotation = {0.0, 0, 0.0};
     sphere.textureFilePath = "";
 
     Game::ModelInfo teapot;
     teapot.meshFilePath = teapotPath;
-    teapot.scale = {1.0, 1.0, 1.0};
+    teapot.scale = {0.2, 0.2, 0.2};
     teapot.position = {0.0, 0.0, 0.0};
     teapot.rotation = {0.0, 0, 0.0};
     teapot.textureFilePath = "";
