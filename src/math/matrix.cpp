@@ -224,11 +224,10 @@ Matrix4 Matrix4::operator-(Matrix4 &right) {
 }
 
 Matrix4 Matrix4::operator*(f32 scalar) {
-  Matrix4 value((*this));
+  Matrix4 value(0.0f);
 
-  for (int r = 0; r < 4; r++)
-    for (int c = 0; c < 4; c++)
-      value.set(r, c, value(r, c) * scalar);
+  for (int x = 0; x < 16; x++)
+    value.m[x] = this->m[x] * scalar;
 
   return value;
 }

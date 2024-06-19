@@ -10,12 +10,12 @@
 #include <vulkan/vulkan_core.h>
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <iostream>
 #include <limits>
 #include <set>
-#include <cmath>
 
 namespace Renderer {
 
@@ -71,7 +71,6 @@ RendererVulkan::~RendererVulkan() {
   vkDestroyDevice(device, nullptr);
   vkDestroySurfaceKHR(instance, surface, nullptr);
   vkDestroyInstance(instance, nullptr);
-  
 
   glfwDestroyWindow(window);
   glfwTerminate();

@@ -33,8 +33,8 @@ void Renderer::draw() {
 
   f32 speed = 0.1;
   scene.objects[0].moveRotation({0.0, 0.0, speed});
-  /* scene.objects[1].moveRotation({0.0, 0.0, speed}); */
-  /* scene.objects[2].moveRotation({0.0, 0.0, speed}); */
+  scene.objects[1].moveRotation({0.0, 0.0, speed});
+  scene.objects[2].moveRotation({0.0, 0.0, speed});
 
   rendererbackend.drawScene();
 }

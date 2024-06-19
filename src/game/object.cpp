@@ -57,11 +57,11 @@ Math::Matrix4 Object::getModelMatrix() {
                       0.0, 1.0, 0.0, 0.0, //
                       0.0, 0.0, 1.0, 0.0, //
                       0.0, 0.0, 0.0, 1.0);
-  model = getTranslationMatrix(mesh.getBoundingBox().mid * -1) * model;
-  model = getRotationMatrix() * model;
-  /* model = getScaleMatrix(scale) * model; */
-  /* model = rotation.toRotationMatrix() * model; */
-  /* model = getTranslationMatrix(position) * model; */
+  model = getScaleMatrix(scale) * model;
+  model = getTranslationMatrix(mesh.getBoundingBox().mid * -scale.x) * model;
+  /* model = getRotationMatrix() * model; */
+  model = rotation.toRotationMatrix() * model;
+  model = getTranslationMatrix(position) * model;
   return model;
 }
 

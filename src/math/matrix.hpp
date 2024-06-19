@@ -8,7 +8,7 @@
 
 namespace Math {
 
-#define ROW_COL_TO_INDEX(R, C, S) (S * R) + C
+#define ROW_COL_TO_INDEX(R, C, S) (S * C) + R
 
 // =============================================================================
 // Matrix 3x3
