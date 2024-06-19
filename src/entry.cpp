@@ -18,31 +18,31 @@ int main(void) {
     Game::ModelInfo sphere;
     sphere.meshFilePath = spherePath;
     sphere.scale = {0.5, 0.5, 0.5};
-    sphere.position = {0.0, 40.0, 0.0};
+    sphere.position = {-40.0, 40.0, 0.0};
     sphere.rotation = {0.0, 0, 0.0};
     sphere.textureFilePath = "";
 
     Game::ModelInfo cube;
     cube.meshFilePath = cubePath;
     cube.scale = {18.5, 18.5, 18.5};
-    cube.position = {0.0, 0.0, 0.0};
-    cube.rotation = {0.0, 0, 0.0};
+    cube.position = {-40.0, 0.0, 0.0};
+    cube.rotation = {0.0, 0.0, 0.0};
     cube.textureFilePath = "";
 
     Game::ModelInfo teapot;
     teapot.meshFilePath = teapotPath;
-    teapot.scale = {0.4, 0.4, 0.4};
-    teapot.position = {0.0, -40.0, 0.0};
-    teapot.rotation = {0.0, 0, 0.0};
+    teapot.scale = {1.0, 1.0, 1.0};
+    teapot.position = {0.0, 0.0, 0.0};
+    teapot.rotation = {0.0, 0.0, 0.0};
     teapot.textureFilePath = "";
 
-    models.push_back(sphere);
     models.push_back(teapot);
-    models.push_back(cube);
+    /* models.push_back(sphere); */
+    /* models.push_back(cube); */
 
     Game::Scene scene(models);
 
-    Renderer::Renderer renderer(1000, 800, scene);
+    Renderer::Renderer renderer(800, 800, scene);
     while (renderer.running()) {
       renderer.FPS();
       renderer.draw();

@@ -70,15 +70,15 @@ Vector3 &Vector3::operator=(Vector3 &&other) noexcept {
 bool Vector3::operator==(const Vector3 &right) const {
   return (this->x == right.x) && (this->y == right.y) && (this->z == right.z);
 }
-Vector3 Vector3::operator+(const Vector3 &right) { return Vector3(x + right.x, this->y + right.y, this->z + right.z); }
+Vector3 Vector3::operator+(const Vector3 &right) { return Vector3(x + right.x, y + right.y, z + right.z); }
 
 Vector3 Vector3::operator*(f32 scalar) { return Vector3(x * scalar, y * scalar, z * scalar); }
 
 Vector3 Vector3::operator*(f32 scalar) const { return Vector3(x * scalar, y * scalar, z * scalar); }
 
-Vector3 Vector3::operator-(const Vector3 &right) { return Vector3(x - right.x, this->y - right.y, this->z - right.z); }
+Vector3 Vector3::operator-(const Vector3 &right) { return Vector3(x - right.x, y - right.y, z - right.z); }
 
-f32 Vector3::dot(const Vector3 &right) { return this->x * right.x + this->y * right.y + this->z * right.z; }
+f32 Vector3::dot(const Vector3 &right) { return x * right.x + y * right.y + z * right.z; }
 
 Vector3 Vector3::cross(const Vector3 &right) {
   return Vector3(this->y * right.z - this->z * right.y, -(this->x * right.z - this->z * right.x),

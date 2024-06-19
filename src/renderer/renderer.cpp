@@ -9,6 +9,8 @@ Renderer::Renderer(int w, int h, Game::Scene &scene) {
   WIDTH = w;
   HEIGHT = h;
 
+  state = State::RUNNING;
+
   glfwInit();
 
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -25,15 +27,37 @@ Renderer::Renderer(int w, int h, Game::Scene &scene) {
 
   rendererbackend.init(this->window, this->scene);
 }
-void Renderer::draw() { rendererbackend.drawScene(); }
+void Renderer::draw() {
+  if (state != State::RUNNING)
+    return;
 
-void Renderer::poll() { glfwPollEvents(); }
+  f32 speed = 0.1;
+  scene.objects[0].moveRotation({0.0, 0.0, speed});
+  /* scene.objects[1].moveRotation({0.0, 0.0, speed}); */
+  /* scene.objects[2].moveRotation({0.0, 0.0, speed}); */
 
-bool Renderer::running() { return !glfwWindowShouldClose(window); }
+  rendererbackend.drawScene();
+}
 
-void Renderer::resize() { rendererbackend.resize(); }
+void Renderer::poll() {
+  if (state != State::RUNNING)
+    return;
+
+  glfwPollEvents();
+}
+
+bool Renderer::running() { return state == State::RUNNING; }
+
+void Renderer::resize() {
+  if (state != State::RUNNING)
+    return;
+  rendererbackend.resize();
+}
 
 void Renderer::FPS() {
+  if (state != State::RUNNING)
+    return;
+
   currTime = glfwGetTime();
   double diff = currTime - prevTime;
   frames++;
@@ -52,8 +76,10 @@ void Renderer::keyCallback(GLFWwindow *window, int key, int scancode, int action
   Renderer *state = static_cast<Renderer *>(glfwGetWindowUserPointer(window));
   f32 speed = 0.7;
 
-  if (key == GLFW_KEY_Q && action == GLFW_PRESS)
+  if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
+    state->state = State::STOPPED;
     glfwSetWindowShouldClose(window, GLFW_TRUE);
+  }
 
   if (key == GLFW_KEY_S && action == GLFW_PRESS) {
     state->scene.camera.movePositionZ(1.0 * speed);

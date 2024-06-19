@@ -381,11 +381,11 @@ f32 Quaternion::length() { return std::sqrt(w * w + v.x * v.x + v.y * v.y + v.z 
 Quaternion Quaternion::conjugate() { return Quaternion{w, Vector3(v * -1.0f)}; }
 
 void Quaternion::normalize() {
-  f32 length = this->length();
-  this->w /= length;
-  this->v.x /= length;
-  this->v.y /= length;
-  this->v.z /= length;
+  f32 length = 1.0f / this->length();
+  this->w *= length;
+  this->v.x *= length;
+  this->v.y *= length;
+  this->v.z *= length;
 }
 
 Matrix4 Quaternion::toRotationMatrix() {

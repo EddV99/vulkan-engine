@@ -22,6 +22,7 @@ private:
   Math::Vector3 scale;
 
   Math::Matrix4 getTranslationMatrix(Math::Vector3 t);
+  Math::Matrix4 getRotationMatrix();
   Math::Matrix4 getScaleMatrix(Math::Vector3 s);
 
   Mesh::Mesh mesh;

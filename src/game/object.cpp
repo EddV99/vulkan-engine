@@ -57,11 +57,11 @@ Math::Matrix4 Object::getModelMatrix() {
                       0.0, 1.0, 0.0, 0.0, //
                       0.0, 0.0, 1.0, 0.0, //
                       0.0, 0.0, 0.0, 1.0);
-
-  model = getScaleMatrix(scale) * model;
-  model = getTranslationMatrix(mesh.getBoundingBox().mid * -1*scale.x) * model;
-  model = rotation.toRotationMatrix() * model;
-  model = getTranslationMatrix(position) * model;
+  model = getTranslationMatrix(mesh.getBoundingBox().mid * -1) * model;
+  model = getRotationMatrix() * model;
+  /* model = getScaleMatrix(scale) * model; */
+  /* model = rotation.toRotationMatrix() * model; */
+  /* model = getTranslationMatrix(position) * model; */
   return model;
 }
 
@@ -69,6 +69,19 @@ Math::Matrix4 Object::getTranslationMatrix(Math::Vector3 t) {
   return Math::Matrix4(1, 0, 0, t.x, //
                        0, 1, 0, t.y, //
                        0, 0, 1, t.z, //
+                       0, 0, 0, 1);
+}
+
+Math::Matrix4 Object::getRotationMatrix() {
+  f32 cosx = cosf(TO_RADIANS(pitch));
+  f32 sinx = sinf(TO_RADIANS(pitch));
+  f32 cosy = cosf(TO_RADIANS(yaw));
+  f32 siny = sinf(TO_RADIANS(yaw));
+  f32 cosz = cosf(TO_RADIANS(roll));
+  f32 sinz = sinf(TO_RADIANS(roll));
+  return Math::Matrix4(cosy * cosz, sinx * siny * cosz - cosx * sinz, cosx * siny * cosz + sinx * sinz, 0, //
+                       cosy * sinz, sinx * siny * sinz + cosx * cosz, cosx * siny * sinz - sinx * cosz, 0, //
+                       -siny, sinx * cosy, cosx * cosy, 0,                                                 //
                        0, 0, 0, 1);
 }
 
