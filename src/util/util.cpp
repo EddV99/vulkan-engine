@@ -28,4 +28,6 @@ std::vector<char> readFile(const std::string &filename) {
 
 void Error(const std::string &message) { throw std::runtime_error(message); }
 
+f32 randomFloat(f32 lo, f32 hi) { return lo + static_cast<f32>(rand() / (static_cast<f32>(RAND_MAX / (hi - lo)))); }
+
 } // namespace Util

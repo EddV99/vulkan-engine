@@ -1,6 +1,8 @@
 #include <GLFW/glfw3.h>
 
 #include "../game/scene.hpp"
+#include "../util/util.hpp"
+#include "input.hpp"
 #include "renderer.hpp"
 
 namespace Renderer {
@@ -31,10 +33,13 @@ void Renderer::draw() {
   if (state != State::RUNNING)
     return;
 
-  f32 speed = 0.1;
-  scene.objects[0].moveRotation({0.0, 0.0, speed});
-  scene.objects[1].moveRotation({0.0, 0.0, speed});
-  scene.objects[2].moveRotation({0.0, 0.0, speed});
+  f32 speed = 0.0007;
+  for (auto &obj : scene.objects) {
+    f32 dx = Util::randomFloat(0.0, 360.0) * speed;
+    f32 dy = Util::randomFloat(0.0, 360.0) * speed;
+    f32 dz = Util::randomFloat(0.0, 360.0) * speed;
+    obj.moveRotation({dx, dy, dz});
+  }
 
   rendererbackend.drawScene();
 }
@@ -44,6 +49,7 @@ void Renderer::poll() {
     return;
 
   glfwPollEvents();
+  handleInput();
 }
 
 bool Renderer::running() { return state == State::RUNNING; }
@@ -51,6 +57,7 @@ bool Renderer::running() { return state == State::RUNNING; }
 void Renderer::resize() {
   if (state != State::RUNNING)
     return;
+
   rendererbackend.resize();
 }
 
@@ -69,29 +76,61 @@ void Renderer::FPS() {
   }
 }
 
+void Renderer::handleInput() {
+  f32 speed = 0.1;
+
+  if (input.isPressed(Keys::KEY_W)) {
+    scene.camera.movePositionZ(-1.0 * speed);
+  }
+  if (input.isPressed(Keys::KEY_A)) {
+    scene.camera.movePositionX(-1.0 * speed);
+  }
+  if (input.isPressed(Keys::KEY_S)) {
+    scene.camera.movePositionZ(1.0 * speed);
+  }
+  if (input.isPressed(Keys::KEY_D)) {
+    scene.camera.movePositionX(1.0 * speed);
+  }
+}
+
 void Renderer::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
   (void)scancode;
   (void)mods;
 
-  Renderer *state = static_cast<Renderer *>(glfwGetWindowUserPointer(window));
-  f32 speed = 0.7;
+  Renderer *app = static_cast<Renderer *>(glfwGetWindowUserPointer(window));
+
+  if (app->state != State::RUNNING)
+    return;
 
   if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
-    state->state = State::STOPPED;
+    app->state = State::STOPPED;
     glfwSetWindowShouldClose(window, GLFW_TRUE);
   }
 
-  if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-    state->scene.camera.movePositionZ(1.0 * speed);
-  }
   if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-    state->scene.camera.movePositionZ(-1.0 * speed);
-  }
-  if (key == GLFW_KEY_D && action == GLFW_PRESS) {
-    state->scene.camera.movePositionX(1.0 * speed);
+    app->input.setPressed(Keys::KEY_W);
   }
   if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-    state->scene.camera.movePositionX(-1.0 * speed);
+    app->input.setPressed(Keys::KEY_A);
+  }
+  if (key == GLFW_KEY_S && action == GLFW_PRESS) {
+    app->input.setPressed(Keys::KEY_S);
+  }
+  if (key == GLFW_KEY_D && action == GLFW_PRESS) {
+    app->input.setPressed(Keys::KEY_D);
+  }
+
+  if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
+    app->input.setUnpressed(Keys::KEY_W);
+  }
+  if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
+    app->input.setUnpressed(Keys::KEY_A);
+  }
+  if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
+    app->input.setUnpressed(Keys::KEY_S);
+  }
+  if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
+    app->input.setUnpressed(Keys::KEY_D);
   }
 }
 
@@ -99,6 +138,10 @@ void Renderer::resizeCallback(GLFWwindow *window, int width, int height) {
   (void)width;
   (void)height;
   auto app = reinterpret_cast<Renderer *>(glfwGetWindowUserPointer(window));
+
+  if (app->state != State::RUNNING)
+    return;
+
   app->resize();
 }
 
