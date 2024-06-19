@@ -37,9 +37,34 @@ int main(void) {
     teapot.rotation = {0.0, 0.0, 0.0};
     teapot.textureFilePath = "";
 
+    Game::ModelInfo sphere2;
+    sphere2.meshFilePath = spherePath;
+    sphere2.scale = {0.5, 0.5, 0.5};
+    sphere2.position = {10.0, 10.0, 0.0};
+    sphere2.rotation = {0.0, 0, 0.0};
+    sphere2.textureFilePath = "";
+
+    Game::ModelInfo cube2;
+    cube2.meshFilePath = cubePath;
+    cube2.scale = {18.5, 18.5, 18.5};
+    cube2.position = {10.0, 0.0, 0.0};
+    cube2.rotation = {0.0, 0.0, 0.0};
+    cube2.textureFilePath = "";
+
+    Game::ModelInfo teapot2;
+    teapot2.meshFilePath = teapotPath;
+    teapot2.scale = {0.5, 0.5, 0.5};
+    teapot2.position = {-10.0, -20.0, 0.0};
+    teapot2.rotation = {0.0, 0.0, 0.0};
+    teapot2.textureFilePath = "";
+
     models.push_back(teapot);
     models.push_back(sphere);
     models.push_back(cube);
+
+    models.push_back(teapot2);
+    models.push_back(sphere2);
+    models.push_back(cube2);
 
     Game::Scene scene(models);
 

@@ -8,7 +8,8 @@ IF(WIN32)
 
     add_subdirectory(vendor/glfw)
 ELSE()
-    set(CMAKE_CXX_FLAGS "-Wextra -Wall -fsanitize=address")
+    # set(CMAKE_CXX_FLAGS "-Wextra -Wall -fsanitize=address")
+    set(CMAKE_CXX_FLAGS "-Wextra -Wall")
     find_package(glfw3 REQUIRED)
 ENDIF()
 
