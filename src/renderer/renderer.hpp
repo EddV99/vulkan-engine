@@ -28,6 +28,7 @@ private:
   enum State { RUNNING, STOPPED } state;
   static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
   static void resizeCallback(GLFWwindow *window, int width, int height);
+
   void handleInput();
 
   RendererVulkan rendererbackend;
