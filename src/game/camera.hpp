@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../math/vector.hpp"
+#include "../math/matrix.hpp"
 
 namespace Game {
 class Camera {
@@ -23,6 +24,8 @@ public:
   void movePositionX(f32 dx);
   void movePositionY(f32 dy);
   void movePositionZ(f32 dz);
+
+  Math::Matrix4 viewMatrix();
 private:
 };
 }; // namespace Game

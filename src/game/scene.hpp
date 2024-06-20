@@ -41,7 +41,5 @@ public:
 
   std::vector<Object> objects;
   Camera camera;
-
-  Math::Matrix4 viewMatrix(Math::Vector3 up);
 };
 } // namespace Game

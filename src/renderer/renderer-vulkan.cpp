@@ -1374,7 +1374,7 @@ void RendererVulkan::drawScene() {
 
 void RendererVulkan::updateUniformBuffer(uint32_t frame) {
   Math::Matrix4 proj = perspectiveMatrix(60, (f32)WIDTH / HEIGHT);
-  Math::Matrix4 view = scene->viewMatrix(Math::Vector3(0.0, 1.0, 0.0));
+  Math::Matrix4 view = scene->camera.viewMatrix();
   for (size_t i = 0; i < OBJECT_COUNT; i++) {
     ubos[i].view = view;
     ubos[i].proj = proj;
