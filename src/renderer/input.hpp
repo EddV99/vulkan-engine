@@ -1,8 +1,8 @@
 #pragma once
 
 namespace Renderer {
-#define DEFINED_KEYS_COUNT 4
-enum Keys { KEY_W = 0, KEY_A, KEY_S, KEY_D };
+#define DEFINED_KEYS_COUNT 5
+enum Keys { KEY_W = 0, KEY_A, KEY_S, KEY_D, KEY_C };
 class Input {
 private:
   bool keys[DEFINED_KEYS_COUNT]{false};

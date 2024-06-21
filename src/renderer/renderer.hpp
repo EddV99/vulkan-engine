@@ -28,6 +28,7 @@ private:
   enum State { RUNNING, STOPPED } state;
   static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
   static void resizeCallback(GLFWwindow *window, int width, int height);
+  static void mousePointerCallback(GLFWwindow *window, double x, double y);
 
   void handleInput();
 
@@ -36,7 +37,7 @@ private:
   Game::Scene scene;
   int WIDTH, HEIGHT;
 
-  f32 mx = 0, my = 0;
+  double mx = 0, my = 0;
 
   Input input;
 

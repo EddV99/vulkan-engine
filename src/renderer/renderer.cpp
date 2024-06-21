@@ -11,6 +11,9 @@ Renderer::Renderer(int w, int h, Game::Scene &scene) {
   WIDTH = w;
   HEIGHT = h;
 
+  mx = w / 2.0;
+  my = h / 2.0;
+
   state = State::RUNNING;
 
   glfwInit();
@@ -25,6 +28,7 @@ Renderer::Renderer(int w, int h, Game::Scene &scene) {
 
   glfwSetWindowUserPointer(window, this);
   glfwSetKeyCallback(window, keyCallback);
+  glfwSetCursorPosCallback(window, mousePointerCallback);
   glfwSetFramebufferSizeCallback(window, resizeCallback);
 
   rendererbackend.init(this->window, this->scene);
@@ -92,6 +96,26 @@ void Renderer::handleInput() {
     scene.camera.movePositionX(1.0 * speed);
   }
 }
+void Renderer::mousePointerCallback(GLFWwindow *window, double x, double y) {
+  Renderer *app = static_cast<Renderer *>(glfwGetWindowUserPointer(window));
+
+  if (app->state != State::RUNNING)
+    return;
+
+  double dx = x - app->mx;
+  double dy = y - app->my;
+
+  app->mx = x;
+  app->my = y;
+
+  double sens = 0.1;
+
+  dx *= sens;
+  dy *= sens;
+
+  app->scene.camera.ax += dx;
+  app->scene.camera.ay += dy;
+}
 
 void Renderer::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
   (void)scancode;
@@ -119,6 +143,9 @@ void Renderer::keyCallback(GLFWwindow *window, int key, int scancode, int action
   if (key == GLFW_KEY_D && action == GLFW_PRESS) {
     app->input.setPressed(Keys::KEY_D);
   }
+  if (key == GLFW_KEY_C && action == GLFW_PRESS) {
+    app->input.setPressed(Keys::KEY_C);
+  }
 
   if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
     app->input.setUnpressed(Keys::KEY_W);
@@ -131,6 +158,9 @@ void Renderer::keyCallback(GLFWwindow *window, int key, int scancode, int action
   }
   if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
     app->input.setUnpressed(Keys::KEY_D);
+  }
+  if (key == GLFW_KEY_C && action == GLFW_RELEASE) {
+    app->input.setUnpressed(Keys::KEY_C);
   }
 }
 
