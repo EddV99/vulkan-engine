@@ -95,6 +95,10 @@ void Renderer::handleInput() {
   if (input.isPressed(Keys::KEY_D)) {
     scene.camera.movePositionX(1.0 * speed);
   }
+  if (input.isPressed(Keys::KEY_C)) {
+    scene.camera.toggleFreecam();
+    input.setUnpressed(Keys::KEY_C);
+  }
 }
 void Renderer::mousePointerCallback(GLFWwindow *window, double x, double y) {
   Renderer *app = static_cast<Renderer *>(glfwGetWindowUserPointer(window));
