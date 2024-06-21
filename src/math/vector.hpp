@@ -27,12 +27,14 @@ public:
   Vector3 operator*(f32 scalar) const;
   Vector3 operator-(const Vector3 &right);
   bool operator==(const Vector3 &right) const;
+  void print();
 
   f32 dot(const Vector3 &right);
   Vector3 cross(const Vector3 &right);
   f32 length();
   void normalize();
   Vector3 normal();
+  void rotate(f32 angle, Vector3 axis);
 };
 
 class Vector4 {

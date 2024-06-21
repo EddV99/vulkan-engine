@@ -1,6 +1,8 @@
 #include "vector.hpp"
+#include "matrix.hpp"
 
 #include <cmath>
+#include <iostream>
 
 namespace Math {
 // =============================================================================
@@ -35,6 +37,8 @@ Vector3::~Vector3() {
 Vector3::Vector3(f32 x, f32 y, f32 z) : x(x), y(y), z(z) {}
 
 Vector3::Vector3(const Vector3 &other) : x(other.x), y(other.y), z(other.z) {}
+
+void Vector3::print() { std::cout << "[" << x << " " << y << " " << z << "]\n"; }
 
 Vector3 &Vector3::operator=(const Vector3 &other) {
   if (this == &other)
@@ -100,6 +104,17 @@ Vector3 Vector3::normal() {
   result.y = y * l;
   result.z = z * l;
   return result;
+}
+
+void Vector3::rotate(f32 angle, Vector3 axis) {
+  Quaternion r(angle, axis);
+  Quaternion c = r.conjugate();
+  Quaternion pos(0, {x, y, z});
+  Quaternion w = r * pos * c;
+
+  this->x = w.v.x;
+  this->y = w.v.y;
+  this->z = w.v.z;
 }
 
 // =============================================================================

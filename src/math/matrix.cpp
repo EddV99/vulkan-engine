@@ -326,6 +326,8 @@ Quaternion::Quaternion(const Quaternion &other) : w(other.w), v(other.v) {}
 
 Quaternion::Quaternion(Quaternion &&other) noexcept : w(other.w), v(other.v) {}
 
+void Quaternion::print() { std::cout << "(" << w << "{" << v.x << " " << v.y << " " << v.z << "})\n"; }
+
 Quaternion &Quaternion::operator=(Quaternion &&other) noexcept {
   if (this == &other)
     return *this;
@@ -347,7 +349,9 @@ Quaternion &Quaternion::operator=(const Quaternion &other) {
 }
 
 Quaternion Quaternion::operator*(const Quaternion &other) {
-  return Quaternion(w * other.w - v.dot(other.v), (other.v * w) + (v * other.w) + v.cross(other.v));
+  f32 x0 = w * other.w - v.dot(other.v);
+  Math::Vector3 x = (other.v * w) + (v * other.w) + v.cross(other.v);
+  return Quaternion{x0, x.x, x.y, x.z};
 }
 Quaternion Quaternion::operator*(f32 scalar) {
   return Quaternion(w * scalar, v.x * scalar, v.y * scalar, v.z * scalar);

@@ -107,6 +107,7 @@ struct Quaternion {
   Quaternion(f32 w, f32 i, f32 j, f32 k);
   Quaternion(const Quaternion &other);
   Quaternion(Quaternion &&other) noexcept;
+  void print();
   Quaternion &operator=(const Quaternion &other);
   Quaternion &operator=(Quaternion &&other) noexcept;
 
