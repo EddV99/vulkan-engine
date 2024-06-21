@@ -3,7 +3,9 @@
  */
 #include "game/scene.hpp"
 #include "math/matrix.hpp"
+#include "math/vector.hpp"
 #include "renderer/renderer.hpp"
+#include "util/defines.hpp"
 
 #include <exception>
 #include <iostream>
@@ -13,6 +15,11 @@ int main(void) {
   std::string cubePath = "res/cube/cube.obj";
   std::string teapotPath = "res/teapot/teapot.obj";
   std::string spherePath = "res/sphere/sphere.obj";
+
+  Math::Quaternion a{1, 2, 3, 4};
+  Math::Quaternion b{5, 6, 7, 8};
+
+  (a*b).print();
 
   try {
     std::vector<Game::ModelInfo> models;
@@ -68,7 +75,7 @@ int main(void) {
 
     Game::Scene scene(models);
 
-    Renderer::Renderer renderer(800, 800, scene);
+    Renderer::Renderer renderer(SCREEN_WIDTH, SCREEN_HEIGHT, scene);
     while (renderer.running()) {
       renderer.FPS();
       renderer.draw();
@@ -77,7 +84,7 @@ int main(void) {
     }
   } catch (std::exception &e) {
     std::cerr << e.what() << std::endl;
-    return 0;
+    return -1;
   }
 
   return 0;

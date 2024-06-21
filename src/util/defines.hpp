@@ -16,3 +16,6 @@ using f64 = double;
 
 #define MATH_PI 3.14159265358979323846
 #define TO_RADIANS(d) d * MATH_PI / 180.0
+
+#define SCREEN_WIDTH 880 
+#define SCREEN_HEIGHT 495 
