@@ -45,6 +45,8 @@ Scene &Scene::operator=(Scene &&other) noexcept {
 
 const Object &Scene::operator[](int32_t index) { return objects[index]; }
 
+size_t Scene::getTextureCount() { return textureCount; }
+
 void Scene::init() {
   for (const auto &modelInfo : models) {
     Math::Quaternion q = {0, {0, 0, 0}};
@@ -52,6 +54,9 @@ void Scene::init() {
     Object obj(modelInfo.position, q, modelInfo.scale);
     obj.init(modelInfo.meshFilePath, modelInfo.textureFilePath);
     objects.push_back(obj);
+
+    if (!modelInfo.textureFilePath.empty())
+      textureCount++;
   }
 }
 

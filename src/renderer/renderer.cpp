@@ -31,7 +31,7 @@ Renderer::Renderer(int w, int h, Game::Scene &scene) {
   glfwSetCursorPosCallback(window, mousePointerCallback);
   glfwSetFramebufferSizeCallback(window, resizeCallback);
 
-  rendererbackend.init(this->window, this->scene);
+  rendererbackend.init(this->window, this->scene, WIDTH, HEIGHT);
 }
 void Renderer::draw() {
   if (state != State::RUNNING)

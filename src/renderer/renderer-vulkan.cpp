@@ -34,12 +34,12 @@ RendererVulkan::~RendererVulkan() {
 
   cleanSwapchain();
 
-  if (madeTextureImage) {
-    vkDestroySampler(device, textureSampler, nullptr);
-    vkDestroyImageView(device, textureImageView, nullptr);
+  for (size_t i = 0; i < textureSampler.size(); i++) {
+    vkDestroySampler(device, textureSampler[i], nullptr);
+    vkDestroyImageView(device, textureImageView[i], nullptr);
 
-    vkDestroyImage(device, textureImage, nullptr);
-    vkFreeMemory(device, textureImageMemory, nullptr);
+    vkDestroyImage(device, textureImage[i], nullptr);
+    vkFreeMemory(device, textureImageMemory[i], nullptr);
   }
 
   for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
@@ -79,14 +79,23 @@ RendererVulkan::~RendererVulkan() {
 // ====================================================================================================================
 //     Initialization
 // ====================================================================================================================
-void RendererVulkan::init(GLFWwindow *window, Game::Scene &scene) {
+void RendererVulkan::init(GLFWwindow *window, Game::Scene &scene, uint32_t width, uint32_t height) {
   if (enableValidationLayers && !checkValidationLayerSupport())
     Util::Error("Validation layers requested, but failed to get");
 
   this->scene = &scene;
   this->window = window;
+
   OBJECT_COUNT = scene.objects.size();
   ubos.resize(OBJECT_COUNT);
+
+  WIDTH = width;
+  HEIGHT = height;
+  r = (f32)WIDTH / 2.0;
+  l = -r;
+
+  t = (f32)HEIGHT / 2.0;
+  b = -t;
 
   createInstance();
   createSurface();
@@ -102,9 +111,35 @@ void RendererVulkan::init(GLFWwindow *window, Game::Scene &scene) {
   createFrameBuffers();
 
   // TODO: should be able to load every objects texture
-  createTextureImage(DEFAULT_IMAGE, 1, 1);
-  createTextureImageView();
-  createTextureSampler();
+  size_t textureCount = scene.getTextureCount();
+
+  if (textureCount == 0) {
+    textureCount = 1;
+    textureImage.resize(textureCount);
+    textureImageMemory.resize(textureCount);
+    textureImageView.resize(textureCount);
+    textureSampler.resize(textureCount);
+
+    createTextureImage(DEFAULT_IMAGE, 1, 1, textureImage[0], textureImageMemory[0]);
+    createTextureImageView(textureImage[0], textureImageView[0]);
+    createTextureSampler(textureSampler[0]);
+  } else {
+    textureImage.resize(textureCount);
+    textureImageMemory.resize(textureCount);
+    textureImageView.resize(textureCount);
+    textureSampler.resize(textureCount);
+
+    size_t i = 0;
+    for (auto &obj : scene.objects) {
+      if (obj.hasTexture()) {
+        auto t = obj.getTextureData();
+        createTextureImage(t.pixels, t.width, t.height, textureImage[i], textureImageMemory[i]);
+        createTextureImageView(textureImage[i], textureImageView[i]);
+        createTextureSampler(textureSampler[i]);
+      }
+      i++;
+    }
+  }
 
   // combine all object(s) data into one buffer
   size_t vertexDataSize = 0;
@@ -459,7 +494,6 @@ void RendererVulkan::createGraphicsPipeline() {
   rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
   rasterizer.lineWidth = 1.0f;
   rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-  /* rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE; */
   rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
   rasterizer.depthBiasEnable = VK_FALSE;
   rasterizer.depthBiasConstantFactor = 0.0f;
@@ -523,7 +557,7 @@ void RendererVulkan::createGraphicsPipeline() {
   pipelineLayoutInfo.pushConstantRangeCount = 0;
   pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
-  if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
+  if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) 
     Util::Error("Failed to create pipeline layout");
 
   // create the graphics pipeline object
@@ -677,8 +711,8 @@ void RendererVulkan::createDescriptorSets() {
 
     VkDescriptorImageInfo imageInfo{};
     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    imageInfo.imageView = textureImageView;
-    imageInfo.sampler = textureSampler;
+    imageInfo.imageView = textureImageView[0];
+    imageInfo.sampler = textureSampler[0];
 
     std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
     descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -725,9 +759,8 @@ void RendererVulkan::createDepthResources() {
                         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 }
 
-void RendererVulkan::createTextureImage(void *textureData, int width, int height) {
-  madeTextureImage = true;
-
+void RendererVulkan::createTextureImage(void *textureData, int width, int height, VkImage &image,
+                                        VkDeviceMemory &imageMemory) {
   int imageWidth = width;
   int imageHeight = height;
 
@@ -748,24 +781,24 @@ void RendererVulkan::createTextureImage(void *textureData, int width, int height
   vkUnmapMemory(device, stagingBufferMemory);
 
   createImage(imageWidth, imageHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
-              VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-              textureImage, textureImageMemory);
+              VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image,
+              imageMemory);
 
-  transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED,
+  transitionImageLayout(image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED,
                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-  copyBufferToImage(stagingBuffer, textureImage, (uint32_t)imageWidth, (uint32_t)imageHeight);
-  transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+  copyBufferToImage(stagingBuffer, image, (uint32_t)imageWidth, (uint32_t)imageHeight);
+  transitionImageLayout(image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
   vkDestroyBuffer(device, stagingBuffer, nullptr);
   vkFreeMemory(device, stagingBufferMemory, nullptr);
 }
 
-void RendererVulkan::createTextureImageView() {
-  textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+void RendererVulkan::createTextureImageView(VkImage &image, VkImageView &imageView) {
+  imageView = createImageView(image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
-void RendererVulkan::createTextureSampler() {
+void RendererVulkan::createTextureSampler(VkSampler &sampler) {
   VkPhysicalDeviceProperties properties{};
   vkGetPhysicalDeviceProperties(physicalDevice, &properties);
 
@@ -787,7 +820,7 @@ void RendererVulkan::createTextureSampler() {
   samplerInfo.minLod = 0.0f;
   samplerInfo.maxLod = 0.0f;
 
-  if (vkCreateSampler(device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS)
+  if (vkCreateSampler(device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS)
     Util::Error("Failed to create texture sampler");
 }
 

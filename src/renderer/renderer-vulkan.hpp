@@ -31,8 +31,9 @@ public:
   ~RendererVulkan();
 
   void drawScene();
-  void init(GLFWwindow *window, Game::Scene &scene);
+  void init(GLFWwindow *window, Game::Scene &scene, uint32_t width, uint32_t height);
   void resize();
+  
 
 private:
   /**
@@ -43,7 +44,7 @@ private:
     VkShaderModule fragment = nullptr;
     VkShaderModule tesselation = nullptr;
     VkShaderModule geometery = nullptr;
-  } shaders;
+  };
 
   struct QueueFamily {
     std::optional<uint32_t> graphics;
@@ -63,13 +64,6 @@ private:
     alignas(16) Math::Matrix4 view;
     alignas(16) Math::Matrix4 proj;
   };
-
-  /**
-   * List of wanted validation layers
-   */
-  const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
-
-  const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
   /**
    * Vulkan Initilization
@@ -98,11 +92,11 @@ private:
 
   void createDepthResources();
 
-  void createTextureImage(void *textureData, int width, int height);
+  void createTextureImage(void *textureData, int width, int height, VkImage &image, VkDeviceMemory &imageMemory);
 
-  void createTextureImageView();
+  void createTextureImageView(VkImage &image, VkImageView &imageView);
 
-  void createTextureSampler();
+  void createTextureSampler(VkSampler &sampler);
 
   void createDescriptorSets();
 
@@ -185,16 +179,6 @@ private:
   /**
    * Perspective Matrix
    */
-  f32 f = 100;
-  f32 n = 0.1;
-
-  f32 dt = 0;
-
-  f32 t = 400;
-  f32 b = -400;
-
-  f32 r = 400;
-  f32 l = -400;
   Math::Matrix4 perspectiveMatrix(f32 fov, f32 aspect);
 
   /**
@@ -211,14 +195,17 @@ private:
   std::vector<VkImageView> swapchainImageViews;
   std::vector<VkImage> swapchainImages;
   VkFormat swapchainImageFormat;
-  VkRenderPass renderPass;
   VkExtent2D extent;
+
+  VkRenderPass renderPass;
   VkDescriptorSetLayout descriptorSetLayout;
   VkPipelineLayout pipelineLayout;
   VkPipeline graphicsPipeline;
+
   std::vector<VkFramebuffer> framebuffers;
   std::vector<VkCommandBuffer> commandBuffers;
   VkCommandPool commandPool;
+
   std::vector<VkSemaphore> imageAvailableSem;
   std::vector<VkSemaphore> renderFinishedSem;
   std::vector<VkFence> inFlightFence;
@@ -230,49 +217,90 @@ private:
   VkDescriptorPool descriptorPool;
   std::vector<VkDescriptorSet> descriptorSets;
 
-  // depth
   VkImage depthImage;
   VkDeviceMemory depthImageMemory;
   VkImageView depthImageView;
 
-  // mesh(s)
+  /**
+   * Vertex data
+   */
   VkBuffer meshBuffer;
   VkDeviceMemory meshMemory;
-
   VkBuffer indexBuffer;
   VkDeviceMemory indexMemory;
-
-  std::vector<VkBuffer> uniformBuffers;
-  std::vector<VkDeviceMemory> uniformBuffersMemory;
-  std::vector<void *> uniformBuffersMapped;
-
-  bool madeTextureImage = false;
-  VkImage textureImage;
-  VkDeviceMemory textureImageMemory;
-  VkImageView textureImageView;
-  VkSampler textureSampler;
 
   std::vector<int32_t> vertexOffsets;
   std::vector<uint32_t> indexOffsets;
   std::vector<uint32_t> indexCount;
 
+  /**
+   * Uniform buffers
+   */
+  std::vector<VkBuffer> uniformBuffers;
+  std::vector<VkDeviceMemory> uniformBuffersMemory;
+  std::vector<void *> uniformBuffersMapped;
+  std::vector<UniformBufferObject> ubos;
+
   VkDeviceSize alignment;
   VkDeviceSize dynamicUniformBufferSize;
 
-  std::vector<UniformBufferObject> ubos;
-
   /**
-   * Constants
+   * Texture
    */
-  uint32_t WIDTH = 500;
-  uint32_t HEIGHT = 500;
+  std::vector<VkImage> textureImage;
+  std::vector<VkDeviceMemory> textureImageMemory;
+  std::vector<VkImageView> textureImageView;
+  std::vector<VkSampler> textureSampler;
 
-  size_t OBJECT_COUNT = 0;
-
-  const int MAX_FRAMES_IN_FLIGHT = 2;
-
+  VkImage cubemapImage;
+  VkDeviceMemory cubemapImageMemory;
+  VkImageView cubemapImageView;
+  VkSampler cubemapSampler;
+  // when no textures are needed send a "dummy" texture
   unsigned char DEFAULT_IMAGE[4] = {0, 0, 0, 0};
 
+  // Shaders for pipeline
+  Shaders shaders;
+
+  /**
+   * List of wanted validation layers
+   */
+  const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
+
+  const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
+  /**
+   * Values for perspective matrix
+   */
+  // far/near
+  f32 f = 100;
+  f32 n = 0.1;
+  // top/bottom
+  f32 t;
+  f32 b;
+  // right/left
+  f32 r;
+  f32 l;
+
+  /**
+   * Width and Height
+   */
+  uint32_t WIDTH;
+  uint32_t HEIGHT;
+
+  /**
+   * Number of objects to render
+   */
+  size_t OBJECT_COUNT = 0;
+
+  /**
+   * Number of frames in flight at a time (2 is double buffering)
+   */
+  const int MAX_FRAMES_IN_FLIGHT = 2;
+
+  /**
+   * Enable validation layers in debug mode
+   */
 #ifdef NDEBUG
   const bool enableValidationLayers = false;
 #else

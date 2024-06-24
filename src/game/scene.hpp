@@ -26,6 +26,7 @@ struct ModelInfo {
 class Scene {
 private:
   std::vector<ModelInfo> models;
+  size_t textureCount = 0;
 
 public:
   Scene() = default;
@@ -38,6 +39,7 @@ public:
   const Object &operator[](int32_t index);
 
   void init();
+  size_t getTextureCount();
 
   std::vector<Object> objects;
   Camera camera;
