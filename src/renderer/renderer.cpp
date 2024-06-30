@@ -42,11 +42,13 @@ void Renderer::draw() {
     return;
 
   f32 speed = 0.0007;
-  for (auto &obj : scene.objects) {
-    f32 dx = Util::randomFloat(0.0, 360.0) * speed;
-    f32 dy = Util::randomFloat(0.0, 360.0) * speed;
-    f32 dz = Util::randomFloat(0.0, 360.0) * speed;
-    obj.moveRotation({dx, dy, dz});
+  if (spin) {
+    for (auto &obj : scene.objects) {
+      f32 dx = Util::randomFloat(0.0, 360.0) * speed;
+      f32 dy = Util::randomFloat(0.0, 360.0) * speed;
+      f32 dz = Util::randomFloat(0.0, 360.0) * speed;
+      obj.moveRotation({dx, dy, dz});
+    }
   }
 
   rendererbackend.drawScene();
@@ -103,6 +105,10 @@ void Renderer::handleInput() {
     scene.camera.toggleFreecam();
     input.setUnpressed(Keys::KEY_C);
   }
+  if (input.isPressed(Keys::KEY_R)) {
+    spin = !spin;
+    input.setUnpressed(Keys::KEY_R);
+  }
 }
 void Renderer::mousePointerCallback(GLFWwindow *window, double x, double y) {
   Renderer *app = static_cast<Renderer *>(glfwGetWindowUserPointer(window));
@@ -154,6 +160,9 @@ void Renderer::keyCallback(GLFWwindow *window, int key, int scancode, int action
   if (key == GLFW_KEY_C && action == GLFW_PRESS) {
     app->input.setPressed(Keys::KEY_C);
   }
+  if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+    app->input.setPressed(Keys::KEY_R);
+  }
 
   if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
     app->input.setUnpressed(Keys::KEY_W);
@@ -169,6 +178,9 @@ void Renderer::keyCallback(GLFWwindow *window, int key, int scancode, int action
   }
   if (key == GLFW_KEY_C && action == GLFW_RELEASE) {
     app->input.setUnpressed(Keys::KEY_C);
+  }
+  if (key == GLFW_KEY_R && action == GLFW_RELEASE) {
+    app->input.setUnpressed(Keys::KEY_R);
   }
 }
 

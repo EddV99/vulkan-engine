@@ -16,11 +16,6 @@ int main(void) {
   std::string teapotPath = "res/teapot/teapot.obj";
   std::string spherePath = "res/sphere/sphere.obj";
 
-  Math::Quaternion a{1, 2, 3, 4};
-  Math::Quaternion b{5, 6, 7, 8};
-
-  (a*b).print();
-
   try {
     std::vector<Game::ModelInfo> models;
     Game::ModelInfo sphere;

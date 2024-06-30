@@ -45,6 +45,8 @@ private:
   double currTime = 0;
   uint32_t frames = 0;
 
+  bool spin = false;
+
 };
 
 } // namespace Renderer
