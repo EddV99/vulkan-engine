@@ -77,6 +77,7 @@ public:
   Matrix4 operator-(Matrix4 &right);
   Matrix4 operator*(Matrix4 &right);
   Matrix4 operator*(f32 scalar);
+  Matrix3 toMatrix3x3();
 
   f32 determinate();
   void transpose();

@@ -204,6 +204,12 @@ Matrix4 &Matrix4::operator=(Matrix4 &&other) noexcept {
   return *this;
 }
 
+Matrix3 Matrix4::toMatrix3x3() {
+  return Matrix3((*this)(0, 0), (*this)(0, 1), (*this)(0, 2), //
+                 (*this)(1, 0), (*this)(1, 1), (*this)(1, 2), //
+                 (*this)(2, 0), (*this)(2, 1), (*this)(2, 2));
+}
+
 void Matrix4::set(i32 row, i32 col, f32 value) { m[ROW_COL_TO_INDEX(row, col, 4)] = value; }
 
 f32 Matrix4::operator()(i32 row, i32 col) { return m[ROW_COL_TO_INDEX(row, col, 4)]; }

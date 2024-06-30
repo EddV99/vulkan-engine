@@ -73,6 +73,7 @@ private:
     alignas(16) Math::Matrix4 model;
     alignas(16) Math::Matrix4 view;
     alignas(16) Math::Matrix4 proj;
+    alignas(16) Math::Matrix3 mvn;
   };
 
   /**
