@@ -31,8 +31,12 @@ Renderer::Renderer(int w, int h, Game::Scene &scene) {
   glfwSetCursorPosCallback(window, mousePointerCallback);
   glfwSetFramebufferSizeCallback(window, resizeCallback);
 
-  rendererbackend.init(this->window, this->scene, WIDTH, HEIGHT);
+  rendererbackend.init(this->window, WIDTH, HEIGHT);
+  rendererbackend.initializeVulkan();
+  rendererbackend.createAssets(this->scene);
+  rendererbackend.createPipeline();
 }
+
 void Renderer::draw() {
   if (state != State::RUNNING)
     return;

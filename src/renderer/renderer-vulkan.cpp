@@ -19,6 +19,103 @@
 
 namespace Renderer {
 
+// Refractor ///////////////////////////////////////////////////////////
+
+// step 1: initialize vulkan
+void RendererVulkan::initializeVulkan() {
+  createInstance();
+  createSurface();
+  pickPhysicalDevice();
+  createDevice();
+  createSwapchain();
+  createImageViews();
+  createRenderPass();
+  createCommandPool();
+  createCommandBuffer();
+  createDepthResources();
+  createFrameBuffers();
+  createSyncObjects();
+}
+
+// step 2: create assets for a scene
+void RendererVulkan::createAssets(Game::Scene &scene) {
+  this->scene = &scene;
+
+  OBJECT_COUNT = scene.objects.size();
+  ubos.resize(OBJECT_COUNT);
+
+  // Combine all data into one big buffer.
+  // This provides good data locality.
+  size_t vertexDataSize = 0;
+  size_t indexDataSize = 0;
+  uint32_t offsetCount = 0;
+  int32_t vertexCount = 0;
+  std::vector<Mesh::Vertex> vertexData;
+  std::vector<u32> indexData;
+
+  for (auto &obj : scene.objects) {
+    auto v = obj.getMesh().getVertexData();
+    auto i = obj.getMesh().getIndices();
+
+    vertexData.insert(vertexData.end(), v.begin(), v.end());
+    indexData.insert(indexData.end(), i.begin(), i.end());
+
+    vertexDataSize += obj.getMesh().getVertexDataSize();
+    indexDataSize += obj.getMesh().getIndexDataSize();
+
+    indexOffsets.push_back(offsetCount);
+    indexCount.push_back((uint32_t)obj.getMesh().getVertexCount());
+    offsetCount += (uint32_t)obj.getMesh().getVertexCount();
+
+    vertexOffsets.push_back(vertexCount);
+    vertexCount += (int32_t)v.size();
+  }
+
+  createVertexBuffer(vertexData.data(), vertexDataSize);
+  createIndexBuffer(indexData.data(), indexDataSize);
+
+  // upload textures for objects
+  size_t textureCount = scene.getTextureCount();
+
+  if (textureCount == 0) {
+    textureCount = 1;
+    textureImage.resize(textureCount);
+    textureImageMemory.resize(textureCount);
+    textureImageView.resize(textureCount);
+    textureSampler.resize(textureCount);
+
+    createTextureImage(DEFAULT_IMAGE, 1, 1, textureImage[0], textureImageMemory[0]);
+    createTextureImageView(textureImage[0], textureImageView[0]);
+    createTextureSampler(textureSampler[0]);
+  } else {
+    textureImage.resize(textureCount);
+    textureImageMemory.resize(textureCount);
+    textureImageView.resize(textureCount);
+    textureSampler.resize(textureCount);
+
+    size_t i = 0;
+    for (auto &obj : scene.objects) {
+      if (obj.hasTexture()) {
+        auto t = obj.getTextureData();
+        createTextureImage(t.pixels, t.width, t.height, textureImage[i], textureImageMemory[i]);
+        createTextureImageView(textureImage[i], textureImageView[i]);
+        createTextureSampler(textureSampler[i]);
+      }
+      i++;
+    }
+  }
+}
+
+void RendererVulkan::createPipeline() {
+  createDescriptorSetLayout();
+  createGraphicsPipeline();
+  createUniformBuffers();
+  createDescriptorPool();
+  createDescriptorSets();
+}
+
+////////////////////////////////////////////////////////////////////////
+
 RendererVulkan::RendererVulkan(uint32_t width, uint32_t height) {
   WIDTH = width;
   HEIGHT = height;
@@ -66,7 +163,7 @@ RendererVulkan::~RendererVulkan() {
 
   vkDestroyPipeline(device, graphicsPipeline, nullptr);
   vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-  vkDestroyRenderPass(device, renderPass, nullptr);
+  vkDestroyRenderPass(device, colorAndDepthRenderPass, nullptr);
 
   vkDestroyDevice(device, nullptr);
   vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -79,68 +176,50 @@ RendererVulkan::~RendererVulkan() {
 // ====================================================================================================================
 //     Initialization
 // ====================================================================================================================
-void RendererVulkan::init(GLFWwindow *window, Game::Scene &scene, uint32_t width, uint32_t height) {
+void RendererVulkan::init(GLFWwindow *window, uint32_t width, uint32_t height) {
   if (enableValidationLayers && !checkValidationLayerSupport())
     Util::Error("Validation layers requested, but failed to get");
 
-  this->scene = &scene;
   this->window = window;
-
-  OBJECT_COUNT = scene.objects.size();
-  ubos.resize(OBJECT_COUNT);
 
   WIDTH = width;
   HEIGHT = height;
+
   r = (f32)WIDTH / 2.0;
   l = -r;
 
   t = (f32)HEIGHT / 2.0;
   b = -t;
 
-  createInstance();
-  createSurface();
-  pickPhysicalDevice();
-  createDevice();
-  createSwapchain();
-  createImageViews();
-  createRenderPass();
-  createDescriptorSetLayout();
-  createGraphicsPipeline();
-  createCommandPool();
-  createDepthResources();
-  createFrameBuffers();
+  /* createInstance(); */
+  /* createSurface(); */
+  /* pickPhysicalDevice(); */
+  /* createDevice(); */
+  /* createSwapchain(); */
 
-  // TODO: should be able to load every objects texture
-  size_t textureCount = scene.getTextureCount();
+  /* createImageViews(); */
+  /* createRenderPass(); */
 
-  if (textureCount == 0) {
-    textureCount = 1;
-    textureImage.resize(textureCount);
-    textureImageMemory.resize(textureCount);
-    textureImageView.resize(textureCount);
-    textureSampler.resize(textureCount);
+  /* createDescriptorSetLayout(); */
+  /* createGraphicsPipeline(); */
 
-    createTextureImage(DEFAULT_IMAGE, 1, 1, textureImage[0], textureImageMemory[0]);
-    createTextureImageView(textureImage[0], textureImageView[0]);
-    createTextureSampler(textureSampler[0]);
-  } else {
-    textureImage.resize(textureCount);
-    textureImageMemory.resize(textureCount);
-    textureImageView.resize(textureCount);
-    textureSampler.resize(textureCount);
+  /* createCommandPool(); */
+  /* createDepthResources(); */
+  /* createFrameBuffers(); */
 
-    size_t i = 0;
-    for (auto &obj : scene.objects) {
-      if (obj.hasTexture()) {
-        auto t = obj.getTextureData();
-        createTextureImage(t.pixels, t.width, t.height, textureImage[i], textureImageMemory[i]);
-        createTextureImageView(textureImage[i], textureImageView[i]);
-        createTextureSampler(textureSampler[i]);
-      }
-      i++;
-    }
-  }
+  /* setupObjectTextures(); */
+  /* setupCubemap(); */
+  /* setupVertexAndIndexData(); */
 
+  /* createUniformBuffers(); */
+  /* createDescriptorPool(); */
+  /* createDescriptorSets(); */
+
+  /* createCommandBuffer(); */
+  /* createSyncObjects(); */
+}
+
+void RendererVulkan::setupVertexAndIndexData() {
   // combine all object(s) data into one buffer
   size_t vertexDataSize = 0;
   size_t indexDataSize = 0;
@@ -149,7 +228,7 @@ void RendererVulkan::init(GLFWwindow *window, Game::Scene &scene, uint32_t width
   std::vector<Mesh::Vertex> vertexData;
   std::vector<u32> indexData;
 
-  for (auto &obj : scene.objects) {
+  for (auto &obj : scene->objects) {
     auto v = obj.getMesh().getVertexData();
     auto i = obj.getMesh().getIndices();
 
@@ -169,13 +248,42 @@ void RendererVulkan::init(GLFWwindow *window, Game::Scene &scene, uint32_t width
 
   createVertexBuffer(vertexData.data(), vertexDataSize);
   createIndexBuffer(indexData.data(), indexDataSize);
-
-  createUniformBuffers();
-  createDescriptorPool();
-  createDescriptorSets();
-  createCommandBuffer();
-  createSyncObjects();
 }
+
+void RendererVulkan::setupObjectTextures() {
+  // TODO: should be able to load every objects texture
+  size_t textureCount = scene->getTextureCount();
+
+  if (textureCount == 0) {
+    textureCount = 1;
+    textureImage.resize(textureCount);
+    textureImageMemory.resize(textureCount);
+    textureImageView.resize(textureCount);
+    textureSampler.resize(textureCount);
+
+    createTextureImage(DEFAULT_IMAGE, 1, 1, textureImage[0], textureImageMemory[0]);
+    createTextureImageView(textureImage[0], textureImageView[0]);
+    createTextureSampler(textureSampler[0]);
+  } else {
+    textureImage.resize(textureCount);
+    textureImageMemory.resize(textureCount);
+    textureImageView.resize(textureCount);
+    textureSampler.resize(textureCount);
+
+    size_t i = 0;
+    for (auto &obj : scene->objects) {
+      if (obj.hasTexture()) {
+        auto t = obj.getTextureData();
+        createTextureImage(t.pixels, t.width, t.height, textureImage[i], textureImageMemory[i]);
+        createTextureImageView(textureImage[i], textureImageView[i]);
+        createTextureSampler(textureSampler[i]);
+      }
+      i++;
+    }
+  }
+}
+
+void RendererVulkan::setupCubemap() {}
 
 void RendererVulkan::createInstance() {
   VkApplicationInfo appInfo{};
@@ -390,7 +498,7 @@ void RendererVulkan::createRenderPass() {
   renderPassInfo.dependencyCount = 1;
   renderPassInfo.pDependencies = &dependency;
 
-  if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
+  if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &colorAndDepthRenderPass) != VK_SUCCESS)
     Util::Error("Failed to create render pass");
 }
 
@@ -528,14 +636,6 @@ void RendererVulkan::createGraphicsPipeline() {
   colorBlendAttachment.colorWriteMask =
       VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
   colorBlendAttachment.blendEnable = VK_FALSE;
-  /* colorBlendAttachment.srcColorBlendFactor = */
-  /*     VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA; */
-  /* colorBlendAttachment.dstColorBlendFactor = */
-  /*     VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA; */
-  /* colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD; */
-  /* colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; */
-  /* colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; */
-  /* colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD; */
 
   VkPipelineColorBlendStateCreateInfo colorBlending{};
   colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -557,7 +657,7 @@ void RendererVulkan::createGraphicsPipeline() {
   pipelineLayoutInfo.pushConstantRangeCount = 0;
   pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
-  if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) 
+  if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
     Util::Error("Failed to create pipeline layout");
 
   // create the graphics pipeline object
@@ -574,7 +674,7 @@ void RendererVulkan::createGraphicsPipeline() {
   pipelineInfo.pColorBlendState = &colorBlending;
   pipelineInfo.pDynamicState = &dynamicState;
   pipelineInfo.layout = pipelineLayout;
-  pipelineInfo.renderPass = renderPass;
+  pipelineInfo.renderPass = colorAndDepthRenderPass;
   pipelineInfo.subpass = 0;
   pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
   pipelineInfo.basePipelineIndex = -1;
@@ -595,7 +695,7 @@ void RendererVulkan::createFrameBuffers() {
 
     VkFramebufferCreateInfo framebufferInfo{};
     framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebufferInfo.renderPass = renderPass;
+    framebufferInfo.renderPass = colorAndDepthRenderPass;
     framebufferInfo.attachmentCount = (uint32_t)attachments.size();
     framebufferInfo.pAttachments = attachments.data();
     framebufferInfo.width = extent.width;
@@ -690,6 +790,7 @@ void RendererVulkan::createDescriptorPool() {
   if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
     Util::Error("Failed to create descriptor pool");
 }
+
 void RendererVulkan::createDescriptorSets() {
   std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
   VkDescriptorSetAllocateInfo allocInfo{};
@@ -1148,9 +1249,8 @@ bool RendererVulkan::checkValidationLayerSupport() {
 }
 
 void RendererVulkan::createSurface() {
-  if (glfwCreateWindowSurface(instance, window, nullptr, &surface)) {
+  if (glfwCreateWindowSurface(instance, window, nullptr, &surface))
     Util::Error("Failed to create window surface");
-  }
 
 #ifdef PRINT_EXTENSIONS
   uint32_t extensionCount = 0;
@@ -1296,7 +1396,7 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
 
   VkRenderPassBeginInfo renderPassInfo{};
   renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-  renderPassInfo.renderPass = renderPass;
+  renderPassInfo.renderPass = colorAndDepthRenderPass;
   renderPassInfo.framebuffer = framebuffers[imageIndex];
   renderPassInfo.renderArea.offset = {0, 0};
   renderPassInfo.renderArea.extent = swapchainExtent;

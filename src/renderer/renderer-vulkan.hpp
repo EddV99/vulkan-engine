@@ -30,10 +30,20 @@ public:
   RendererVulkan(uint32_t width, uint32_t height);
   ~RendererVulkan();
 
+  void init(GLFWwindow *window, uint32_t width, uint32_t height);
+
+  void initializeVulkan();
+  void createAssets(Game::Scene &scene);
+  void createPipeline();
+
+  /**
+   * Render the whole scene
+   */
   void drawScene();
-  void init(GLFWwindow *window, Game::Scene &scene, uint32_t width, uint32_t height);
+  /**
+   * Set to resize when possible
+   */
   void resize();
-  
 
 private:
   /**
@@ -115,6 +125,15 @@ private:
   /**
    * Helper Methods
    */
+  void createTexture(void *textureData, int width, int height, VkImage &image, VkDeviceMemory &imageMemory,
+                     VkImageView &imageView, VkSampler sampler);
+
+  void setupVertexAndIndexData();
+
+  void setupObjectTextures();
+
+  void setupCubemap();
+
   bool hasStencilComponent(VkFormat format);
 
   VkFormat findDepthFormat();
@@ -186,10 +205,10 @@ private:
    */
   GLFWwindow *window;
   VkInstance instance;
-  VkSurfaceKHR surface;
   VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-  VkDevice device;
   QueueFamily queueFamily;
+  VkDevice device;
+  VkSurfaceKHR surface;
   VkSwapchainKHR swapchain;
   VkExtent2D swapchainExtent;
   std::vector<VkImageView> swapchainImageViews;
@@ -197,9 +216,14 @@ private:
   VkFormat swapchainImageFormat;
   VkExtent2D extent;
 
-  VkRenderPass renderPass;
+  VkRenderPass colorAndDepthRenderPass;
+  VkRenderPass depthRenderPass;
+
+  // describes uniform variables
   VkDescriptorSetLayout descriptorSetLayout;
+  // references descriptor set, push constants
   VkPipelineLayout pipelineLayout;
+  // references the pipeline layout and renderpass
   VkPipeline graphicsPipeline;
 
   std::vector<VkFramebuffer> framebuffers;
@@ -209,26 +233,30 @@ private:
   std::vector<VkSemaphore> imageAvailableSem;
   std::vector<VkSemaphore> renderFinishedSem;
   std::vector<VkFence> inFlightFence;
+
   VkQueue graphicsQueue;
   VkQueue presentQueue;
   uint32_t currentFrame = 0;
   bool resized = false;
-  Game::Scene *scene;
   VkDescriptorPool descriptorPool;
   std::vector<VkDescriptorSet> descriptorSets;
 
+  /**
+   * Depth needed for 3D rendering
+   */
   VkImage depthImage;
   VkDeviceMemory depthImageMemory;
   VkImageView depthImageView;
 
   /**
    * Vertex data
+   *  (we'll combine scene mesh data into one big buffer)
    */
   VkBuffer meshBuffer;
   VkDeviceMemory meshMemory;
   VkBuffer indexBuffer;
   VkDeviceMemory indexMemory;
-
+  // data needed to be able to index into individual models from our big mesh buffer
   std::vector<int32_t> vertexOffsets;
   std::vector<uint32_t> indexOffsets;
   std::vector<uint32_t> indexCount;
@@ -252,15 +280,30 @@ private:
   std::vector<VkImageView> textureImageView;
   std::vector<VkSampler> textureSampler;
 
+  /**
+   * cubemap
+   *  (should just be one)
+   */
   VkImage cubemapImage;
   VkDeviceMemory cubemapImageMemory;
   VkImageView cubemapImageView;
   VkSampler cubemapSampler;
+
   // when no textures are needed send a "dummy" texture
   unsigned char DEFAULT_IMAGE[4] = {0, 0, 0, 0};
 
   // Shaders for pipeline
   Shaders shaders;
+
+  // one triangle for cubemap
+  f32 triangleVertices[9] = {-1.0, -1.0, 0.999, //
+                             3.0,  -1.0, 0.999, //
+                             -1.0, 3.0,  0.999};
+
+  /**
+   * Scene to render
+   */
+  Game::Scene *scene;
 
   /**
    * List of wanted validation layers
