@@ -19,103 +19,6 @@
 
 namespace Renderer {
 
-// Refractor ///////////////////////////////////////////////////////////
-
-// step 1: initialize vulkan
-void RendererVulkan::initializeVulkan() {
-  createInstance();
-  createSurface();
-  pickPhysicalDevice();
-  createDevice();
-  createSwapchain();
-  createImageViews();
-  createRenderPass();
-  createCommandPool();
-  createCommandBuffer();
-  createDepthResources();
-  createFrameBuffers();
-  createSyncObjects();
-}
-
-// step 2: create assets for a scene
-void RendererVulkan::createAssets(Game::Scene &scene) {
-  this->scene = &scene;
-
-  OBJECT_COUNT = scene.objects.size();
-  ubos.resize(OBJECT_COUNT);
-
-  // Combine all data into one big buffer.
-  // This provides good data locality.
-  size_t vertexDataSize = 0;
-  size_t indexDataSize = 0;
-  uint32_t offsetCount = 0;
-  int32_t vertexCount = 0;
-  std::vector<Mesh::Vertex> vertexData;
-  std::vector<u32> indexData;
-
-  for (auto &obj : scene.objects) {
-    auto v = obj.getMesh().getVertexData();
-    auto i = obj.getMesh().getIndices();
-
-    vertexData.insert(vertexData.end(), v.begin(), v.end());
-    indexData.insert(indexData.end(), i.begin(), i.end());
-
-    vertexDataSize += obj.getMesh().getVertexDataSize();
-    indexDataSize += obj.getMesh().getIndexDataSize();
-
-    indexOffsets.push_back(offsetCount);
-    indexCount.push_back((uint32_t)obj.getMesh().getVertexCount());
-    offsetCount += (uint32_t)obj.getMesh().getVertexCount();
-
-    vertexOffsets.push_back(vertexCount);
-    vertexCount += (int32_t)v.size();
-  }
-
-  createVertexBuffer(vertexData.data(), vertexDataSize);
-  createIndexBuffer(indexData.data(), indexDataSize);
-
-  // upload textures for objects
-  size_t textureCount = scene.getTextureCount();
-
-  if (textureCount == 0) {
-    textureCount = 1;
-    textureImage.resize(textureCount);
-    textureImageMemory.resize(textureCount);
-    textureImageView.resize(textureCount);
-    textureSampler.resize(textureCount);
-
-    createTextureImage(DEFAULT_IMAGE, 1, 1, textureImage[0], textureImageMemory[0]);
-    createTextureImageView(textureImage[0], textureImageView[0]);
-    createTextureSampler(textureSampler[0]);
-  } else {
-    textureImage.resize(textureCount);
-    textureImageMemory.resize(textureCount);
-    textureImageView.resize(textureCount);
-    textureSampler.resize(textureCount);
-
-    size_t i = 0;
-    for (auto &obj : scene.objects) {
-      if (obj.hasTexture()) {
-        auto t = obj.getTextureData();
-        createTextureImage(t.pixels, t.width, t.height, textureImage[i], textureImageMemory[i]);
-        createTextureImageView(textureImage[i], textureImageView[i]);
-        createTextureSampler(textureSampler[i]);
-      }
-      i++;
-    }
-  }
-}
-
-void RendererVulkan::createPipeline() {
-  createDescriptorSetLayout();
-  createGraphicsPipeline();
-  createUniformBuffers();
-  createDescriptorPool();
-  createDescriptorSets();
-}
-
-////////////////////////////////////////////////////////////////////////
-
 RendererVulkan::RendererVulkan(uint32_t width, uint32_t height) {
   WIDTH = width;
   HEIGHT = height;
@@ -190,37 +93,31 @@ void RendererVulkan::init(GLFWwindow *window, uint32_t width, uint32_t height) {
 
   t = (f32)HEIGHT / 2.0;
   b = -t;
-
-  /* createInstance(); */
-  /* createSurface(); */
-  /* pickPhysicalDevice(); */
-  /* createDevice(); */
-  /* createSwapchain(); */
-
-  /* createImageViews(); */
-  /* createRenderPass(); */
-
-  /* createDescriptorSetLayout(); */
-  /* createGraphicsPipeline(); */
-
-  /* createCommandPool(); */
-  /* createDepthResources(); */
-  /* createFrameBuffers(); */
-
-  /* setupObjectTextures(); */
-  /* setupCubemap(); */
-  /* setupVertexAndIndexData(); */
-
-  /* createUniformBuffers(); */
-  /* createDescriptorPool(); */
-  /* createDescriptorSets(); */
-
-  /* createCommandBuffer(); */
-  /* createSyncObjects(); */
 }
 
-void RendererVulkan::setupVertexAndIndexData() {
-  // combine all object(s) data into one buffer
+void RendererVulkan::initializeVulkan() {
+  createInstance();
+  createSurface();
+  pickPhysicalDevice();
+  createDevice();
+  createSwapchain();
+  createImageViews();
+  createRenderPass();
+  createCommandPool();
+  createCommandBuffer();
+  createDepthResources();
+  createFrameBuffers();
+  createSyncObjects();
+}
+
+void RendererVulkan::createAssets(Game::Scene &scene) {
+  this->scene = &scene;
+
+  OBJECT_COUNT = scene.objects.size();
+  ubos.resize(OBJECT_COUNT);
+
+  // Combine all data into one big buffer.
+  // This provides good data locality.
   size_t vertexDataSize = 0;
   size_t indexDataSize = 0;
   uint32_t offsetCount = 0;
@@ -228,7 +125,7 @@ void RendererVulkan::setupVertexAndIndexData() {
   std::vector<Mesh::Vertex> vertexData;
   std::vector<u32> indexData;
 
-  for (auto &obj : scene->objects) {
+  for (auto &obj : scene.objects) {
     auto v = obj.getMesh().getVertexData();
     auto i = obj.getMesh().getIndices();
 
@@ -248,11 +145,9 @@ void RendererVulkan::setupVertexAndIndexData() {
 
   createVertexBuffer(vertexData.data(), vertexDataSize);
   createIndexBuffer(indexData.data(), indexDataSize);
-}
 
-void RendererVulkan::setupObjectTextures() {
-  // TODO: should be able to load every objects texture
-  size_t textureCount = scene->getTextureCount();
+  // upload textures for objects
+  size_t textureCount = scene.getTextureCount();
 
   if (textureCount == 0) {
     textureCount = 1;
@@ -271,7 +166,7 @@ void RendererVulkan::setupObjectTextures() {
     textureSampler.resize(textureCount);
 
     size_t i = 0;
-    for (auto &obj : scene->objects) {
+    for (auto &obj : scene.objects) {
       if (obj.hasTexture()) {
         auto t = obj.getTextureData();
         createTextureImage(t.pixels, t.width, t.height, textureImage[i], textureImageMemory[i]);
@@ -281,6 +176,14 @@ void RendererVulkan::setupObjectTextures() {
       i++;
     }
   }
+}
+
+void RendererVulkan::createPipeline() {
+  createDescriptorSetLayout();
+  createGraphicsPipeline();
+  createUniformBuffers();
+  createDescriptorPool();
+  createDescriptorSets();
 }
 
 void RendererVulkan::setupCubemap() {}

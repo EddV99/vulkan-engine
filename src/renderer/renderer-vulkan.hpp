@@ -129,10 +129,6 @@ private:
   void createTexture(void *textureData, int width, int height, VkImage &image, VkDeviceMemory &imageMemory,
                      VkImageView &imageView, VkSampler sampler);
 
-  void setupVertexAndIndexData();
-
-  void setupObjectTextures();
-
   void setupCubemap();
 
   bool hasStencilComponent(VkFormat format);
