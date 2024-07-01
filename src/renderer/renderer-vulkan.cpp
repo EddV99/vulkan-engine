@@ -1417,6 +1417,7 @@ void RendererVulkan::updateUniformBuffer(uint32_t frame) {
     ubos[i].model = scene->objects[i].getModelMatrix();
     ubos[i].mvn = (view * ubos[i].model).toMatrix3x3();
     ubos[i].mvn.inverse();
+    ubos[i].mvn.transpose();
   }
 
   memcpy(uniformBuffersMapped[frame], ubos.data(), dynamicUniformBufferSize);

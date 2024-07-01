@@ -104,13 +104,13 @@ Matrix3 &Matrix3::operator=(Matrix3 other) noexcept {
 }
 
 void Matrix3::transpose() {
-  for (int r = 0; r < 3; r++) {
-    for (int c = 0; c < 3; c++) {
-      f32 temp = (*this)(r, c);
-      this->set(r, c, (*this)(c, r));
-      this->set(c, r, temp);
-    }
-  }
+  Matrix3 t;
+
+  for (int r = 0; r < 3; r++)
+    for (int c = 0; c < 3; c++)
+      t.set(r, c, (*this)(c, r));
+
+  (*this) = t;
 }
 
 f32 Matrix3::determinate() {
