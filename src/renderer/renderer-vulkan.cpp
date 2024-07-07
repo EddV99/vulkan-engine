@@ -93,6 +93,8 @@ void RendererVulkan::init(GLFWwindow *window, uint32_t width, uint32_t height) {
 
   t = (f32)HEIGHT / 2.0;
   b = -t;
+
+  initializeVulkan();
 }
 
 void RendererVulkan::initializeVulkan() {
@@ -1415,6 +1417,7 @@ void RendererVulkan::updateUniformBuffer(uint32_t frame) {
     ubos[i].view = view;
     ubos[i].proj = proj;
     ubos[i].model = scene->objects[i].getModelMatrix();
+
     ubos[i].mvn = (view * ubos[i].model).toMatrix3x3();
     ubos[i].mvn.inverse();
     ubos[i].mvn.transpose();

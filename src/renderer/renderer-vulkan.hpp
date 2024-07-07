@@ -32,7 +32,6 @@ public:
 
   void init(GLFWwindow *window, uint32_t width, uint32_t height);
 
-  void initializeVulkan();
   void createAssets(Game::Scene &scene);
   void createPipeline();
 
@@ -79,6 +78,8 @@ private:
   /**
    * Vulkan Initilization
    */
+  void initializeVulkan();
+
   void createInstance();
 
   void createSurface();

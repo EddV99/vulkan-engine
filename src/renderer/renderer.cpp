@@ -32,7 +32,6 @@ Renderer::Renderer(int w, int h, Game::Scene &scene) {
   glfwSetFramebufferSizeCallback(window, resizeCallback);
 
   rendererbackend.init(this->window, WIDTH, HEIGHT);
-  rendererbackend.initializeVulkan();
   rendererbackend.createAssets(this->scene);
   rendererbackend.createPipeline();
 }
