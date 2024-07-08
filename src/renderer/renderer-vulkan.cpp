@@ -180,15 +180,29 @@ void RendererVulkan::createAssets(Game::Scene &scene) {
   }
 }
 
-void RendererVulkan::createPipeline() {
-  createDescriptorSetLayout();
+void RendererVulkan::createPipelines() {
+  // Blinn Shading Setup
+  Pipeline blinn{};
+  VkDescriptorSetLayoutBinding uniformBindingBlinn{};
+  uniformBindingBlinn.binding = 0;
+  uniformBindingBlinn.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+  uniformBindingBlinn.descriptorCount = 1;
+  uniformBindingBlinn.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  uniformBindingBlinn.pImmutableSamplers = nullptr;
+
+  VkDescriptorSetLayoutBinding samplerBindingBlinn{};
+  samplerBindingBlinn.binding = 1;
+  samplerBindingBlinn.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  samplerBindingBlinn.descriptorCount = 1;
+  samplerBindingBlinn.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+  samplerBindingBlinn.pImmutableSamplers = nullptr;
+  std::vector<VkDescriptorSetLayoutBinding> bindingsBlinn = {uniformBindingBlinn, samplerBindingBlinn};
+  createDescriptorSetLayout(bindingsBlinn, blinn.descriptorSetLayout);
   createGraphicsPipeline();
   createUniformBuffers();
   createDescriptorPool();
   createDescriptorSets();
 }
-
-void RendererVulkan::setupCubemap() {}
 
 void RendererVulkan::createInstance() {
   VkApplicationInfo appInfo{};
@@ -407,30 +421,14 @@ void RendererVulkan::createRenderPass() {
     Util::Error("Failed to create render pass");
 }
 
-void RendererVulkan::createDescriptorSetLayout() {
-  VkDescriptorSetLayoutBinding uboLayoutBinding{};
-  uboLayoutBinding.binding = 0;
-  /* uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; */
-  uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-  uboLayoutBinding.descriptorCount = 1;
-  uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-  uboLayoutBinding.pImmutableSamplers = nullptr;
-
-  VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-  samplerLayoutBinding.binding = 1;
-  samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  samplerLayoutBinding.descriptorCount = 1;
-  samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-  samplerLayoutBinding.pImmutableSamplers = nullptr;
-
-  std::array<VkDescriptorSetLayoutBinding, 2> bindings = {uboLayoutBinding, samplerLayoutBinding};
-
+void RendererVulkan::createDescriptorSetLayout(std::vector<VkDescriptorSetLayoutBinding> bindings,
+                                               VkDescriptorSetLayout layout) {
   VkDescriptorSetLayoutCreateInfo layoutInfo{};
   layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
   layoutInfo.bindingCount = (uint32_t)bindings.size();
   layoutInfo.pBindings = bindings.data();
 
-  if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS)
+  if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &layout) != VK_SUCCESS)
     Util::Error("Failed to create descriptor set layout");
 }
 
@@ -880,6 +878,7 @@ VkFormat RendererVulkan::findDepthFormat() {
   return findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
                              VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 }
+
 VkFormat RendererVulkan::findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
                                              VkFormatFeatureFlags features) {
   for (VkFormat format : candidates) {
@@ -894,6 +893,7 @@ VkFormat RendererVulkan::findSupportedFormat(const std::vector<VkFormat> &candid
   Util::Error("");
   return {};
 }
+
 VkImageView RendererVulkan::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags) {
   VkImageViewCreateInfo viewInfo{};
   viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;

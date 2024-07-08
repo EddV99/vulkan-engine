@@ -33,7 +33,7 @@ public:
   void init(GLFWwindow *window, uint32_t width, uint32_t height);
 
   void createAssets(Game::Scene &scene);
-  void createPipeline();
+  void createPipelines();
 
   /**
    * Render the whole scene
@@ -75,6 +75,11 @@ private:
     alignas(32) Math::Matrix3 mvn;
   };
 
+  struct Pipeline {
+    Shaders shaders;
+    VkDescriptorSetLayout descriptorSetLayout;
+  };
+
   /**
    * Vulkan Initilization
    */
@@ -94,7 +99,7 @@ private:
 
   void createRenderPass();
 
-  void createDescriptorSetLayout();
+  void createDescriptorSetLayout(std::vector<VkDescriptorSetLayoutBinding> bindings, VkDescriptorSetLayout layout);
 
   void createGraphicsPipeline();
 
@@ -129,8 +134,6 @@ private:
    */
   void createTexture(void *textureData, int width, int height, VkImage &image, VkDeviceMemory &imageMemory,
                      VkImageView &imageView, VkSampler sampler);
-
-  void setupCubemap();
 
   bool hasStencilComponent(VkFormat format);
 
@@ -297,7 +300,6 @@ private:
   f32 triangleVertices[9] = {-1.0, -1.0, 0.999, //
                              3.0,  -1.0, 0.999, //
                              -1.0, 3.0,  0.999};
-
   /**
    * Scene to render
    */
@@ -313,13 +315,10 @@ private:
   /**
    * Values for perspective matrix
    */
-  // far/near
   f32 f = 100;
   f32 n = 0.1;
-  // top/bottom
   f32 t;
   f32 b;
-  // right/left
   f32 r;
   f32 l;
 
