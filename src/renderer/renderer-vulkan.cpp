@@ -183,6 +183,9 @@ void RendererVulkan::createAssets(Game::Scene &scene) {
 void RendererVulkan::createPipelines() {
   // Blinn Shading Setup
   Pipeline blinn{};
+  blinn.vertexShaderPath = "src/shaders/blinn-vertex.spv";
+  blinn.fragmentShaderPath = "src/shaders/blinn-fragment.spv";
+
   VkDescriptorSetLayoutBinding uniformBindingBlinn{};
   uniformBindingBlinn.binding = 0;
   uniformBindingBlinn.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
@@ -196,9 +199,11 @@ void RendererVulkan::createPipelines() {
   samplerBindingBlinn.descriptorCount = 1;
   samplerBindingBlinn.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
   samplerBindingBlinn.pImmutableSamplers = nullptr;
+
   std::vector<VkDescriptorSetLayoutBinding> bindingsBlinn = {uniformBindingBlinn, samplerBindingBlinn};
+
   createDescriptorSetLayout(bindingsBlinn, blinn.descriptorSetLayout);
-  createGraphicsPipeline();
+  createGraphicsPipeline(blinn, Mesh::Mesh::getAttributeDescriptions(), Mesh::Mesh::getBindingDescriptions(), true);
   createUniformBuffers();
   createDescriptorPool();
   createDescriptorSets();
@@ -432,9 +437,11 @@ void RendererVulkan::createDescriptorSetLayout(std::vector<VkDescriptorSetLayout
     Util::Error("Failed to create descriptor set layout");
 }
 
-void RendererVulkan::createGraphicsPipeline() {
-  auto vertexShader = Util::readFile("src/shaders/vert.spv");
-  auto fragmentShader = Util::readFile("src/shaders/frag.spv");
+void RendererVulkan::createGraphicsPipeline(Pipeline pipeline,
+                                            std::vector<VkVertexInputAttributeDescription> attributeDescription,
+                                            VkVertexInputBindingDescription bindingDescription, bool enableDepthTest) {
+  auto vertexShader = Util::readFile(pipeline.vertexShaderPath);
+  auto fragmentShader = Util::readFile(pipeline.fragmentShaderPath);
 
   VkShaderModule vertexShaderModule = createShaderModule(vertexShader);
   VkShaderModule fragmentShaderModule = createShaderModule(fragmentShader);
@@ -461,15 +468,12 @@ void RendererVulkan::createGraphicsPipeline() {
   dynamicState.pDynamicStates = dynamicStates.data();
 
   // vertex input
-  auto attributeDescriptions = Mesh::Mesh::getAttributeDescriptions();
-  auto bindingDescription = Mesh::Mesh::getBindingDescriptions();
-
   VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
   vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
   vertexInputInfo.vertexBindingDescriptionCount = 1;
   vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-  vertexInputInfo.vertexAttributeDescriptionCount = attributeDescriptions.size();
-  vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+  vertexInputInfo.vertexAttributeDescriptionCount = attributeDescription.size();
+  vertexInputInfo.pVertexAttributeDescriptions = attributeDescription.data();
 
   // input assembly
   VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
@@ -524,8 +528,8 @@ void RendererVulkan::createGraphicsPipeline() {
   // depth/stencil testing
   VkPipelineDepthStencilStateCreateInfo depthStencil{};
   depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-  depthStencil.depthTestEnable = VK_TRUE;
-  depthStencil.depthWriteEnable = VK_TRUE;
+  depthStencil.depthTestEnable = enableDepthTest;
+  depthStencil.depthWriteEnable = enableDepthTest;
   depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
   depthStencil.depthBoundsTestEnable = VK_FALSE;
   depthStencil.minDepthBounds = 0.0f;
@@ -556,11 +560,11 @@ void RendererVulkan::createGraphicsPipeline() {
   VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
   pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
   pipelineLayoutInfo.setLayoutCount = 1;
-  pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+  pipelineLayoutInfo.pSetLayouts = &pipeline.descriptorSetLayout;
   pipelineLayoutInfo.pushConstantRangeCount = 0;
   pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
-  if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
+  if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipeline.pipelineLayout) != VK_SUCCESS)
     Util::Error("Failed to create pipeline layout");
 
   // create the graphics pipeline object
@@ -576,13 +580,16 @@ void RendererVulkan::createGraphicsPipeline() {
   pipelineInfo.pDepthStencilState = &depthStencil;
   pipelineInfo.pColorBlendState = &colorBlending;
   pipelineInfo.pDynamicState = &dynamicState;
-  pipelineInfo.layout = pipelineLayout;
-  pipelineInfo.renderPass = colorAndDepthRenderPass;
+  pipelineInfo.layout = pipeline.pipelineLayout;
+  if (enableDepthTest)
+    pipelineInfo.renderPass = colorAndDepthRenderPass;
+  else
+    pipelineInfo.renderPass = colorAndDepthRenderPass;
   pipelineInfo.subpass = 0;
   pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
   pipelineInfo.basePipelineIndex = -1;
 
-  if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
+  if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.pipeline) != VK_SUCCESS)
     Util::Error("Failed to create graphics pipeline");
 
   // destroy modules after setup

@@ -83,12 +83,12 @@ public:
     return result;
   }
 
-  static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
+  static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions() {
     auto v = getAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position));
     auto n = getAttributeDescription(0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal));
     auto u = getAttributeDescription(0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv));
 
-    std::array<VkVertexInputAttributeDescription, 3> result = {v, n, u};
+    std::vector<VkVertexInputAttributeDescription> result = {v, n, u};
     return result;
   }
   // VULKAN ONLY END -----------------------------------------

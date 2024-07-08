@@ -76,8 +76,14 @@ private:
   };
 
   struct Pipeline {
-    Shaders shaders;
+    std::string vertexShaderPath;
+    std::string fragmentShaderPath;
+    std::string geometeryShaderPath;
+    std::string tesselationShaderPath;
+
     VkDescriptorSetLayout descriptorSetLayout;
+    VkPipelineLayout pipelineLayout;
+    VkPipeline pipeline;
   };
 
   /**
@@ -101,7 +107,8 @@ private:
 
   void createDescriptorSetLayout(std::vector<VkDescriptorSetLayoutBinding> bindings, VkDescriptorSetLayout layout);
 
-  void createGraphicsPipeline();
+  void createGraphicsPipeline(Pipeline pipeline, std::vector<VkVertexInputAttributeDescription> attributeDescription,
+                              VkVertexInputBindingDescription bindingDescription, bool enableDepthTest);
 
   void createFrameBuffers();
 
