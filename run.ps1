@@ -11,8 +11,8 @@ function build_shaders ()
     # go to shaders directory
     Set-Location -Path "src/shaders"
 
-    glslc basic.vert -o vert.spv
-    glslc basic.frag -o frag.spv
+    glslc blinn.vert -o blinn-vertex.spv
+    glslc blinn.frag -o blinn-fragment.spv
 
     Set-Location -Path "../.."
 }
