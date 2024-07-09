@@ -87,11 +87,20 @@ private:
     VkDescriptorPool descriptorPool;
 
     std::vector<VkDescriptorSet> descriptorSets;
+    std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
+    std::vector<VkDescriptorPoolSize> descriptorPoolSize;
 
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;
     std::vector<void *> uniformBuffersMapped;
     std::vector<UniformBufferObject> ubos;
+
+    std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+    VkVertexInputBindingDescription bindingDescription;
+
+    std::vector<VkWriteDescriptorSet> writeDescriptor;
+
+    bool depthTest;
 
     VkDeviceSize uniformObjectSize;
   };
@@ -115,10 +124,9 @@ private:
 
   void createRenderPass();
 
-  void createDescriptorSetLayout(std::vector<VkDescriptorSetLayoutBinding> bindings, VkDescriptorSetLayout layout);
+  void createDescriptorSetLayout(Pipeline &pipeline);
 
-  void createGraphicsPipeline(Pipeline pipeline, std::vector<VkVertexInputAttributeDescription> attributeDescription,
-                              VkVertexInputBindingDescription bindingDescription, bool enableDepthTest);
+  void createGraphicsPipeline(Pipeline &pipeline);
 
   void createFrameBuffers();
 
@@ -132,15 +140,15 @@ private:
 
   void createTextureSampler(VkSampler &sampler);
 
-  void createDescriptorSets(Pipeline pipeline);
+  void createDescriptorSets(Pipeline &pipeline);
 
   void createVertexBuffer(void *vertexData, size_t size);
 
   void createIndexBuffer(void *indexData, size_t size);
 
-  void createUniformBuffers(unsigned long uniformObjectSize, size_t objectCount, Pipeline pipeline);
+  void createUniformBuffers(size_t objectCount, Pipeline &pipeline);
 
-  void createDescriptorPool(std::vector<VkDescriptorPoolSize> poolSize, Pipeline pipeline);
+  void createDescriptorPool(Pipeline &pipeline);
 
   void createCommandBuffer();
 
@@ -241,11 +249,11 @@ private:
   VkDeviceSize minUniformSize;
 
   // describes uniform variables
-  VkDescriptorSetLayout descriptorSetLayout;
+  /* VkDescriptorSetLayout descriptorSetLayout; */
   // references descriptor set, push constants
-  VkPipelineLayout pipelineLayout;
+  /* VkPipelineLayout pipelineLayout; */
   // references the pipeline layout and renderpass
-  VkPipeline graphicsPipeline;
+  /* VkPipeline graphicsPipeline; */
 
   std::vector<VkFramebuffer> framebuffers;
   std::vector<VkCommandBuffer> commandBuffers;
@@ -259,8 +267,8 @@ private:
   VkQueue presentQueue;
   uint32_t currentFrame = 0;
   bool resized = false;
-  VkDescriptorPool descriptorPool;
-  std::vector<VkDescriptorSet> descriptorSets;
+  /* VkDescriptorPool descriptorPool; */
+  /* std::vector<VkDescriptorSet> descriptorSets; */
 
   /**
    * Depth needed for 3D rendering
@@ -285,10 +293,10 @@ private:
   /**
    * Uniform buffers
    */
-  std::vector<VkBuffer> uniformBuffers;
-  std::vector<VkDeviceMemory> uniformBuffersMemory;
-  std::vector<void *> uniformBuffersMapped;
-  std::vector<UniformBufferObject> ubos;
+  /* std::vector<VkBuffer> uniformBuffers; */
+  /* std::vector<VkDeviceMemory> uniformBuffersMemory; */
+  /* std::vector<void *> uniformBuffersMapped; */
+  /* std::vector<UniformBufferObject> ubos; */
 
   VkDeviceSize alignment;
   VkDeviceSize dynamicUniformBufferSize;
@@ -324,6 +332,8 @@ private:
    * Scene to render
    */
   Game::Scene *scene;
+
+  Pipeline blinn{};
 
   /**
    * List of wanted validation layers
