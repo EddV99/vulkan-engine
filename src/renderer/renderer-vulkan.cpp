@@ -95,6 +95,7 @@ void RendererVulkan::init(GLFWwindow *window, uint32_t width, uint32_t height) {
   b = -t;
 
   initializeVulkan();
+  minUniformSize = getMinUniformBufferOffsetAlignment();
 }
 
 void RendererVulkan::initializeVulkan() {
@@ -202,10 +203,18 @@ void RendererVulkan::createPipelines() {
 
   std::vector<VkDescriptorSetLayoutBinding> bindingsBlinn = {uniformBindingBlinn, samplerBindingBlinn};
 
+  std::vector<VkDescriptorPoolSize> blinnPoolSize;
+  blinnPoolSize.resize(2);
+  blinnPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+  blinnPoolSize[0].descriptorCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+
+  blinnPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  blinnPoolSize[1].descriptorCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+
   createDescriptorSetLayout(bindingsBlinn, blinn.descriptorSetLayout);
   createGraphicsPipeline(blinn, Mesh::Mesh::getAttributeDescriptions(), Mesh::Mesh::getBindingDescriptions(), true);
-  createUniformBuffers();
-  createDescriptorPool();
+  createUniformBuffers(sizeof(UniformBufferObject), scene->objects.size(), blinn);
+  createDescriptorPool(blinnPoolSize);
   createDescriptorSets();
 }
 
@@ -667,58 +676,52 @@ void RendererVulkan::createIndexBuffer(void *indexData, size_t size) {
   vkFreeMemory(device, stagingMemory, nullptr);
 }
 
-void RendererVulkan::createUniformBuffers() {
-  alignment = getUniformBufferAlignment(sizeof(UniformBufferObject), getMinUniformBufferOffsetAlignment());
-  dynamicUniformBufferSize = OBJECT_COUNT * alignment;
+void RendererVulkan::createUniformBuffers(unsigned long uniformObjectSize, size_t objectCount, Pipeline pipeline) {
+  alignment = getUniformBufferAlignment(uniformObjectSize, minUniformSize);
+  dynamicUniformBufferSize = objectCount * alignment;
 
-  uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-  uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
-  uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
+  pipeline.uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+  pipeline.uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
+  pipeline.uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
 
   for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
     createBuffer(dynamicUniformBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                 uniformBuffers[i], uniformBuffersMemory[i]);
+                 pipeline.uniformBuffers[i], pipeline.uniformBuffersMemory[i]);
 
-    vkMapMemory(device, uniformBuffersMemory[i], 0, dynamicUniformBufferSize, 0, &uniformBuffersMapped[i]);
+    vkMapMemory(device, pipeline.uniformBuffersMemory[i], 0, dynamicUniformBufferSize, 0,
+                &pipeline.uniformBuffersMapped[i]);
   }
 }
 
-void RendererVulkan::createDescriptorPool() {
-  std::array<VkDescriptorPoolSize, 2> poolSizes{};
-  poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-  poolSizes[0].descriptorCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
-
-  poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  poolSizes[1].descriptorCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
-
+void RendererVulkan::createDescriptorPool(std::vector<VkDescriptorPoolSize> poolSize, Pipeline pipeline) {
   VkDescriptorPoolCreateInfo poolInfo{};
   poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-  poolInfo.poolSizeCount = (uint32_t)poolSizes.size();
-  poolInfo.pPoolSizes = poolSizes.data();
+  poolInfo.poolSizeCount = (uint32_t)poolSize.size();
+  poolInfo.pPoolSizes = poolSize.data();
   poolInfo.maxSets = (uint32_t)MAX_FRAMES_IN_FLIGHT;
 
-  if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
+  if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &pipeline.descriptorPool) != VK_SUCCESS)
     Util::Error("Failed to create descriptor pool");
 }
 
-void RendererVulkan::createDescriptorSets() {
-  std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
+void RendererVulkan::createDescriptorSets(Pipeline pipeline) {
+  std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, pipeline.descriptorSetLayout);
   VkDescriptorSetAllocateInfo allocInfo{};
   allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-  allocInfo.descriptorPool = descriptorPool;
+  allocInfo.descriptorPool = pipeline.descriptorPool;
   allocInfo.descriptorSetCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
   allocInfo.pSetLayouts = layouts.data();
 
-  descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+  pipeline.descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
 
-  if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) != VK_SUCCESS)
+  if (vkAllocateDescriptorSets(device, &allocInfo, pipeline.descriptorSets.data()) != VK_SUCCESS)
     Util::Error("Failed to allocate descriptor sets");
 
   for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
     VkDescriptorBufferInfo bufferInfo{};
-    bufferInfo.buffer = uniformBuffers[i];
+    bufferInfo.buffer = pipeline.uniformBuffers[i];
     bufferInfo.offset = 0;
-    bufferInfo.range = sizeof(UniformBufferObject);
+    bufferInfo.range = sizeof(UniformBufferObject); // TODO: fix, each pipeline might have different uniform
 
     VkDescriptorImageInfo imageInfo{};
     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;

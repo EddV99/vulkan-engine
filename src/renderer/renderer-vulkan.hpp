@@ -84,6 +84,16 @@ private:
     VkDescriptorSetLayout descriptorSetLayout;
     VkPipelineLayout pipelineLayout;
     VkPipeline pipeline;
+    VkDescriptorPool descriptorPool;
+
+    std::vector<VkDescriptorSet> descriptorSets;
+
+    std::vector<VkBuffer> uniformBuffers;
+    std::vector<VkDeviceMemory> uniformBuffersMemory;
+    std::vector<void *> uniformBuffersMapped;
+    std::vector<UniformBufferObject> ubos;
+
+    VkDeviceSize uniformObjectSize;
   };
 
   /**
@@ -122,15 +132,15 @@ private:
 
   void createTextureSampler(VkSampler &sampler);
 
-  void createDescriptorSets();
+  void createDescriptorSets(Pipeline pipeline);
 
   void createVertexBuffer(void *vertexData, size_t size);
 
   void createIndexBuffer(void *indexData, size_t size);
 
-  void createUniformBuffers();
+  void createUniformBuffers(unsigned long uniformObjectSize, size_t objectCount, Pipeline pipeline);
 
-  void createDescriptorPool();
+  void createDescriptorPool(std::vector<VkDescriptorPoolSize> poolSize, Pipeline pipeline);
 
   void createCommandBuffer();
 
@@ -226,6 +236,9 @@ private:
 
   VkRenderPass colorAndDepthRenderPass;
   VkRenderPass depthRenderPass;
+
+  // min uniform object size (for alignment purposes)
+  VkDeviceSize minUniformSize;
 
   // describes uniform variables
   VkDescriptorSetLayout descriptorSetLayout;
