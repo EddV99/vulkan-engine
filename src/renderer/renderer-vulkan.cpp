@@ -117,7 +117,7 @@ void RendererVulkan::createAssets(Game::Scene &scene) {
   this->scene = &scene;
 
   OBJECT_COUNT = scene.objects.size();
-  blinn.ubos.resize(OBJECT_COUNT);
+  blinnUBO.resize(OBJECT_COUNT);
 
   // Combine all data into one big buffer.
   // This provides good data locality.
@@ -1402,16 +1402,16 @@ void RendererVulkan::updateUniformBuffer(uint32_t frame) {
   Math::Matrix4 proj = perspectiveMatrix(60, (f32)WIDTH / HEIGHT);
   Math::Matrix4 view = scene->camera.viewMatrix();
   for (size_t i = 0; i < OBJECT_COUNT; i++) {
-    blinn.ubos[i].view = view;
-    blinn.ubos[i].proj = proj;
-    blinn.ubos[i].model = scene->objects[i].getModelMatrix();
+    blinnUBO[i].view = view;
+    blinnUBO[i].proj = proj;
+    blinnUBO[i].model = scene->objects[i].getModelMatrix();
 
-    blinn.ubos[i].mvn = (view * blinn.ubos[i].model).toMatrix3x3();
-    blinn.ubos[i].mvn.inverse();
-    blinn.ubos[i].mvn.transpose();
+    blinnUBO[i].mvn = (view * blinnUBO[i].model).toMatrix3x3();
+    blinnUBO[i].mvn.inverse();
+    blinnUBO[i].mvn.transpose();
   }
 
-  memcpy(blinn.uniformBuffersMapped[frame], blinn.ubos.data(), dynamicUniformBufferSize);
+  memcpy(blinn.uniformBuffersMapped[frame], blinnUBO.data(), dynamicUniformBufferSize);
 
   VkMappedMemoryRange memoryRange{};
   memoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;

@@ -45,8 +45,13 @@ public:
   void resize();
 
 private:
+  // ==================================================================================================================
+  // Internal Structs
+  // ==================================================================================================================
   /**
-   * Internal Structs
+   * @brief QueueFamily struct
+   *
+   * @details We will need graphics and present families
    */
   struct QueueFamily {
     std::optional<uint32_t> graphics;
@@ -55,12 +60,20 @@ private:
     bool compatible() { return graphics.has_value() && present.has_value(); }
   };
 
+  /**
+   * @brief Swapchain details struct
+   *
+   * @details Hold details of the swapchain
+   */
   struct SwapchainSupportDetails {
     VkSurfaceCapabilitiesKHR capabilities;
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR> presentModes;
   } swapchainSupport;
 
+  /**
+   * @brief Pipeline details struct
+   */
   struct Pipeline {
     std::string vertexShaderPath;
     std::string fragmentShaderPath;
@@ -79,7 +92,6 @@ private:
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;
     std::vector<void *> uniformBuffersMapped;
-    std::vector<BlinnUniformBufferObject> ubos;
 
     std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
     VkVertexInputBindingDescription bindingDescription;
@@ -91,23 +103,74 @@ private:
     VkDeviceSize uniformObjectSize;
   };
 
+  // ==================================================================================================================
+  // Blinn Shading
+  // ==================================================================================================================
   /**
-   * Vulkan Initilization
+   * @brief Blinn uniform object struct
+   */
+  struct BlinnUniformBufferObject {
+    alignas(16) Math::Matrix4 model;
+    alignas(16) Math::Matrix4 view;
+    alignas(16) Math::Matrix4 proj;
+    alignas(32) Math::Matrix3 mvn;
+  };
+
+  /**
+   * @brief Uniform objects for Blinn pipeline
+   */
+  std::vector<BlinnUniformBufferObject> blinnUBO;
+
+  /**
+   * @brief Blinn pipeline
+   */
+  Pipeline blinn{};
+
+  // ==================================================================================================================
+  // Vulkan Initilization
+  // ==================================================================================================================
+  /**
+   * @brief Initilize needed Vulkan components
    */
   void initializeVulkan();
 
+  /**
+   * @brief Create an Vulkan instance object
+   */
   void createInstance();
 
+  /**
+   * @brief Create the drawing surface
+   */
   void createSurface();
 
+  /**
+   * @brief Choose a physical device (gpu)
+   */
   void pickPhysicalDevice();
 
+  /**
+   * @brief Create a Vulkan device object
+   */
   void createDevice();
 
+  /**
+   * @brief Create a Vulkan swapchain object
+   */
   void createSwapchain();
 
+  /**
+   * @brief Create a Vulkan ImageView object
+   */
   void createImageViews();
 
+  /**
+   * @brief Create a Vulkan RenderPass object
+   *
+   * @details As of right now, this only creates a
+   *          color and depth pass. In the future might just
+   *          need a depth only or color only render pass.
+   */
   void createRenderPass();
 
   void createDescriptorSetLayout(Pipeline &pipeline);
@@ -140,9 +203,9 @@ private:
 
   void createSyncObjects();
 
-  /**
-   * Helper Methods
-   */
+  // ==================================================================================================================
+  // Helper Methods
+  // ==================================================================================================================
   void createTexture(void *textureData, int width, int height, VkImage &image, VkDeviceMemory &imageMemory,
                      VkImageView &imageView, VkSampler sampler);
 
@@ -207,14 +270,11 @@ private:
 
   VkDeviceSize getUniformBufferAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment);
 
-  /**
-   * Perspective Matrix
-   */
   Math::Matrix4 perspectiveMatrix(f32 fov, f32 aspect);
 
-  /**
-   * Instance Variables
-   */
+  // ==================================================================================================================
+  // Instance Variables
+  // ==================================================================================================================
   GLFWwindow *window;
   VkInstance instance;
   VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -298,8 +358,6 @@ private:
    * Scene to render
    */
   Game::Scene *scene;
-
-  Pipeline blinn{};
 
   /**
    * List of wanted validation layers
