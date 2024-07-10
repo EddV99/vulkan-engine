@@ -48,13 +48,6 @@ private:
   /**
    * Internal Structs
    */
-  struct Shaders {
-    VkShaderModule vertex = nullptr;
-    VkShaderModule fragment = nullptr;
-    VkShaderModule tesselation = nullptr;
-    VkShaderModule geometery = nullptr;
-  };
-
   struct QueueFamily {
     std::optional<uint32_t> graphics;
     std::optional<uint32_t> present;
@@ -67,13 +60,6 @@ private:
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR> presentModes;
   } swapchainSupport;
-
-  struct UniformBufferObject {
-    alignas(16) Math::Matrix4 model;
-    alignas(16) Math::Matrix4 view;
-    alignas(16) Math::Matrix4 proj;
-    alignas(32) Math::Matrix3 mvn;
-  };
 
   struct Pipeline {
     std::string vertexShaderPath;
@@ -93,7 +79,7 @@ private:
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;
     std::vector<void *> uniformBuffersMapped;
-    std::vector<UniformBufferObject> ubos;
+    std::vector<BlinnUniformBufferObject> ubos;
 
     std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
     VkVertexInputBindingDescription bindingDescription;
@@ -248,13 +234,6 @@ private:
   // min uniform object size (for alignment purposes)
   VkDeviceSize minUniformSize;
 
-  // describes uniform variables
-  /* VkDescriptorSetLayout descriptorSetLayout; */
-  // references descriptor set, push constants
-  /* VkPipelineLayout pipelineLayout; */
-  // references the pipeline layout and renderpass
-  /* VkPipeline graphicsPipeline; */
-
   std::vector<VkFramebuffer> framebuffers;
   std::vector<VkCommandBuffer> commandBuffers;
   VkCommandPool commandPool;
@@ -267,8 +246,6 @@ private:
   VkQueue presentQueue;
   uint32_t currentFrame = 0;
   bool resized = false;
-  /* VkDescriptorPool descriptorPool; */
-  /* std::vector<VkDescriptorSet> descriptorSets; */
 
   /**
    * Depth needed for 3D rendering
@@ -289,14 +266,6 @@ private:
   std::vector<int32_t> vertexOffsets;
   std::vector<uint32_t> indexOffsets;
   std::vector<uint32_t> indexCount;
-
-  /**
-   * Uniform buffers
-   */
-  /* std::vector<VkBuffer> uniformBuffers; */
-  /* std::vector<VkDeviceMemory> uniformBuffersMemory; */
-  /* std::vector<void *> uniformBuffersMapped; */
-  /* std::vector<UniformBufferObject> ubos; */
 
   VkDeviceSize alignment;
   VkDeviceSize dynamicUniformBufferSize;
@@ -320,9 +289,6 @@ private:
 
   // when no textures are needed send a "dummy" texture
   unsigned char DEFAULT_IMAGE[4] = {0, 0, 0, 0};
-
-  // Shaders for pipeline
-  Shaders shaders;
 
   // one triangle for cubemap
   f32 triangleVertices[9] = {-1.0, -1.0, 0.999, //

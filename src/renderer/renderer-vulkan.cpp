@@ -186,6 +186,8 @@ void RendererVulkan::createPipelines() {
   blinn.vertexShaderPath = "src/shaders/blinn-vertex.spv";
   blinn.fragmentShaderPath = "src/shaders/blinn-fragment.spv";
 
+  blinn.depthTest = true;
+
   VkDescriptorSetLayoutBinding uniformBindingBlinn{};
   uniformBindingBlinn.binding = 0;
   uniformBindingBlinn.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
@@ -209,7 +211,7 @@ void RendererVulkan::createPipelines() {
   blinn.descriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
   blinn.descriptorPoolSize[1].descriptorCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
 
-  blinn.uniformObjectSize = sizeof(UniformBufferObject);
+  blinn.uniformObjectSize = sizeof(BlinnUniformBufferObject);
 
   blinn.attributeDescriptions = Mesh::Mesh::getAttributeDescriptions();
   blinn.bindingDescription = Mesh::Mesh::getBindingDescriptions();
@@ -220,7 +222,7 @@ void RendererVulkan::createPipelines() {
   createDescriptorPool(blinn);
   createDescriptorSets(blinn);
 
-  // after creating descriptor sets you bind them to the uniform buffers
+  // after creating descriptor sets you bind them to the uniform buffers/samplers
   for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
     VkDescriptorBufferInfo bufferInfo{};
     bufferInfo.buffer = blinn.uniformBuffers[i];
@@ -1259,32 +1261,6 @@ RendererVulkan::QueueFamily RendererVulkan::setupQueueFamilies(VkPhysicalDevice 
     i++;
   }
   return queue;
-}
-
-void RendererVulkan::createShaders(std::string vertexFilePath, std::string fragmentFilePath,
-                                   std::string tesselationFilePath, std::string geometeryFilePath) {
-
-  VkShaderModule vertex, fragment, tesselation, geometery;
-
-  std::vector<char> vertexShader = Util::readFile(vertexFilePath);
-  vertex = createShaderModule(vertexShader);
-  shaders.vertex = vertex;
-
-  if (!tesselationFilePath.empty()) {
-    std::vector<char> tessShader = Util::readFile(tesselationFilePath);
-    tesselation = createShaderModule(tessShader);
-    shaders.tesselation = tesselation;
-  }
-
-  std::vector<char> fragmentShader = Util::readFile(fragmentFilePath);
-  fragment = createShaderModule(fragmentShader);
-  shaders.fragment = fragment;
-
-  if (!geometeryFilePath.empty()) {
-    std::vector<char> geomShader = Util::readFile(geometeryFilePath);
-    geometery = createShaderModule(geomShader);
-    shaders.geometery = geometery;
-  }
 }
 
 VkShaderModule RendererVulkan::createShaderModule(std::vector<char> &shader) {
