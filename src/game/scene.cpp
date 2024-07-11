@@ -13,9 +13,11 @@ Scene::~Scene() { objects.clear(); }
 
 Scene::Scene(const std::vector<ModelInfo> &models) : models(models) { camera = Camera(); }
 
-Scene::Scene(const Scene &other) : models(other.models), objects(other.objects), camera(other.camera) {}
+Scene::Scene(const Scene &other)
+    : models(other.models), textureCount(other.textureCount), objects(other.objects), camera(other.camera) {}
 
-Scene::Scene(Scene &&other) noexcept : models(other.models), objects(other.objects), camera(other.camera) {
+Scene::Scene(Scene &&other) noexcept
+    : models(other.models), textureCount(other.textureCount), objects(other.objects), camera(other.camera) {
   other.models.clear();
   other.objects.clear();
 }
@@ -25,6 +27,7 @@ Scene &Scene::operator=(const Scene &other) {
     return *this;
 
   this->models = other.models;
+  this->textureCount = other.textureCount;
   this->objects = other.objects;
   this->camera = other.camera;
 
@@ -36,6 +39,7 @@ Scene &Scene::operator=(Scene &&other) noexcept {
     return *this;
 
   this->models = other.models;
+  this->textureCount = other.textureCount;
   this->objects = other.objects;
   this->camera = other.camera;
 

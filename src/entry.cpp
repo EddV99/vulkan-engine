@@ -24,7 +24,7 @@ int main(void) {
     sphere.position = {-10.0, 10.0, 0.0};
     sphere.rotation = {0.0, 0, 0.0};
     sphere.textureFilePath = "";
-    sphere.renderMode = Game::Object::RenderMode::BLINN_SHADING;
+    sphere.renderMode = Game::Object::RenderMode::ENVIRONMENT_MAP;
 
     Game::ModelInfo cube;
     cube.meshFilePath = cubePath;
@@ -32,7 +32,7 @@ int main(void) {
     cube.position = {-10.0, 0.0, 0.0};
     cube.rotation = {0.0, 0.0, 0.0};
     cube.textureFilePath = "";
-    cube.renderMode = Game::Object::RenderMode::ENVIRONMENT_MAP;
+    cube.renderMode = Game::Object::RenderMode::BLINN_SHADING;
 
     Game::ModelInfo teapot;
     teapot.meshFilePath = teapotPath;
@@ -40,7 +40,7 @@ int main(void) {
     teapot.position = {0.0, 0.0, 0.0};
     teapot.rotation = {0.0, 0.0, 0.0};
     teapot.textureFilePath = "";
-    teapot.renderMode = Game::Object::RenderMode::BLINN_SHADING;
+    teapot.renderMode = Game::Object::RenderMode::ENVIRONMENT_MAP;
 
     Game::ModelInfo sphere2;
     sphere2.meshFilePath = spherePath;
@@ -48,7 +48,7 @@ int main(void) {
     sphere2.position = {10.0, 10.0, 0.0};
     sphere2.rotation = {0.0, 0, 0.0};
     sphere2.textureFilePath = "";
-    sphere2.renderMode = Game::Object::RenderMode::ENVIRONMENT_MAP;
+    sphere2.renderMode = Game::Object::RenderMode::BLINN_SHADING;
 
     Game::ModelInfo cube2;
     cube2.meshFilePath = cubePath;

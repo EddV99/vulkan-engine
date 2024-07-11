@@ -42,6 +42,7 @@ Mesh &Mesh::operator=(Mesh &&other) noexcept {
   this->indexDataSize = other.indexDataSize;
   this->indices = other.indices;
   this->vertexData = other.vertexData;
+  this->box = other.box;
 
   other.indices.clear();
   other.vertexData.clear();
@@ -60,6 +61,7 @@ Mesh &Mesh::operator=(const Mesh &other) {
   this->indexDataSize = other.indexDataSize;
   this->indices = other.indices;
   this->vertexData = other.vertexData;
+  this->box = other.box;
 
   return *this;
 }
