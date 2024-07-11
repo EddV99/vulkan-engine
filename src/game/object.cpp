@@ -6,10 +6,12 @@
 #include "../util/util.hpp"
 
 namespace Game {
-Object::Object(Math::Vector3 p, Math::Quaternion r, Math::Vector3 s) : position(p), rotation(r), scale(s) {}
+Object::Object(Math::Vector3 p, Math::Quaternion r, Math::Vector3 s, RenderMode m)
+    : position(p), rotation(r), scale(s), renderMode(m) {}
 
 Object::Object(const Object &other)
-    : position(other.position), rotation(other.rotation), scale(other.scale), mesh(other.mesh) {}
+    : position(other.position), rotation(other.rotation), scale(other.scale), mesh(other.mesh),
+      renderMode(other.renderMode) {}
 
 Object &Object::operator=(const Object &other) {
   if (this == &other)
@@ -18,11 +20,13 @@ Object &Object::operator=(const Object &other) {
   this->rotation = other.rotation;
   this->position = other.position;
   this->scale = other.scale;
+  this->renderMode = other.renderMode;
   return *this;
 }
 
 Object::Object(Object &&other) noexcept
-    : position(other.position), rotation(other.rotation), scale(other.scale), mesh(other.mesh) {
+    : position(other.position), rotation(other.rotation), scale(other.scale), mesh(other.mesh),
+      renderMode(other.renderMode) {
 
   other.rotation = {0, {0, 0, 0}};
   other.position = {0, 0, 0};
@@ -37,6 +41,7 @@ Object &Object::operator=(Object &&other) noexcept {
   this->rotation = other.rotation;
   this->position = other.position;
   this->scale = other.scale;
+  this->renderMode = other.renderMode;
 
   other.rotation = {0, {0, 0, 0}};
   other.position = {0, 0, 0};
@@ -44,6 +49,8 @@ Object &Object::operator=(Object &&other) noexcept {
 
   return *this;
 }
+
+bool Object::operator<(const Object &other) { return this->renderMode < other.renderMode; }
 
 void Object::init(std::string meshPath, std::string texturePath) {
   mesh.init(meshPath);

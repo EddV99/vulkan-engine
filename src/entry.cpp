@@ -1,8 +1,8 @@
 /**
  * @brief Entry point of the program
  */
+#include "game/object.hpp"
 #include "game/scene.hpp"
-#include "math/matrix.hpp"
 #include "math/vector.hpp"
 #include "renderer/renderer.hpp"
 #include "util/defines.hpp"
@@ -24,6 +24,7 @@ int main(void) {
     sphere.position = {-10.0, 10.0, 0.0};
     sphere.rotation = {0.0, 0, 0.0};
     sphere.textureFilePath = "";
+    sphere.renderMode = Game::Object::RenderMode::BLINN_SHADING;
 
     Game::ModelInfo cube;
     cube.meshFilePath = cubePath;
@@ -31,6 +32,7 @@ int main(void) {
     cube.position = {-10.0, 0.0, 0.0};
     cube.rotation = {0.0, 0.0, 0.0};
     cube.textureFilePath = "";
+    cube.renderMode = Game::Object::RenderMode::ENVIRONMENT_MAP;
 
     Game::ModelInfo teapot;
     teapot.meshFilePath = teapotPath;
@@ -38,6 +40,7 @@ int main(void) {
     teapot.position = {0.0, 0.0, 0.0};
     teapot.rotation = {0.0, 0.0, 0.0};
     teapot.textureFilePath = "";
+    teapot.renderMode = Game::Object::RenderMode::BLINN_SHADING;
 
     Game::ModelInfo sphere2;
     sphere2.meshFilePath = spherePath;
@@ -45,6 +48,7 @@ int main(void) {
     sphere2.position = {10.0, 10.0, 0.0};
     sphere2.rotation = {0.0, 0, 0.0};
     sphere2.textureFilePath = "";
+    sphere2.renderMode = Game::Object::RenderMode::ENVIRONMENT_MAP;
 
     Game::ModelInfo cube2;
     cube2.meshFilePath = cubePath;
@@ -52,6 +56,7 @@ int main(void) {
     cube2.position = {10.0, 0.0, 0.0};
     cube2.rotation = {0.0, 0.0, 0.0};
     cube2.textureFilePath = "";
+    cube2.renderMode = Game::Object::RenderMode::BLINN_SHADING;
 
     Game::ModelInfo teapot2;
     teapot2.meshFilePath = teapotPath;
@@ -59,6 +64,7 @@ int main(void) {
     teapot2.position = {-10.0, -20.0, 0.0};
     teapot2.rotation = {0.0, 0.0, 0.0};
     teapot2.textureFilePath = "";
+    teapot2.renderMode = Game::Object::RenderMode::ENVIRONMENT_MAP;
 
     models.push_back(teapot);
     models.push_back(sphere);

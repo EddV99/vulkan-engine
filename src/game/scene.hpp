@@ -3,24 +3,29 @@
  *
  * @brief header file for scene class
  *
+ * @details A scene holds information for each
+ *          object to be rendered and other
+ *          information like camera stuff
+ *
  */
 
 #pragma once
 
 #include "../game/camera.hpp"
-#include "../math/matrix.hpp"
 #include "../math/vector.hpp"
 #include "object.hpp"
 
 #include <vector>
 
 namespace Game {
+
 struct ModelInfo {
   std::string meshFilePath;
   std::string textureFilePath;
   Math::Vector3 position;
   Math::Vector3 rotation;
   Math::Vector3 scale;
+  Object::RenderMode renderMode;
 };
 
 class Scene {

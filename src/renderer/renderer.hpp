@@ -17,8 +17,6 @@
 namespace Renderer {
 class Renderer {
 public:
-  enum Pipelines { BLINN_SHADING, ENVIRONMENT_MAP };
-
   Renderer(int w, int h, Game::Scene &scene);
   bool running();
   void poll();

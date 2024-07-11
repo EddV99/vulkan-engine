@@ -3,6 +3,8 @@
  */
 
 #include "scene.hpp"
+
+#include <algorithm>
 #include <vector>
 
 namespace Game {
@@ -51,13 +53,16 @@ void Scene::init() {
   for (const auto &modelInfo : models) {
     Math::Quaternion q = {0, {0, 0, 0}};
     q.rotate(modelInfo.rotation);
-    Object obj(modelInfo.position, q, modelInfo.scale);
+    Object obj(modelInfo.position, q, modelInfo.scale, modelInfo.renderMode);
     obj.init(modelInfo.meshFilePath, modelInfo.textureFilePath);
     objects.push_back(obj);
 
     if (!modelInfo.textureFilePath.empty())
       textureCount++;
   }
+
+  // sort by render mode
+  std::sort(objects.begin(), objects.end());
 }
 
 } // namespace Game

@@ -5,34 +5,22 @@
 #include "../math/matrix.hpp"
 #include "../math/vector.hpp"
 #include "../mesh/mesh.hpp"
+#include "../util/defines.hpp"
 
 namespace Game {
 class Object {
+public:
+  enum RenderMode { BLINN_SHADING, ENVIRONMENT_MAP };
+
 private:
   struct TextureData {
     stbi_uc *pixels;
     int width = 1, height = 1, channels;
   };
 
-  void loadTexture(std::string fileName);
-  bool textureLoaded = false;
-
-  Math::Vector3 position;
-  Math::Quaternion rotation;
-  Math::Vector3 scale;
-
-  Math::Matrix4 getTranslationMatrix(Math::Vector3 t);
-  Math::Matrix4 getRotationMatrix();
-  Math::Matrix4 getScaleMatrix(Math::Vector3 s);
-
-  Mesh::Mesh mesh;
-  TextureData texture;
-
-  f32 pitch = 0, yaw = 0, roll = 0;
-
 public:
   Object() = delete;
-  Object(Math::Vector3 p = {0, 0, 0}, Math::Quaternion o = {0, {0, 0, 0}}, Math::Vector3 s = {1, 1, 1});
+  Object(Math::Vector3 p, Math::Quaternion o, Math::Vector3 s, RenderMode mode);
   ~Object() = default;
   Object(const Object &other);
   Object &operator=(const Object &other);
@@ -70,5 +58,26 @@ public:
 
   const TextureData &getTextureData();
   const Mesh::Mesh &getMesh();
+
+  bool operator<(const Object &other);
+
+private:
+  void loadTexture(std::string fileName);
+  bool textureLoaded = false;
+
+  Math::Vector3 position;
+  Math::Quaternion rotation;
+  Math::Vector3 scale;
+
+  Math::Matrix4 getTranslationMatrix(Math::Vector3 t);
+  Math::Matrix4 getRotationMatrix();
+  Math::Matrix4 getScaleMatrix(Math::Vector3 s);
+
+  Mesh::Mesh mesh;
+  TextureData texture;
+
+  f32 pitch = 0, yaw = 0, roll = 0;
+
+  RenderMode renderMode;
 };
 } // namespace Game
