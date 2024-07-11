@@ -181,83 +181,7 @@ void RendererVulkan::createAssets(Game::Scene &scene) {
   }
 }
 
-void RendererVulkan::createPipelines() {
-  // Blinn Shading Setup
-  blinn.vertexShaderPath = "src/shaders/blinn-vertex.spv";
-  blinn.fragmentShaderPath = "src/shaders/blinn-fragment.spv";
-
-  blinn.depthTest = true;
-
-  VkDescriptorSetLayoutBinding uniformBindingBlinn{};
-  uniformBindingBlinn.binding = 0;
-  uniformBindingBlinn.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-  uniformBindingBlinn.descriptorCount = 1;
-  uniformBindingBlinn.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-  uniformBindingBlinn.pImmutableSamplers = nullptr;
-
-  VkDescriptorSetLayoutBinding samplerBindingBlinn{};
-  samplerBindingBlinn.binding = 1;
-  samplerBindingBlinn.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  samplerBindingBlinn.descriptorCount = 1;
-  samplerBindingBlinn.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-  samplerBindingBlinn.pImmutableSamplers = nullptr;
-
-  blinn.layoutBindings = {uniformBindingBlinn, samplerBindingBlinn};
-
-  blinn.descriptorPoolSize.resize(2);
-  blinn.descriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-  blinn.descriptorPoolSize[0].descriptorCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
-
-  blinn.descriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  blinn.descriptorPoolSize[1].descriptorCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
-
-  blinn.uniformObjectSize = sizeof(BlinnUniformBufferObject);
-
-  blinn.attributeDescriptions = Mesh::Mesh::getAttributeDescriptions();
-  blinn.bindingDescription = Mesh::Mesh::getBindingDescriptions();
-
-  createDescriptorSetLayout(blinn);
-  createGraphicsPipeline(blinn);
-  createUniformBuffers(scene->objects.size(), blinn);
-  createDescriptorPool(blinn);
-  createDescriptorSets(blinn);
-
-  // after creating descriptor sets you bind them to the uniform buffers/samplers
-  for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-    VkDescriptorBufferInfo bufferInfo{};
-    bufferInfo.buffer = blinn.uniformBuffers[i];
-    bufferInfo.offset = 0;
-    bufferInfo.range = blinn.uniformObjectSize;
-
-    VkDescriptorImageInfo imageInfo{};
-    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    imageInfo.imageView = textureImageView[0];
-    imageInfo.sampler = textureSampler[0];
-
-    std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-    descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptorWrites[0].dstSet = blinn.descriptorSets[i];
-    descriptorWrites[0].dstBinding = 0;
-    descriptorWrites[0].dstArrayElement = 0;
-    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    descriptorWrites[0].descriptorCount = 1;
-    descriptorWrites[0].pBufferInfo = &bufferInfo;
-    descriptorWrites[0].pImageInfo = nullptr;
-    descriptorWrites[0].pTexelBufferView = nullptr;
-
-    descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptorWrites[1].dstSet = blinn.descriptorSets[i];
-    descriptorWrites[1].dstBinding = 1;
-    descriptorWrites[1].dstArrayElement = 0;
-    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    descriptorWrites[1].descriptorCount = 1;
-    descriptorWrites[1].pBufferInfo = nullptr;
-    descriptorWrites[1].pImageInfo = &imageInfo;
-    descriptorWrites[1].pTexelBufferView = nullptr;
-
-    vkUpdateDescriptorSets(device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
-  }
-}
+void RendererVulkan::createPipelines() { createBlinnPipeline(); }
 
 void RendererVulkan::createInstance() {
   VkApplicationInfo appInfo{};
@@ -1498,6 +1422,87 @@ Math::Matrix4 RendererVulkan::perspectiveMatrix(f32 fov, f32 aspect) {
                        0, -focalLength, 0, 0,         //
                        0, 0, A, B,                    //
                        0, 0, -1, 0);
+}
+
+// ==================================================================================================================
+// Pipeline(s)
+// ==================================================================================================================
+void RendererVulkan::createBlinnPipeline() {
+  // Blinn Shading Setup
+  blinn.vertexShaderPath = "src/shaders/blinn-vertex.spv";
+  blinn.fragmentShaderPath = "src/shaders/blinn-fragment.spv";
+
+  blinn.depthTest = true;
+
+  VkDescriptorSetLayoutBinding uniformBindingBlinn{};
+  uniformBindingBlinn.binding = 0;
+  uniformBindingBlinn.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+  uniformBindingBlinn.descriptorCount = 1;
+  uniformBindingBlinn.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  uniformBindingBlinn.pImmutableSamplers = nullptr;
+
+  VkDescriptorSetLayoutBinding samplerBindingBlinn{};
+  samplerBindingBlinn.binding = 1;
+  samplerBindingBlinn.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  samplerBindingBlinn.descriptorCount = 1;
+  samplerBindingBlinn.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+  samplerBindingBlinn.pImmutableSamplers = nullptr;
+
+  blinn.layoutBindings = {uniformBindingBlinn, samplerBindingBlinn};
+
+  blinn.descriptorPoolSize.resize(2);
+  blinn.descriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+  blinn.descriptorPoolSize[0].descriptorCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+
+  blinn.descriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  blinn.descriptorPoolSize[1].descriptorCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+
+  blinn.uniformObjectSize = sizeof(BlinnUniformBufferObject);
+
+  blinn.attributeDescriptions = Mesh::Mesh::getAttributeDescriptions();
+  blinn.bindingDescription = Mesh::Mesh::getBindingDescriptions();
+
+  createDescriptorSetLayout(blinn);
+  createGraphicsPipeline(blinn);
+  createUniformBuffers(scene->objects.size(), blinn);
+  createDescriptorPool(blinn);
+  createDescriptorSets(blinn);
+
+  // after creating descriptor sets you bind them to the uniform buffers/samplers
+  for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    VkDescriptorBufferInfo bufferInfo{};
+    bufferInfo.buffer = blinn.uniformBuffers[i];
+    bufferInfo.offset = 0;
+    bufferInfo.range = blinn.uniformObjectSize;
+
+    VkDescriptorImageInfo imageInfo{};
+    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    imageInfo.imageView = textureImageView[0];
+    imageInfo.sampler = textureSampler[0];
+
+    std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+    descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrites[0].dstSet = blinn.descriptorSets[i];
+    descriptorWrites[0].dstBinding = 0;
+    descriptorWrites[0].dstArrayElement = 0;
+    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    descriptorWrites[0].descriptorCount = 1;
+    descriptorWrites[0].pBufferInfo = &bufferInfo;
+    descriptorWrites[0].pImageInfo = nullptr;
+    descriptorWrites[0].pTexelBufferView = nullptr;
+
+    descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrites[1].dstSet = blinn.descriptorSets[i];
+    descriptorWrites[1].dstBinding = 1;
+    descriptorWrites[1].dstArrayElement = 0;
+    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    descriptorWrites[1].descriptorCount = 1;
+    descriptorWrites[1].pBufferInfo = nullptr;
+    descriptorWrites[1].pImageInfo = &imageInfo;
+    descriptorWrites[1].pTexelBufferView = nullptr;
+
+    vkUpdateDescriptorSets(device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+  }
 }
 
 } // namespace Renderer

@@ -104,8 +104,10 @@ private:
   };
 
   // ==================================================================================================================
-  // Blinn Shading
+  // Pipeline(s)
   // ==================================================================================================================
+
+  /* Blinn Shading */
   /**
    * @brief Blinn uniform object struct
    */
@@ -117,7 +119,7 @@ private:
   };
 
   /**
-   * @brief Uniform objects for Blinn pipeline
+   * @brief Uniform object(s) for Blinn pipeline
    */
   std::vector<BlinnUniformBufferObject> blinnUBO;
 
@@ -125,6 +127,26 @@ private:
    * @brief Blinn pipeline
    */
   Pipeline blinn{};
+
+  void createBlinnPipeline();
+
+  /* Environment Map */
+  /**
+   * @brief EnvironmentMap uniform object struct
+   */
+  struct EnvironmentMapUniformBufferObject {
+    alignas(16) Math::Matrix4 mvp;
+  };
+
+  /**
+   * @brief Uniform object(s) for EnvironmentMap pipeline
+   */
+  std::vector<EnvironmentMapUniformBufferObject> environmentMapUBO;
+
+  /**
+   * @brief EnvironmentMap pipeline
+   */
+  Pipeline environmentMap{};
 
   // ==================================================================================================================
   // Vulkan Initilization
