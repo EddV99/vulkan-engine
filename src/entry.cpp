@@ -24,7 +24,7 @@ int main(void) {
     sphere.position = {-10.0, 10.0, 0.0};
     sphere.rotation = {0.0, 0, 0.0};
     sphere.textureFilePath = "";
-    sphere.renderMode = Game::Object::RenderMode::ENVIRONMENT_MAP;
+    sphere.renderMode = Game::Object::RenderMode::BLINN_SHADING;
 
     Game::ModelInfo cube;
     cube.meshFilePath = cubePath;
@@ -40,7 +40,7 @@ int main(void) {
     teapot.position = {0.0, 0.0, 0.0};
     teapot.rotation = {0.0, 0.0, 0.0};
     teapot.textureFilePath = "";
-    teapot.renderMode = Game::Object::RenderMode::ENVIRONMENT_MAP;
+    teapot.renderMode = Game::Object::RenderMode::BLINN_SHADING;
 
     Game::ModelInfo sphere2;
     sphere2.meshFilePath = spherePath;
@@ -64,7 +64,7 @@ int main(void) {
     teapot2.position = {-10.0, -20.0, 0.0};
     teapot2.rotation = {0.0, 0.0, 0.0};
     teapot2.textureFilePath = "";
-    teapot2.renderMode = Game::Object::RenderMode::ENVIRONMENT_MAP;
+    teapot2.renderMode = Game::Object::RenderMode::BLINN_SHADING;
 
     models.push_back(teapot);
     models.push_back(sphere);
@@ -74,6 +74,12 @@ int main(void) {
     models.push_back(sphere2);
     models.push_back(cube2);
 
+    std::array<std::string, 6> env = {
+        "res/env/dark-desert/dark_sand_front.png", "res/env/dark-desert/dark_sand_back.png",
+        "res/env/dark-desert/dark_sand_top.png",   "res/env/dark-desert/dark_sand_bottom.png",
+        "res/env/dark-desert/dark_sand_right.png", "res/env/dark-desert/dark_sand_left.png"};
+
+    //Game::Scene scene(models, env);
     Game::Scene scene(models);
 
     Renderer::Renderer renderer(SCREEN_WIDTH, SCREEN_HEIGHT, scene);

@@ -128,9 +128,21 @@ private:
    */
   Pipeline blinn{};
 
-  void createBlinnPipeline();
+  void createBlinnPipeline(size_t objectCount);
 
   /* Environment Map */
+  VkImage cubemapImage;
+  VkDeviceMemory cubemapImageMemory;
+  VkImageView cubemapImageView;
+  VkSampler cubemapSampler;
+
+  VkBuffer envBuffer;
+  VkDeviceMemory envMemory;
+
+  f32 environmentMapVertices[9] = {-1.0, -1.0, 0.999, //
+                                   3.0,  -1.0, 0.999, //
+                                   -1.0, 3.0,  0.999};
+
   /**
    * @brief EnvironmentMap uniform object struct
    */
@@ -215,7 +227,7 @@ private:
 
   void createDescriptorSets(Pipeline &pipeline);
 
-  void createVertexBuffer(void *vertexData, size_t size);
+  void createVertexBuffer(void *vertexData, size_t size, VkBuffer buffer, VkDeviceMemory memory);
 
   void createIndexBuffer(void *indexData, size_t size);
 
@@ -346,6 +358,7 @@ private:
   VkDeviceMemory meshMemory;
   VkBuffer indexBuffer;
   VkDeviceMemory indexMemory;
+
   // data needed to be able to index into individual models from our big mesh buffer
   std::vector<int32_t> vertexOffsets;
   std::vector<uint32_t> indexOffsets;
@@ -362,22 +375,9 @@ private:
   std::vector<VkImageView> textureImageView;
   std::vector<VkSampler> textureSampler;
 
-  /**
-   * cubemap
-   *  (should just be one)
-   */
-  VkImage cubemapImage;
-  VkDeviceMemory cubemapImageMemory;
-  VkImageView cubemapImageView;
-  VkSampler cubemapSampler;
-
   // when no textures are needed send a "dummy" texture
   unsigned char DEFAULT_IMAGE[4] = {0, 0, 0, 0};
 
-  // one triangle for cubemap
-  f32 triangleVertices[9] = {-1.0, -1.0, 0.999, //
-                             3.0,  -1.0, 0.999, //
-                             -1.0, 3.0,  0.999};
   /**
    * Scene to render
    */

@@ -50,7 +50,7 @@ private:
   std::vector<u32> indices;
   std::vector<Vertex> vertexData;
   BoundingBox box;
-  void loadOBJFile(std::string filename);
+  void loadOBJFile(const std::string& filename);
 
 public:
   Mesh() = default;
@@ -60,7 +60,7 @@ public:
   Mesh &operator=(const Mesh &other);
   Mesh &operator=(Mesh &&other) noexcept;
 
-  void init(std::string meshPath);
+  void init(const std::string& meshPath);
 
   void computeBoundingBox();
   bool hasNormals();

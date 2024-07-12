@@ -66,12 +66,12 @@ Mesh &Mesh::operator=(const Mesh &other) {
   return *this;
 }
 
-void Mesh::init(std::string meshPath) {
+void Mesh::init(const std::string& meshPath) {
   loadOBJFile(meshPath);
   computeBoundingBox();
 }
 
-void Mesh::loadOBJFile(std::string filename) {
+void Mesh::loadOBJFile(const std::string& filename) {
   tinyobj::attrib_t attrib;
   std::vector<tinyobj::shape_t> shapes;
   std::vector<tinyobj::material_t> materials;

@@ -11,13 +11,22 @@ namespace Game {
 
 Scene::~Scene() { objects.clear(); }
 
-Scene::Scene(const std::vector<ModelInfo> &models) : models(models) { camera = Camera(); }
+Scene::Scene(const std::vector<ModelInfo> &models, std::array<std::string, 6> environmentMapImagePaths)
+    : models(models) {
+  camera = Camera();
+  if (!environmentMapImagePaths.empty()) {
+    hasEnvironmentMap = true;
+    envMapImagePaths = environmentMapImagePaths;
+  }
+}
 
 Scene::Scene(const Scene &other)
-    : models(other.models), textureCount(other.textureCount), objects(other.objects), camera(other.camera) {}
+    : models(other.models), textureCount(other.textureCount), hasEnvironmentMap(other.hasEnvironmentMap),
+      envMapImagePaths(other.envMapImagePaths), objects(other.objects), camera(other.camera) {}
 
 Scene::Scene(Scene &&other) noexcept
-    : models(other.models), textureCount(other.textureCount), objects(other.objects), camera(other.camera) {
+    : models(other.models), textureCount(other.textureCount), hasEnvironmentMap(other.hasEnvironmentMap),
+      envMapImagePaths(other.envMapImagePaths), objects(other.objects), camera(other.camera) {
   other.models.clear();
   other.objects.clear();
 }
@@ -30,6 +39,8 @@ Scene &Scene::operator=(const Scene &other) {
   this->textureCount = other.textureCount;
   this->objects = other.objects;
   this->camera = other.camera;
+  this->hasEnvironmentMap = other.hasEnvironmentMap;
+  this->envMapImagePaths = other.envMapImagePaths;
 
   return *this;
 }
@@ -42,6 +53,8 @@ Scene &Scene::operator=(Scene &&other) noexcept {
   this->textureCount = other.textureCount;
   this->objects = other.objects;
   this->camera = other.camera;
+  this->hasEnvironmentMap = other.hasEnvironmentMap;
+  this->envMapImagePaths = other.envMapImagePaths;
 
   other.models.clear();
   other.objects.clear();

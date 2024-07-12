@@ -15,6 +15,7 @@
 #include "../math/vector.hpp"
 #include "object.hpp"
 
+#include <array>
 #include <vector>
 
 namespace Game {
@@ -32,11 +33,13 @@ class Scene {
 private:
   std::vector<ModelInfo> models;
   size_t textureCount = 0;
+  bool hasEnvironmentMap = false;
+  std::array<std::string, 6> envMapImagePaths;
 
 public:
   Scene() = default;
   ~Scene();
-  Scene(const std::vector<ModelInfo> &models);
+  Scene(const std::vector<ModelInfo> &models, std::array<std::string, 6> environmentMapImagePaths = {});
   Scene(const Scene &other);
   Scene(Scene &&other) noexcept;
   Scene &operator=(const Scene &other);

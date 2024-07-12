@@ -14,8 +14,8 @@ public:
 
 private:
   struct TextureData {
-    stbi_uc *pixels;
-    int width = 1, height = 1, channels;
+    stbi_uc *pixels = nullptr;
+    int width = 1, height = 1, channels = 1;
   };
 
 public:
@@ -27,7 +27,7 @@ public:
   Object(Object &&other) noexcept;
   Object &operator=(Object &&other) noexcept;
 
-  void init(std::string meshPath, std::string texturePath = "");
+  void init(const std::string &meshPath, const std::string &texturePath = {});
 
   void setPosition(Math::Vector3 p);
   void setPositionX(f32 x);

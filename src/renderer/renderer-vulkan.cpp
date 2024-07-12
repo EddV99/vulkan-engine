@@ -116,6 +116,8 @@ void RendererVulkan::initializeVulkan() {
 void RendererVulkan::createAssets(Game::Scene &scene) {
   this->scene = &scene;
 
+  createVertexBuffer(environmentMapVertices, sizeof(environmentMapVertices), envBuffer, envMemory);
+
   OBJECT_COUNT = scene.objects.size();
   blinnUBO.resize(OBJECT_COUNT);
 
@@ -146,7 +148,7 @@ void RendererVulkan::createAssets(Game::Scene &scene) {
     vertexCount += (int32_t)v.size();
   }
 
-  createVertexBuffer(vertexData.data(), vertexDataSize);
+  createVertexBuffer(vertexData.data(), vertexDataSize, meshBuffer, meshMemory);
   createIndexBuffer(indexData.data(), indexDataSize);
 
   // upload textures for objects
@@ -181,7 +183,10 @@ void RendererVulkan::createAssets(Game::Scene &scene) {
   }
 }
 
-void RendererVulkan::createPipelines() { createBlinnPipeline(); }
+void RendererVulkan::createPipelines() {
+  createEnvironmentMapPipeline();
+  createBlinnPipeline(scene->objects.size());
+}
 
 void RendererVulkan::createInstance() {
   VkApplicationInfo appInfo{};
@@ -590,7 +595,7 @@ void RendererVulkan::createFrameBuffers() {
   }
 }
 
-void RendererVulkan::createVertexBuffer(void *vertexData, size_t size) {
+void RendererVulkan::createVertexBuffer(void *vertexData, size_t size, VkBuffer buffer, VkDeviceMemory memory) {
   VkDeviceSize bufferSize = size;
 
   VkBuffer stagingBuffer;
@@ -606,9 +611,9 @@ void RendererVulkan::createVertexBuffer(void *vertexData, size_t size) {
   vkUnmapMemory(device, stagingMemory);
 
   createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-               VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, meshBuffer, meshMemory);
+               VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, buffer, memory);
 
-  copyBuffer(stagingBuffer, meshBuffer, bufferSize);
+  copyBuffer(stagingBuffer, buffer, bufferSize);
 
   vkDestroyBuffer(device, stagingBuffer, nullptr);
   vkFreeMemory(device, stagingMemory, nullptr);
@@ -1427,7 +1432,61 @@ Math::Matrix4 RendererVulkan::perspectiveMatrix(f32 fov, f32 aspect) {
 // ==================================================================================================================
 // Pipeline(s)
 // ==================================================================================================================
-void RendererVulkan::createBlinnPipeline() {
+void RendererVulkan::createEnvironmentMapPipeline() {
+  environmentMap.vertexShaderPath = "src/shaders/environment-map-vertex.spv";
+  environmentMap.fragmentShaderPath = "src/shaders/environment-map-fragment.spv";
+
+  environmentMap.depthTest = false;
+
+  VkDescriptorSetLayoutBinding uniformBindingBlinn{};
+  uniformBindingBlinn.binding = 0;
+  uniformBindingBlinn.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  uniformBindingBlinn.descriptorCount = 1;
+  uniformBindingBlinn.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  uniformBindingBlinn.pImmutableSamplers = nullptr;
+
+  VkDescriptorSetLayoutBinding samplerBindingBlinn{};
+  samplerBindingBlinn.binding = 1;
+  samplerBindingBlinn.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  samplerBindingBlinn.descriptorCount = 1;
+  samplerBindingBlinn.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+  samplerBindingBlinn.pImmutableSamplers = nullptr;
+
+  environmentMap.layoutBindings = {uniformBindingBlinn, samplerBindingBlinn};
+
+  environmentMap.descriptorPoolSize.resize(2);
+  environmentMap.descriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  environmentMap.descriptorPoolSize[0].descriptorCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+
+  environmentMap.descriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  environmentMap.descriptorPoolSize[1].descriptorCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+
+  environmentMap.uniformObjectSize = sizeof(EnvironmentMapUniformBufferObject);
+
+  VkVertexInputAttributeDescription attributeDescription{};
+  attributeDescription.binding = 0;
+  attributeDescription.location = 0;
+  attributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
+  attributeDescription.offset = 0;
+
+  std::vector<VkVertexInputAttributeDescription> attributeDescriptions = {attributeDescription};
+
+  VkVertexInputBindingDescription bindingDescription;
+  bindingDescription.binding = 0;
+  bindingDescription.stride = sizeof(Math::Vector3);
+  bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+  environmentMap.attributeDescriptions = attributeDescriptions;
+  environmentMap.bindingDescription = bindingDescription;
+
+  createDescriptorSetLayout(environmentMap);
+  createGraphicsPipeline(environmentMap);
+  createUniformBuffers(1, environmentMap);
+  createDescriptorPool(environmentMap);
+  createDescriptorSets(environmentMap);
+}
+
+void RendererVulkan::createBlinnPipeline(size_t objectCount) {
   // Blinn Shading Setup
   blinn.vertexShaderPath = "src/shaders/blinn-vertex.spv";
   blinn.fragmentShaderPath = "src/shaders/blinn-fragment.spv";
@@ -1464,7 +1523,7 @@ void RendererVulkan::createBlinnPipeline() {
 
   createDescriptorSetLayout(blinn);
   createGraphicsPipeline(blinn);
-  createUniformBuffers(scene->objects.size(), blinn);
+  createUniformBuffers(objectCount, blinn);
   createDescriptorPool(blinn);
   createDescriptorSets(blinn);
 

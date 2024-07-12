@@ -52,8 +52,8 @@ Object &Object::operator=(Object &&other) noexcept {
 
 bool Object::operator<(const Object &other) { return this->renderMode < other.renderMode; }
 
-void Object::init(std::string meshPath, std::string texturePath) {
-  mesh.init(meshPath);
+void Object::init(const std::string& meshPath, const std::string& texturePath) {
+  this->mesh.init(meshPath);
 
   if (!texturePath.empty())
     loadTexture(texturePath);
