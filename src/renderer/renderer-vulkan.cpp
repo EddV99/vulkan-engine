@@ -1433,8 +1433,8 @@ Math::Matrix4 RendererVulkan::perspectiveMatrix(f32 fov, f32 aspect) {
 // Pipeline(s)
 // ==================================================================================================================
 void RendererVulkan::createEnvironmentMapPipeline() {
-  environmentMap.vertexShaderPath = "src/shaders/environment-map-vertex.spv";
-  environmentMap.fragmentShaderPath = "src/shaders/environment-map-fragment.spv";
+  environmentMap.vertexShaderPath = "src/shaders/env-vertex.spv";
+  environmentMap.fragmentShaderPath = "src/shaders/env-fragment.spv";
 
   environmentMap.depthTest = false;
 

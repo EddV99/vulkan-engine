@@ -14,6 +14,9 @@ function build_shaders ()
     glslc blinn.vert -o blinn-vertex.spv
     glslc blinn.frag -o blinn-fragment.spv
 
+    glslc env.vert -o env-vertex.spv
+    glslc env.frag -o env-fragment.spv
+
     Set-Location -Path "../.."
 }
 
