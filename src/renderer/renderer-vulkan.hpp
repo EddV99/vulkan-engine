@@ -131,6 +131,7 @@ private:
   void createBlinnPipeline(size_t objectCount);
 
   /* Environment Map */
+
   VkImage cubemapImage;
   VkDeviceMemory cubemapImageMemory;
   VkImageView cubemapImageView;
@@ -219,9 +220,10 @@ private:
 
   void createDepthResources();
 
-  void createTextureImage(void *textureData, int width, int height, VkImage &image, VkDeviceMemory &imageMemory);
+  void createTextureImage(void *textureData, int width, int height, VkImage &image, VkDeviceMemory &imageMemory,
+                          uint32_t layers, VkImageCreateFlags flags);
 
-  void createTextureImageView(VkImage &image, VkImageView &imageView);
+  void createTextureImageView(VkImage &image, VkImageViewType viewType, VkImageView &imageView, uint32_t layers);
 
   void createTextureSampler(VkSampler &sampler);
 
@@ -251,18 +253,21 @@ private:
 
   VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
                                VkFormatFeatureFlags features);
-  VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+  VkImageView createImageView(VkImage image, VkImageViewType viewType, VkFormat format, VkImageAspectFlags aspectFlags,
+                              uint32_t layers);
 
-  void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+  void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layers);
 
-  void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+  void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout,
+                             uint32_t layers);
 
   VkCommandBuffer beginSingleTimeCommands();
 
   void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 
   void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
-                   VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &imageMemor);
+                   VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &imageMemory, uint32_t layers,
+                   VkImageCreateFlags flags);
 
   void updateUniformBuffer(uint32_t frame);
 
