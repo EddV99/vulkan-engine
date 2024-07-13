@@ -45,16 +45,25 @@ RendererVulkan::~RendererVulkan() {
   for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
     vkDestroyBuffer(device, blinn.uniformBuffers[i], nullptr);
     vkFreeMemory(device, blinn.uniformBuffersMemory[i], nullptr);
+
+    vkDestroyBuffer(device, environmentMap.uniformBuffers[i], nullptr);
+    vkFreeMemory(device, environmentMap.uniformBuffersMemory[i], nullptr);
   }
 
   vkDestroyDescriptorPool(device, blinn.descriptorPool, nullptr);
   vkDestroyDescriptorSetLayout(device, blinn.descriptorSetLayout, nullptr);
+
+  vkDestroyDescriptorPool(device, environmentMap.descriptorPool, nullptr);
+  vkDestroyDescriptorSetLayout(device, environmentMap.descriptorSetLayout, nullptr);
 
   vkDestroyBuffer(device, indexBuffer, nullptr);
   vkFreeMemory(device, indexMemory, nullptr);
 
   vkDestroyBuffer(device, meshBuffer, nullptr);
   vkFreeMemory(device, meshMemory, nullptr);
+
+  vkDestroyBuffer(device, envBuffer, nullptr);
+  vkFreeMemory(device, envMemory, nullptr);
 
   for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
     vkDestroySemaphore(device, imageAvailableSem[i], nullptr);
@@ -66,6 +75,10 @@ RendererVulkan::~RendererVulkan() {
 
   vkDestroyPipeline(device, blinn.pipeline, nullptr);
   vkDestroyPipelineLayout(device, blinn.pipelineLayout, nullptr);
+
+  vkDestroyPipeline(device, environmentMap.pipeline, nullptr);
+  vkDestroyPipelineLayout(device, environmentMap.pipelineLayout, nullptr);
+
   vkDestroyRenderPass(device, colorAndDepthRenderPass, nullptr);
 
   vkDestroyDevice(device, nullptr);
@@ -595,7 +608,7 @@ void RendererVulkan::createFrameBuffers() {
   }
 }
 
-void RendererVulkan::createVertexBuffer(void *vertexData, size_t size, VkBuffer buffer, VkDeviceMemory memory) {
+void RendererVulkan::createVertexBuffer(void *vertexData, size_t size, VkBuffer &buffer, VkDeviceMemory &memory) {
   VkDeviceSize bufferSize = size;
 
   VkBuffer stagingBuffer;

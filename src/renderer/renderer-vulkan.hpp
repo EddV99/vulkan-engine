@@ -227,7 +227,7 @@ private:
 
   void createDescriptorSets(Pipeline &pipeline);
 
-  void createVertexBuffer(void *vertexData, size_t size, VkBuffer buffer, VkDeviceMemory memory);
+  void createVertexBuffer(void *vertexData, size_t size, VkBuffer &buffer, VkDeviceMemory &memory);
 
   void createIndexBuffer(void *indexData, size_t size);
 
