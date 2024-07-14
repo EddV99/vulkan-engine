@@ -16,4 +16,5 @@ namespace Util {
 std::vector<char> readFile(const std::string &filename);
 void Error(const std::string &message);
 f32 randomFloat(f32 lo, f32 hi);
+void loadImage(std::string filePath, unsigned char *&data, int &width, int &height, int &channels);
 } // namespace Util

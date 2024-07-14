@@ -4,6 +4,9 @@
 
 #include "util.hpp"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include <fstream>
 #include <stdexcept>
 #include <string>
@@ -29,5 +32,13 @@ std::vector<char> readFile(const std::string &filename) {
 void Error(const std::string &message) { throw std::runtime_error(message); }
 
 f32 randomFloat(f32 lo, f32 hi) { return lo + static_cast<f32>(rand() / (static_cast<f32>(RAND_MAX / (hi - lo)))); }
+
+void loadImage(std::string filePath, unsigned char *&data, int &width, int &height, int &channels) {
+
+  data = stbi_load(filePath.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+
+  if (!data)
+    Util::Error("Failed to load texture image: " + filePath);
+}
 
 } // namespace Util

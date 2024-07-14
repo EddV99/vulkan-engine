@@ -1,9 +1,7 @@
 #include "object.hpp"
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "../util/stb_image.h"
-
 #include "../util/util.hpp"
+
+#include <cmath>
 
 namespace Game {
 Object::Object(Math::Vector3 p, Math::Quaternion r, Math::Vector3 s, RenderMode m)
@@ -52,7 +50,7 @@ Object &Object::operator=(Object &&other) noexcept {
 
 bool Object::operator<(const Object &other) { return this->renderMode < other.renderMode; }
 
-void Object::init(const std::string& meshPath, const std::string& texturePath) {
+void Object::init(const std::string &meshPath, const std::string &texturePath) {
   this->mesh.init(meshPath);
 
   if (!texturePath.empty())
@@ -80,12 +78,12 @@ Math::Matrix4 Object::getTranslationMatrix(Math::Vector3 t) {
 }
 
 Math::Matrix4 Object::getRotationMatrix() {
-  f32 cosx = cosf(TO_RADIANS(pitch));
-  f32 sinx = sinf(TO_RADIANS(pitch));
-  f32 cosy = cosf(TO_RADIANS(yaw));
-  f32 siny = sinf(TO_RADIANS(yaw));
-  f32 cosz = cosf(TO_RADIANS(roll));
-  f32 sinz = sinf(TO_RADIANS(roll));
+  f32 cosx = std::cosf(TO_RADIANS(pitch));
+  f32 sinx = std::sinf(TO_RADIANS(pitch));
+  f32 cosy = std::cosf(TO_RADIANS(yaw));
+  f32 siny = std::sinf(TO_RADIANS(yaw));
+  f32 cosz = std::cosf(TO_RADIANS(roll));
+  f32 sinz = std::sinf(TO_RADIANS(roll));
   return Math::Matrix4(cosy * cosz, sinx * siny * cosz - cosx * sinz, cosx * siny * cosz + sinx * sinz, 0, //
                        cosy * sinz, sinx * siny * sinz + cosx * cosz, cosx * siny * sinz - sinx * cosz, 0, //
                        -siny, sinx * cosy, cosx * cosy, 0,                                                 //
@@ -100,17 +98,7 @@ Math::Matrix4 Object::getScaleMatrix(Math::Vector3 s) {
 }
 
 void Object::loadTexture(std::string fileName) {
-  int width, height, channels;
-
-  texture.pixels = stbi_load(fileName.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-  if (!texture.pixels)
-    Util::Error("Failed to load texture image: " + fileName);
-
-  texture.width = width;
-  texture.height = height;
-  texture.channels = channels;
-
-  textureLoaded = true;
+  Util::loadImage(fileName, texture.pixels, texture.width, texture.height, texture.channels);
 }
 bool Object::hasTexture() { return textureLoaded; }
 
