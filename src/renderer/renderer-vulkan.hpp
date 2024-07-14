@@ -220,7 +220,7 @@ private:
 
   void createDepthResources();
 
-  void createTextureImage(void *textureData, int width, int height, VkImage &image, VkDeviceMemory &imageMemory,
+  void createTextureImage(void **textureData, int width, int height, VkImage &image, VkDeviceMemory &imageMemory,
                           uint32_t layers, VkImageCreateFlags flags);
 
   void createTextureImageView(VkImage &image, VkImageViewType viewType, VkImageView &imageView, uint32_t layers);

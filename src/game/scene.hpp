@@ -34,7 +34,6 @@ private:
   std::vector<ModelInfo> models;
   size_t textureCount = 0;
   bool hasEnvironmentMap = false;
-  std::array<std::string, 6> envMapImagePaths;
 
 public:
   Scene() = default;
@@ -49,6 +48,7 @@ public:
   void init();
   size_t getTextureCount();
 
+  std::array<std::string, 6> envMapImagePaths;
   std::vector<Object> objects;
   Camera camera;
 };

@@ -79,8 +79,8 @@ int main(void) {
         "res/env/dark-desert/dark_sand_top.png",   "res/env/dark-desert/dark_sand_bottom.png",
         "res/env/dark-desert/dark_sand_right.png", "res/env/dark-desert/dark_sand_left.png"};
 
-    //Game::Scene scene(models, env);
-    Game::Scene scene(models);
+    Game::Scene scene(models, env);
+    //Game::Scene scene(models);
 
     Renderer::Renderer renderer(SCREEN_WIDTH, SCREEN_HEIGHT, scene);
     while (renderer.running()) {

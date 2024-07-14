@@ -42,6 +42,11 @@ RendererVulkan::~RendererVulkan() {
     vkFreeMemory(device, textureImageMemory[i], nullptr);
   }
 
+  vkDestroySampler(device, cubemapSampler, nullptr);
+  vkDestroyImageView(device, cubemapImageView, nullptr);
+  vkDestroyImage(device, cubemapImage, nullptr);
+  vkFreeMemory(device, cubemapImageMemory, nullptr);
+
   for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
     vkDestroyBuffer(device, blinn.uniformBuffers[i], nullptr);
     vkFreeMemory(device, blinn.uniformBuffersMemory[i], nullptr);
@@ -130,11 +135,21 @@ void RendererVulkan::createAssets(Game::Scene &scene) {
   this->scene = &scene;
 
   createVertexBuffer(environmentMapVertices, sizeof(environmentMapVertices), envBuffer, envMemory);
-  
-  createTextureImage(environmentMapVertices, 1, 1, textureImage[0], textureImageMemory[0], 6,
+
+  unsigned char *data[6];
+  int32_t width, height, channels;
+
+  Util::loadImage(scene.envMapImagePaths[0], data[0], width, height, channels);
+  Util::loadImage(scene.envMapImagePaths[1], data[1], width, height, channels);
+  Util::loadImage(scene.envMapImagePaths[2], data[2], width, height, channels);
+  Util::loadImage(scene.envMapImagePaths[3], data[3], width, height, channels);
+  Util::loadImage(scene.envMapImagePaths[4], data[4], width, height, channels);
+  Util::loadImage(scene.envMapImagePaths[5], data[5], width, height, channels);
+
+  createTextureImage((void **)data, width, height, cubemapImage, cubemapImageMemory, 6,
                      VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
-  createTextureImageView(textureImage[0], VK_IMAGE_VIEW_TYPE_CUBE, textureImageView[0], 6);
-  createTextureSampler(textureSampler[0]);
+  createTextureImageView(cubemapImage, VK_IMAGE_VIEW_TYPE_CUBE, cubemapImageView, 6);
+  createTextureSampler(cubemapSampler);
 
   OBJECT_COUNT = scene.objects.size();
   blinnUBO.resize(OBJECT_COUNT);
@@ -179,7 +194,8 @@ void RendererVulkan::createAssets(Game::Scene &scene) {
     textureImageView.resize(textureCount);
     textureSampler.resize(textureCount);
 
-    createTextureImage(DEFAULT_IMAGE, 1, 1, textureImage[0], textureImageMemory[0], 1, 0);
+    void *p[1] = {DEFAULT_IMAGE};
+    createTextureImage(p, 1, 1, textureImage[0], textureImageMemory[0], 1, 0);
     createTextureImageView(textureImage[0], VK_IMAGE_VIEW_TYPE_2D, textureImageView[0], 1);
     createTextureSampler(textureSampler[0]);
   } else {
@@ -192,7 +208,8 @@ void RendererVulkan::createAssets(Game::Scene &scene) {
     for (auto &obj : scene.objects) {
       if (obj.hasTexture()) {
         auto t = obj.getTextureData();
-        createTextureImage(t.pixels, t.width, t.height, textureImage[i], textureImageMemory[i], 1, 0);
+        void *p[1] = {t.pixels};
+        createTextureImage(p, t.width, t.height, textureImage[i], textureImageMemory[i], 1, 0);
         createTextureImageView(textureImage[i], VK_IMAGE_VIEW_TYPE_2D, textureImageView[i], 1);
         createTextureSampler(textureSampler[i]);
       }
@@ -725,24 +742,23 @@ void RendererVulkan::createDepthResources() {
                         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
 }
 
-void RendererVulkan::createTextureImage(void *textureData, int width, int height, VkImage &image,
+void RendererVulkan::createTextureImage(void **textureData, int imageWidth, int imageHeight, VkImage &image,
                                         VkDeviceMemory &imageMemory, uint32_t layers, VkImageCreateFlags flags) {
-  int imageWidth = width;
-  int imageHeight = height;
-
-  VkDeviceSize imageSize = imageWidth * imageHeight * 4;
+  VkDeviceSize totalSize = imageWidth * imageHeight * 4 * layers;
+  VkDeviceSize layerSize = totalSize / layers;
 
   VkBuffer stagingBuffer;
   VkDeviceMemory stagingBufferMemory;
 
-  createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+  createBuffer(totalSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer,
                stagingBufferMemory);
 
   void *data;
-  vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
+  vkMapMemory(device, stagingBufferMemory, 0, totalSize, 0, &data);
 
-  memcpy(data, textureData, (size_t)imageSize);
+  for (int i = 0; i < layers; i++)
+    memcpy(static_cast<unsigned char *>(data) + (layerSize * i), textureData[i], (size_t)layerSize);
 
   vkUnmapMemory(device, stagingBufferMemory);
 
@@ -872,7 +888,7 @@ VkImageView RendererVulkan::createImageView(VkImage image, VkImageViewType viewT
   viewInfo.subresourceRange.baseMipLevel = 0;
   viewInfo.subresourceRange.levelCount = 1;
   viewInfo.subresourceRange.baseArrayLayer = 0;
-  viewInfo.subresourceRange.layerCount = 1;
+  viewInfo.subresourceRange.layerCount = layers;
 
   VkImageView imageView;
   if (vkCreateImageView(device, &viewInfo, nullptr, &imageView) != VK_SUCCESS)
