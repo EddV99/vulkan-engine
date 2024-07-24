@@ -32,7 +32,7 @@ public:
 
   void init(GLFWwindow *window, uint32_t width, uint32_t height);
 
-  void createAssets(Game::Scene &scene);
+  void createAssets(Game::Scene *scene);
   void createPipelines();
 
   /**
@@ -140,9 +140,9 @@ private:
   VkBuffer envBuffer;
   VkDeviceMemory envMemory;
 
-  f32 environmentMapVertices[9] = {-1.0, -1.0, 0.999, //
-                                   3.0,  -1.0, 0.999, //
-                                   -1.0, 3.0,  0.999};
+  f32 environmentMapVertices[9] = {-1.0, 1.0,  0.999, //
+                                   3.0,  1.0,  0.999, //
+                                   -1.0, -3.0, 0.999};
 
   /**
    * @brief EnvironmentMap uniform object struct
@@ -212,7 +212,7 @@ private:
 
   void createDescriptorSetLayout(Pipeline &pipeline);
 
-  void createGraphicsPipeline(Pipeline &pipeline);
+  void createPipeline(Pipeline &pipeline);
 
   void createFrameBuffers();
 
@@ -380,6 +380,9 @@ private:
   std::vector<VkImageView> textureImageView;
   std::vector<VkSampler> textureSampler;
 
+  // Projection matrix
+  Math::Matrix4 proj;
+
   // when no textures are needed send a "dummy" texture
   unsigned char DEFAULT_IMAGE[4] = {0, 0, 0, 0};
 
@@ -398,7 +401,7 @@ private:
   /**
    * Values for perspective matrix
    */
-  f32 f = 100;
+  f32 f = 1000;
   f32 n = 0.1;
   f32 t;
   f32 b;

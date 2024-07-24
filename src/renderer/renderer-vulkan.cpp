@@ -106,6 +106,8 @@ void RendererVulkan::init(GLFWwindow *window, uint32_t width, uint32_t height) {
   WIDTH = width;
   HEIGHT = height;
 
+  proj = perspectiveMatrix(90, (f32)WIDTH / HEIGHT);
+
   r = (f32)WIDTH / 2.0;
   l = -r;
 
@@ -131,28 +133,29 @@ void RendererVulkan::initializeVulkan() {
   createSyncObjects();
 }
 
-void RendererVulkan::createAssets(Game::Scene &scene) {
-  this->scene = &scene;
+void RendererVulkan::createAssets(Game::Scene *scene) {
+  this->scene = scene;
 
   createVertexBuffer(environmentMapVertices, sizeof(environmentMapVertices), envBuffer, envMemory);
 
   unsigned char *data[6];
   int32_t width, height, channels;
 
-  Util::loadImage(scene.envMapImagePaths[0], data[0], width, height, channels);
-  Util::loadImage(scene.envMapImagePaths[1], data[1], width, height, channels);
-  Util::loadImage(scene.envMapImagePaths[2], data[2], width, height, channels);
-  Util::loadImage(scene.envMapImagePaths[3], data[3], width, height, channels);
-  Util::loadImage(scene.envMapImagePaths[4], data[4], width, height, channels);
-  Util::loadImage(scene.envMapImagePaths[5], data[5], width, height, channels);
+  Util::loadImage(scene->envMapImagePaths[0], data[0], width, height, channels);
+  Util::loadImage(scene->envMapImagePaths[1], data[1], width, height, channels);
+  Util::loadImage(scene->envMapImagePaths[2], data[2], width, height, channels);
+  Util::loadImage(scene->envMapImagePaths[3], data[3], width, height, channels);
+  Util::loadImage(scene->envMapImagePaths[4], data[4], width, height, channels);
+  Util::loadImage(scene->envMapImagePaths[5], data[5], width, height, channels);
 
   createTextureImage((void **)data, width, height, cubemapImage, cubemapImageMemory, 6,
                      VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
   createTextureImageView(cubemapImage, VK_IMAGE_VIEW_TYPE_CUBE, cubemapImageView, 6);
   createTextureSampler(cubemapSampler);
 
-  OBJECT_COUNT = scene.objects.size();
+  OBJECT_COUNT = scene->objects.size();
   blinnUBO.resize(OBJECT_COUNT);
+  environmentMapUBO.resize(1);
 
   // Combine all data into one big buffer.
   // This provides good data locality.
@@ -163,7 +166,7 @@ void RendererVulkan::createAssets(Game::Scene &scene) {
   std::vector<Mesh::Vertex> vertexData;
   std::vector<u32> indexData;
 
-  for (auto &obj : scene.objects) {
+  for (auto &obj : scene->objects) {
     auto v = obj.getMesh().getVertexData();
     auto i = obj.getMesh().getIndices();
 
@@ -185,7 +188,7 @@ void RendererVulkan::createAssets(Game::Scene &scene) {
   createIndexBuffer(indexData.data(), indexDataSize);
 
   // upload textures for objects
-  size_t textureCount = scene.getTextureCount();
+  size_t textureCount = scene->getTextureCount();
 
   if (textureCount == 0) {
     textureCount = 1;
@@ -205,7 +208,7 @@ void RendererVulkan::createAssets(Game::Scene &scene) {
     textureSampler.resize(textureCount);
 
     size_t i = 0;
-    for (auto &obj : scene.objects) {
+    for (auto &obj : scene->objects) {
       if (obj.hasTexture()) {
         auto t = obj.getTextureData();
         void *p[1] = {t.pixels};
@@ -451,7 +454,7 @@ void RendererVulkan::createDescriptorSetLayout(Pipeline &pipeline) {
     Util::Error("Failed to create descriptor set layout");
 }
 
-void RendererVulkan::createGraphicsPipeline(Pipeline &pipeline) {
+void RendererVulkan::createPipeline(Pipeline &pipeline) {
   auto vertexShader = Util::readFile(pipeline.vertexShaderPath);
   auto fragmentShader = Util::readFile(pipeline.fragmentShaderPath);
 
@@ -1267,9 +1270,6 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
   renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
   renderPassInfo.pClearValues = clearValues.data();
 
-  vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, blinn.pipeline);
-
   VkViewport viewport{};
   viewport.x = 0.0f;
   viewport.y = 0.0f;
@@ -1284,9 +1284,25 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
   scissor.extent = swapchainExtent;
   vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-  // assuming, we are combining all objects into one huge mesh/index buffer
-  VkBuffer buffers[] = {meshBuffer};
+  VkBuffer buffers[1];
   VkDeviceSize offsets[] = {0};
+
+  vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+  // sky box
+  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, environmentMap.pipeline);
+
+  buffers[0] = {envBuffer};
+  vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
+
+  vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, environmentMap.pipelineLayout, 0, 1,
+                          &environmentMap.descriptorSets[currentFrame], 0, 0);
+  vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+
+  // blinn
+  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, blinn.pipeline);
+
+  buffers[0] = {meshBuffer};
   vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
   vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
@@ -1366,8 +1382,8 @@ void RendererVulkan::drawScene() {
 }
 
 void RendererVulkan::updateUniformBuffer(uint32_t frame) {
-  Math::Matrix4 proj = perspectiveMatrix(60, (f32)WIDTH / HEIGHT);
-  Math::Matrix4 view = scene->camera.viewMatrix();
+  const Math::Matrix4 view = scene->camera.viewMatrix();
+
   for (size_t i = 0; i < OBJECT_COUNT; i++) {
     blinnUBO[i].view = view;
     blinnUBO[i].proj = proj;
@@ -1388,6 +1404,24 @@ void RendererVulkan::updateUniformBuffer(uint32_t frame) {
   memoryRange.pNext = nullptr;
 
   vkFlushMappedMemoryRanges(device, 1, &memoryRange);
+
+  // sky box
+  /* Math::Matrix4 x(scene->camera.viewMatrix()); */
+  Math::Matrix4 x(view);
+  environmentMapUBO[0].mvp = proj * x;
+  environmentMapUBO[0].mvp.inverse();
+
+  memcpy(environmentMap.uniformBuffersMapped[frame], environmentMapUBO.data(),
+         sizeof(EnvironmentMapUniformBufferObject));
+
+  VkMappedMemoryRange memoryRange2{};
+  memoryRange2.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+  memoryRange2.memory = environmentMap.uniformBuffersMemory[frame];
+  memoryRange2.size = sizeof(EnvironmentMapUniformBufferObject);
+  memoryRange2.offset = 0;
+  memoryRange2.pNext = nullptr;
+
+  vkFlushMappedMemoryRanges(device, 1, &memoryRange2);
 }
 
 void RendererVulkan::cleanSwapchain() {
@@ -1518,10 +1552,46 @@ void RendererVulkan::createEnvironmentMapPipeline() {
   environmentMap.bindingDescription = bindingDescription;
 
   createDescriptorSetLayout(environmentMap);
-  createGraphicsPipeline(environmentMap);
+  createPipeline(environmentMap);
   createUniformBuffers(1, environmentMap);
   createDescriptorPool(environmentMap);
   createDescriptorSets(environmentMap);
+
+  // after creating descriptor sets you bind them to the uniform buffers/samplers
+  for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    VkDescriptorBufferInfo bufferInfo{};
+    bufferInfo.buffer = environmentMap.uniformBuffers[i];
+    bufferInfo.offset = 0;
+    bufferInfo.range = environmentMap.uniformObjectSize;
+
+    VkDescriptorImageInfo imageInfo{};
+    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    imageInfo.imageView = cubemapImageView;
+    imageInfo.sampler = cubemapSampler;
+
+    std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+    descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrites[0].dstSet = environmentMap.descriptorSets[i];
+    descriptorWrites[0].dstBinding = 0;
+    descriptorWrites[0].dstArrayElement = 0;
+    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorWrites[0].descriptorCount = 1;
+    descriptorWrites[0].pBufferInfo = &bufferInfo;
+    descriptorWrites[0].pImageInfo = nullptr;
+    descriptorWrites[0].pTexelBufferView = nullptr;
+
+    descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrites[1].dstSet = environmentMap.descriptorSets[i];
+    descriptorWrites[1].dstBinding = 1;
+    descriptorWrites[1].dstArrayElement = 0;
+    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    descriptorWrites[1].descriptorCount = 1;
+    descriptorWrites[1].pBufferInfo = nullptr;
+    descriptorWrites[1].pImageInfo = &imageInfo;
+    descriptorWrites[1].pTexelBufferView = nullptr;
+
+    vkUpdateDescriptorSets(device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+  }
 }
 
 void RendererVulkan::createBlinnPipeline(size_t objectCount) {
@@ -1560,7 +1630,7 @@ void RendererVulkan::createBlinnPipeline(size_t objectCount) {
   blinn.bindingDescription = Mesh::Mesh::getBindingDescriptions();
 
   createDescriptorSetLayout(blinn);
-  createGraphicsPipeline(blinn);
+  createPipeline(blinn);
   createUniformBuffers(objectCount, blinn);
   createDescriptorPool(blinn);
   createDescriptorSets(blinn);

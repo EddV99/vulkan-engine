@@ -32,7 +32,7 @@ Renderer::Renderer(int w, int h, Game::Scene &scene) {
   glfwSetFramebufferSizeCallback(window, resizeCallback);
 
   rendererbackend.init(this->window, WIDTH, HEIGHT);
-  rendererbackend.createAssets(this->scene);
+  rendererbackend.createAssets(&this->scene);
   rendererbackend.createPipelines();
 }
 
@@ -86,7 +86,7 @@ void Renderer::FPS() {
 }
 
 void Renderer::handleInput() {
-  f32 speed = 0.1;
+  f32 speed = 0.09;
 
   if (input.isPressed(Keys::KEY_W)) {
     scene.camera.movePositionZ(-1.0 * speed);
