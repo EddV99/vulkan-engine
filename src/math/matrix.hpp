@@ -65,6 +65,7 @@ public:
           f32 v10, f32 v11, f32 v12, f32 v13, //
           f32 v20, f32 v21, f32 v22, f32 v23, //
           f32 v30, f32 v31, f32 v32, f32 v33);
+  Matrix4(const Matrix3 &m3);
   Matrix4(const Matrix4 &copy);
   Matrix4(Matrix4 &&copy) noexcept;
   Matrix4 &operator=(const Matrix4 &other);
@@ -73,11 +74,11 @@ public:
   void set(i32 row, i32 col, f32 value);
   f32 operator()(i32 row, i32 col);
   f32 operator()(i32 row, i32 col) const;
-  Matrix4 operator+(Matrix4 &right);
-  Matrix4 operator-(Matrix4 &right);
-  Matrix4 operator*(Matrix4 &right);
-  Matrix4 operator*(f32 scalar);
-  Matrix3 toMatrix3x3();
+  Matrix4 operator+(const Matrix4 &right) const;
+  Matrix4 operator-(const Matrix4 &right) const;
+  Matrix4 operator*(const Matrix4 &right) const;
+  Matrix4 operator*(f32 scalar) const;
+  Matrix3 toMatrix3x3() const;
 
   f32 determinate();
   void transpose();

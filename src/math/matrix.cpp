@@ -171,6 +171,12 @@ Matrix4::Matrix4(f32 v00, f32 v01, f32 v02, f32 v03, //
         v02, v12, v22, v32, //
         v03, v13, v23, v33} {}
 
+Matrix4::Matrix4(const Matrix3 &m3)
+    : m{m3(0, 0), m3(0, 1), m3(0, 2), 0.0f, //
+        m3(1, 0), m3(1, 1), m3(1, 2), 0.0f, //
+        m3(2, 0), m3(2, 1), m3(2, 2), 0.0f, //
+        m3(3, 0), m3(3, 1), m3(3, 2), 1.0f} {}
+
 Matrix4::Matrix4(const Matrix4 &other) {
   for (int r = 0; r < 16; r++)
     this->m[r] = other.m[r];
@@ -204,7 +210,7 @@ Matrix4 &Matrix4::operator=(Matrix4 &&other) noexcept {
   return *this;
 }
 
-Matrix3 Matrix4::toMatrix3x3() {
+Matrix3 Matrix4::toMatrix3x3() const {
   return Matrix3((*this)(0, 0), (*this)(0, 1), (*this)(0, 2), //
                  (*this)(1, 0), (*this)(1, 1), (*this)(1, 2), //
                  (*this)(2, 0), (*this)(2, 1), (*this)(2, 2));
@@ -215,21 +221,21 @@ void Matrix4::set(i32 row, i32 col, f32 value) { m[ROW_COL_TO_INDEX(row, col, 4)
 f32 Matrix4::operator()(i32 row, i32 col) { return m[ROW_COL_TO_INDEX(row, col, 4)]; }
 f32 Matrix4::operator()(i32 row, i32 col) const { return m[ROW_COL_TO_INDEX(row, col, 4)]; }
 
-Matrix4 Matrix4::operator+(Matrix4 &right) {
+Matrix4 Matrix4::operator+(const Matrix4 &right) const {
   Matrix4 value(0.0f);
   for (int x = 0; x < 16; x++)
     value.m[x] = this->m[x] + right.m[x];
   return value;
 }
 
-Matrix4 Matrix4::operator-(Matrix4 &right) {
+Matrix4 Matrix4::operator-(const Matrix4 &right) const {
   Matrix4 value(0.0f);
   for (int x = 0; x < 16; x++)
     value.m[x] = this->m[x] - right.m[x];
   return value;
 }
 
-Matrix4 Matrix4::operator*(f32 scalar) {
+Matrix4 Matrix4::operator*(const f32 scalar) const {
   Matrix4 value(0.0f);
 
   for (int x = 0; x < 16; x++)
@@ -238,7 +244,7 @@ Matrix4 Matrix4::operator*(f32 scalar) {
   return value;
 }
 
-Matrix4 Matrix4::operator*(Matrix4 &right) {
+Matrix4 Matrix4::operator*(const Matrix4 &right) const {
   Matrix4 value(0.0f);
 
   for (int r = 0; r < 4; r++)
@@ -285,7 +291,7 @@ void Matrix4::inverse() {
   inverted.set(2, 0, submatrix(0, 2, (*this)).determinate());
   inverted.set(2, 1, -submatrix(1, 2, (*this)).determinate());
   inverted.set(2, 2, submatrix(2, 2, (*this)).determinate());
-  inverted.set(2, 3, -submatrix(2, 3, (*this)).determinate());
+  inverted.set(2, 3, -submatrix(3, 2, (*this)).determinate());
 
   inverted.set(3, 0, -submatrix(0, 3, (*this)).determinate());
   inverted.set(3, 1, submatrix(1, 3, (*this)).determinate());
