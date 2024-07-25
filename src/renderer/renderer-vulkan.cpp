@@ -1406,8 +1406,8 @@ void RendererVulkan::updateUniformBuffer(uint32_t frame) {
   vkFlushMappedMemoryRanges(device, 1, &memoryRange);
 
   // sky box
-  /* Math::Matrix4 x(scene->camera.viewMatrix()); */
-  Math::Matrix4 x(view);
+   Math::Matrix4 x(scene->camera.viewMatrix().toMatrix3x3()); 
+  /*Math::Matrix4 x(view.toMatrix3x3());*/
   environmentMapUBO[0].mvp = proj * x;
   environmentMapUBO[0].mvp.inverse();
 
