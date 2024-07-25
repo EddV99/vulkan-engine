@@ -1510,21 +1510,21 @@ void RendererVulkan::createEnvironmentMapPipeline() {
 
   environmentMap.depthTest = false;
 
-  VkDescriptorSetLayoutBinding uniformBindingBlinn{};
-  uniformBindingBlinn.binding = 0;
-  uniformBindingBlinn.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  uniformBindingBlinn.descriptorCount = 1;
-  uniformBindingBlinn.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-  uniformBindingBlinn.pImmutableSamplers = nullptr;
+  VkDescriptorSetLayoutBinding uniformBinding{};
+  uniformBinding.binding = 0;
+  uniformBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  uniformBinding.descriptorCount = 1;
+  uniformBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  uniformBinding.pImmutableSamplers = nullptr;
 
-  VkDescriptorSetLayoutBinding samplerBindingBlinn{};
-  samplerBindingBlinn.binding = 1;
-  samplerBindingBlinn.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  samplerBindingBlinn.descriptorCount = 1;
-  samplerBindingBlinn.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-  samplerBindingBlinn.pImmutableSamplers = nullptr;
+  VkDescriptorSetLayoutBinding samplerBinding{};
+  samplerBinding.binding = 1;
+  samplerBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  samplerBinding.descriptorCount = 1;
+  samplerBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+  samplerBinding.pImmutableSamplers = nullptr;
 
-  environmentMap.layoutBindings = {uniformBindingBlinn, samplerBindingBlinn};
+  environmentMap.layoutBindings = {uniformBinding, samplerBinding};
 
   environmentMap.descriptorPoolSize.resize(2);
   environmentMap.descriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
