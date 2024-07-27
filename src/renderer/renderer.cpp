@@ -91,19 +91,19 @@ void Renderer::handleInput() {
   f32 speed = 0.09;
 
   if (input.isPressed(Keys::KEY_W)) {
-    scene.camera.movePositionZ(-1.0 * speed);
+    scene.camera.movePosition(scene.camera.getForwardVector() * (speed * -1.0));
     scene.camera.update();
   }
   if (input.isPressed(Keys::KEY_A)) {
-    scene.camera.movePositionX(-1.0 * speed);
+    scene.camera.movePosition(scene.camera.getRightVector() * (speed * -1.0));
     scene.camera.update();
   }
   if (input.isPressed(Keys::KEY_S)) {
-    scene.camera.movePositionZ(1.0 * speed);
+    scene.camera.movePosition(scene.camera.getForwardVector() * speed);
     scene.camera.update();
   }
   if (input.isPressed(Keys::KEY_D)) {
-    scene.camera.movePositionX(1.0 * speed);
+    scene.camera.movePosition(scene.camera.getRightVector() * speed);
     scene.camera.update();
   }
   if (input.isPressed(Keys::KEY_C)) {
@@ -124,13 +124,19 @@ void Renderer::mousePointerCallback(GLFWwindow *window, double x, double y) {
   if (app->state != State::RUNNING)
     return;
 
+  if (app->firstMouse) {
+    app->mx = x;
+    app->my = y;
+    app->firstMouse = false;
+  }
+
   double dx = x - app->mx;
-  double dy = app->my - y;
+  double dy = y - app->my;
 
   app->mx = x;
   app->my = y;
 
-  double sens = 0.1;
+  double sens = 0.5;
 
   dx *= sens;
   dy *= sens;

@@ -21,9 +21,14 @@ public:
   Math::Vector3 target;
   Math::Vector3 up;
   Math::Vector3 direction;
+
   double yaw = 0, pitch = 0;
 
   Math::Matrix4 view;
+
+  Math::Vector3 right;
+  Math::Vector3 cameraUp;
+  Math::Vector3 forward;
 
   void movePosition(Math::Vector3 dp);
   void movePositionX(f32 dx);
@@ -33,6 +38,10 @@ public:
   void setTarget(Math::Vector3 targetPos);
 
   Math::Matrix4 getViewMatrix() const;
+  Math::Vector3 getRightVector() const;
+  Math::Vector3 getForwardVector() const;
+  Math::Vector3 getUpVector() const;
+
   void update();
 
   void toggleFreecam();

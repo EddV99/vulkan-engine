@@ -2,15 +2,17 @@
 #include <cmath>
 
 namespace Game {
-Camera::Camera() : position{0, 0, 10}, target{0, 0, 0}, up{0, 1, 0}, direction{0, 0, -1} {}
+Camera::Camera() : position{0, 0, 10}, target{0, 0, 0}, up{0, 1, 0}, direction{0, 0, 1} { update(); }
 
 Camera::Camera(const Camera &other)
     : position(other.position), target(other.target), up(other.up), direction(other.direction), yaw(other.yaw),
-      pitch(other.pitch), freecam(other.freecam) {}
+      pitch(other.pitch), view(other.view), right(other.right), cameraUp(other.cameraUp), forward(other.forward),
+      freecam(other.freecam) {}
 
 Camera::Camera(Camera &&other) noexcept
     : position(other.position), target(other.target), up(other.up), direction(other.direction), yaw(other.yaw),
-      pitch(other.pitch), freecam(other.freecam) {}
+      pitch(other.pitch), view(other.view), right(other.right), cameraUp(other.cameraUp), forward(other.forward),
+      freecam(other.freecam) {}
 
 Camera &Camera::operator=(const Camera &other) {
   if (this == &other)
@@ -20,9 +22,13 @@ Camera &Camera::operator=(const Camera &other) {
   this->target = other.target;
   this->up = other.up;
   this->direction = other.direction;
-  this->freecam = other.freecam;
   this->yaw = other.yaw;
   this->pitch = other.pitch;
+  this->view = other.view;
+  this->right = other.right;
+  this->cameraUp = other.cameraUp;
+  this->forward = other.forward;
+  this->freecam = other.freecam;
 
   return *this;
 }
@@ -35,9 +41,13 @@ Camera &Camera::operator=(Camera &&other) noexcept {
   this->target = other.target;
   this->up = other.up;
   this->direction = other.direction;
-  this->freecam = other.freecam;
   this->yaw = other.yaw;
   this->pitch = other.pitch;
+  this->view = other.view;
+  this->right = other.right;
+  this->cameraUp = other.cameraUp;
+  this->forward = other.forward;
+  this->freecam = other.freecam;
 
   return *this;
 }
@@ -49,12 +59,11 @@ void Camera::movePositionZ(f32 dz) { position.z += dz; }
 void Camera::setTarget(Math::Vector3 targetPos) { this->target = targetPos; }
 
 Math::Matrix4 Camera::getViewMatrix() const { return view; }
+Math::Vector3 Camera::getRightVector() const { return right; }
+Math::Vector3 Camera::getForwardVector() const { return forward; }
+Math::Vector3 Camera::getUpVector() const { return cameraUp; }
 
 void Camera::update() {
-  Math::Vector3 forward;
-  Math::Vector3 right;
-  Math::Vector3 cameraUp;
-
   if (freecam) {
     // free fly camera
     forward = direction;
