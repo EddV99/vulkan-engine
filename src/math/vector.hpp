@@ -22,12 +22,11 @@ public:
   Vector3 &operator=(const Vector3 &other);
   Vector3 &operator=(Vector3 &&other) noexcept;
 
-  Vector3 operator+(const Vector3 &right);
-  Vector3 operator*(f32 scalar);
+  Vector3 operator+(const Vector3 &right) const;
   Vector3 operator*(f32 scalar) const;
-  Vector3 operator-(const Vector3 &right);
+  Vector3 operator-(const Vector3 &right) const;
   bool operator==(const Vector3 &right) const;
-  void print();
+  void print() const;
 
   f32 dot(const Vector3 &right);
   Vector3 cross(const Vector3 &right);
@@ -43,11 +42,11 @@ public:
 
   Vector4();
   Vector4(f32 x, f32 y, f32 z, f32 w);
-
-  Vector4 operator+(Vector4 &right);
-  Vector4 operator*(f32 scalar);
-  Vector4 operator-(Vector4 &right);
   Vector4 &operator=(Vector4 other) noexcept;
+
+  Vector4 operator+(Vector4 &right) const;
+  Vector4 operator*(f32 scalar) const;
+  Vector4 operator-(Vector4 &right) const;
 
   f32 dot(const Vector4 &right);
   Vector4 cross(const Vector4 &right);

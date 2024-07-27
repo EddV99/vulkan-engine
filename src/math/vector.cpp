@@ -38,7 +38,7 @@ Vector3::Vector3(f32 x, f32 y, f32 z) : x(x), y(y), z(z) {}
 
 Vector3::Vector3(const Vector3 &other) : x(other.x), y(other.y), z(other.z) {}
 
-void Vector3::print() { std::cout << "[" << x << " " << y << " " << z << "]\n"; }
+void Vector3::print() const { std::cout << "[" << x << " " << y << " " << z << "]\n"; }
 
 Vector3 &Vector3::operator=(const Vector3 &other) {
   if (this == &other)
@@ -74,13 +74,11 @@ Vector3 &Vector3::operator=(Vector3 &&other) noexcept {
 bool Vector3::operator==(const Vector3 &right) const {
   return (this->x == right.x) && (this->y == right.y) && (this->z == right.z);
 }
-Vector3 Vector3::operator+(const Vector3 &right) { return Vector3(x + right.x, y + right.y, z + right.z); }
-
-Vector3 Vector3::operator*(f32 scalar) { return Vector3(x * scalar, y * scalar, z * scalar); }
+Vector3 Vector3::operator+(const Vector3 &right) const { return Vector3(x + right.x, y + right.y, z + right.z); }
 
 Vector3 Vector3::operator*(f32 scalar) const { return Vector3(x * scalar, y * scalar, z * scalar); }
 
-Vector3 Vector3::operator-(const Vector3 &right) { return Vector3(x - right.x, y - right.y, z - right.z); }
+Vector3 Vector3::operator-(const Vector3 &right) const { return Vector3(x - right.x, y - right.y, z - right.z); }
 
 f32 Vector3::dot(const Vector3 &right) { return x * right.x + y * right.y + z * right.z; }
 
@@ -134,6 +132,6 @@ Vector4::Vector4(f32 x, f32 y, f32 z, f32 w) {
   this->w = w;
 }
 
-Vector4 Vector4::operator*(f32 scalar) { return Vector4(x * scalar, y * scalar, z * scalar, w * scalar); }
+Vector4 Vector4::operator*(f32 scalar) const { return Vector4(x * scalar, y * scalar, z * scalar, w * scalar); }
 
 }; // namespace Math
