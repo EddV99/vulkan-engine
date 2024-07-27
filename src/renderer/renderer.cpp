@@ -24,7 +24,7 @@ Renderer::Renderer(int w, int h, Game::Scene &scene) {
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
   /* glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); */
 
-  this->window = glfwCreateWindow(WIDTH, HEIGHT, "Beast Gohan", nullptr, nullptr);
+  this->window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan Engine", nullptr, nullptr);
   this->scene = scene;
   this->scene.init();
 
