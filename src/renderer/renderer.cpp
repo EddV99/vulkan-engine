@@ -5,6 +5,8 @@
 #include "input.hpp"
 #include "renderer.hpp"
 
+#include <cmath>
+
 namespace Renderer {
 
 Renderer::Renderer(int w, int h, Game::Scene &scene) {
@@ -90,25 +92,32 @@ void Renderer::handleInput() {
 
   if (input.isPressed(Keys::KEY_W)) {
     scene.camera.movePositionZ(-1.0 * speed);
+    scene.camera.update();
   }
   if (input.isPressed(Keys::KEY_A)) {
     scene.camera.movePositionX(-1.0 * speed);
+    scene.camera.update();
   }
   if (input.isPressed(Keys::KEY_S)) {
     scene.camera.movePositionZ(1.0 * speed);
+    scene.camera.update();
   }
   if (input.isPressed(Keys::KEY_D)) {
     scene.camera.movePositionX(1.0 * speed);
+    scene.camera.update();
   }
   if (input.isPressed(Keys::KEY_C)) {
     scene.camera.toggleFreecam();
     input.setUnpressed(Keys::KEY_C);
+    scene.camera.update();
   }
   if (input.isPressed(Keys::KEY_R)) {
     spin = !spin;
     input.setUnpressed(Keys::KEY_R);
+    scene.camera.update();
   }
 }
+
 void Renderer::mousePointerCallback(GLFWwindow *window, double x, double y) {
   Renderer *app = static_cast<Renderer *>(glfwGetWindowUserPointer(window));
 
@@ -116,7 +125,7 @@ void Renderer::mousePointerCallback(GLFWwindow *window, double x, double y) {
     return;
 
   double dx = x - app->mx;
-  double dy = y - app->my;
+  double dy = app->my - y;
 
   app->mx = x;
   app->my = y;
@@ -126,8 +135,21 @@ void Renderer::mousePointerCallback(GLFWwindow *window, double x, double y) {
   dx *= sens;
   dy *= sens;
 
-  app->scene.camera.ax += dx;
-  app->scene.camera.ay += dy;
+  app->scene.camera.yaw += dx;
+  app->scene.camera.pitch += dy;
+
+  if (app->scene.camera.pitch > 89.0)
+    app->scene.camera.pitch = 89.0;
+  if (app->scene.camera.pitch < -89.0)
+    app->scene.camera.pitch = -89.0;
+
+  app->scene.camera.direction.x =
+      std::cos(TO_RADIANS(app->scene.camera.yaw)) * std::cos(TO_RADIANS(app->scene.camera.pitch));
+  app->scene.camera.direction.y = std::sin(TO_RADIANS(app->scene.camera.pitch));
+  app->scene.camera.direction.z =
+      std::cos(TO_RADIANS(app->scene.camera.pitch)) * std::sin(TO_RADIANS(app->scene.camera.yaw));
+
+  app->scene.camera.update(); // might be a better place to do an update for mouse movement
 }
 
 void Renderer::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {

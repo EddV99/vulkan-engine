@@ -21,15 +21,19 @@ public:
   Math::Vector3 target;
   Math::Vector3 up;
   Math::Vector3 direction;
+  double yaw = 0, pitch = 0;
 
-  double ax = 0, ay = 0;
+  Math::Matrix4 view;
 
   void movePosition(Math::Vector3 dp);
   void movePositionX(f32 dx);
   void movePositionY(f32 dy);
   void movePositionZ(f32 dz);
 
-  Math::Matrix4 viewMatrix();
+  void setTarget(Math::Vector3 targetPos);
+
+  Math::Matrix4 getViewMatrix() const;
+  void update();
 
   void toggleFreecam();
 

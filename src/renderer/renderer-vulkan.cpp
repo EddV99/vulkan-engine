@@ -1382,8 +1382,26 @@ void RendererVulkan::drawScene() {
 }
 
 void RendererVulkan::updateUniformBuffer(uint32_t frame) {
-  const Math::Matrix4 view = scene->camera.viewMatrix();
+  const Math::Matrix4 view = scene->camera.getViewMatrix();
 
+  // sky box -----
+  Math::Matrix4 viewNoTranslation(view.toMatrix3x3());
+  environmentMapUBO[0].mvp = proj * viewNoTranslation;
+  environmentMapUBO[0].mvp.inverse();
+
+  memcpy(environmentMap.uniformBuffersMapped[frame], environmentMapUBO.data(),
+         sizeof(EnvironmentMapUniformBufferObject));
+
+  VkMappedMemoryRange memoryRangeEnv{};
+  memoryRangeEnv.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+  memoryRangeEnv.memory = environmentMap.uniformBuffersMemory[frame];
+  memoryRangeEnv.size = sizeof(EnvironmentMapUniformBufferObject);
+  memoryRangeEnv.offset = 0;
+  memoryRangeEnv.pNext = nullptr;
+
+  vkFlushMappedMemoryRanges(device, 1, &memoryRangeEnv);
+
+  // objects -----
   for (size_t i = 0; i < OBJECT_COUNT; i++) {
     blinnUBO[i].view = view;
     blinnUBO[i].proj = proj;
@@ -1396,32 +1414,14 @@ void RendererVulkan::updateUniformBuffer(uint32_t frame) {
 
   memcpy(blinn.uniformBuffersMapped[frame], blinnUBO.data(), dynamicUniformBufferSize);
 
-  VkMappedMemoryRange memoryRange{};
-  memoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-  memoryRange.memory = blinn.uniformBuffersMemory[frame];
-  memoryRange.size = dynamicUniformBufferSize;
-  memoryRange.offset = 0;
-  memoryRange.pNext = nullptr;
+  VkMappedMemoryRange memoryRangeBlinn{};
+  memoryRangeBlinn.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+  memoryRangeBlinn.memory = blinn.uniformBuffersMemory[frame];
+  memoryRangeBlinn.size = dynamicUniformBufferSize;
+  memoryRangeBlinn.offset = 0;
+  memoryRangeBlinn.pNext = nullptr;
 
-  vkFlushMappedMemoryRanges(device, 1, &memoryRange);
-
-  // sky box
-   Math::Matrix4 x(scene->camera.viewMatrix().toMatrix3x3()); 
-  /*Math::Matrix4 x(view.toMatrix3x3());*/
-  environmentMapUBO[0].mvp = proj * x;
-  environmentMapUBO[0].mvp.inverse();
-
-  memcpy(environmentMap.uniformBuffersMapped[frame], environmentMapUBO.data(),
-         sizeof(EnvironmentMapUniformBufferObject));
-
-  VkMappedMemoryRange memoryRange2{};
-  memoryRange2.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-  memoryRange2.memory = environmentMap.uniformBuffersMemory[frame];
-  memoryRange2.size = sizeof(EnvironmentMapUniformBufferObject);
-  memoryRange2.offset = 0;
-  memoryRange2.pNext = nullptr;
-
-  vkFlushMappedMemoryRanges(device, 1, &memoryRange2);
+  vkFlushMappedMemoryRanges(device, 1, &memoryRangeBlinn);
 }
 
 void RendererVulkan::cleanSwapchain() {
