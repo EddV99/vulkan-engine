@@ -36,12 +36,12 @@ public:
           f32 v20, f32 v21, f32 v22);
 
   void set(i32 row, i32 col, f32 value);
-  f32 operator()(i32 row, i32 col);
   f32 operator()(i32 row, i32 col) const;
-  Matrix3 operator+(Matrix3 &right);
-  Matrix3 operator-(Matrix3 &right);
-  Matrix3 operator*(Matrix3 &right);
-  Matrix3 operator*(f32 scalar);
+  Matrix3 operator+(Matrix3 &right) const;
+  Matrix3 operator-(Matrix3 &right) const;
+  Matrix3 operator*(Matrix3 &right) const;
+  Matrix3 operator*(f32 scalar) const;
+
   Matrix3 &operator=(Matrix3 other) noexcept;
 
   f32 determinate();
@@ -72,7 +72,6 @@ public:
   Matrix4 &operator=(Matrix4 &&other) noexcept;
 
   void set(i32 row, i32 col, f32 value);
-  f32 operator()(i32 row, i32 col);
   f32 operator()(i32 row, i32 col) const;
   Matrix4 operator+(const Matrix4 &right) const;
   Matrix4 operator-(const Matrix4 &right) const;
@@ -84,7 +83,7 @@ public:
   void transpose();
   void inverse();
 
-  void print();
+  void print() const;
 
 private:
   static Matrix3 submatrix(i32 row, i32 col, const Matrix4 &m);

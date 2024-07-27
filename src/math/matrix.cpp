@@ -50,10 +50,9 @@ Matrix3::Matrix3(Matrix3 const &copy) {
 
 void Matrix3::set(i32 row, i32 col, f32 value) { m[ROW_COL_TO_INDEX(row, col, 3)] = value; }
 
-f32 Matrix3::operator()(i32 row, i32 col) { return this->m[ROW_COL_TO_INDEX(row, col, 3)]; }
 f32 Matrix3::operator()(i32 row, i32 col) const { return this->m[ROW_COL_TO_INDEX(row, col, 3)]; }
 
-Matrix3 Matrix3::operator+(Matrix3 &right) {
+Matrix3 Matrix3::operator+(Matrix3 &right) const {
   Matrix3 value(0.0f);
   for (int r = 0; r < 3; r++) {
     for (int c = 0; c < 3; c++) {
@@ -63,7 +62,7 @@ Matrix3 Matrix3::operator+(Matrix3 &right) {
   return value;
 }
 
-Matrix3 Matrix3::operator-(Matrix3 &right) {
+Matrix3 Matrix3::operator-(Matrix3 &right) const {
   Matrix3 value(0.0f);
   for (int r = 0; r < 3; r++) {
     for (int c = 0; c < 3; c++) {
@@ -73,7 +72,7 @@ Matrix3 Matrix3::operator-(Matrix3 &right) {
   return value;
 }
 
-Matrix3 Matrix3::operator*(f32 scalar) {
+Matrix3 Matrix3::operator*(f32 scalar) const {
   Matrix3 value((*this));
 
   for (int r = 0; r < 3; r++)
@@ -83,7 +82,7 @@ Matrix3 Matrix3::operator*(f32 scalar) {
   return value;
 }
 
-Matrix3 Matrix3::operator*(Matrix3 &right) {
+Matrix3 Matrix3::operator*(Matrix3 &right) const {
   Matrix3 value(0.0f);
 
   for (int r = 0; r < 3; r++)
@@ -140,7 +139,7 @@ void Matrix3::inverse() {
 // =============================================================================
 // Matrix 4x4
 // =============================================================================
-void Matrix4::print() {
+void Matrix4::print() const {
   for (int r = 0; r < 4; r++) {
     for (int c = 0; c < 4; c++) {
       std::cout << (*this)(r, c) << " ";
@@ -218,7 +217,6 @@ Matrix3 Matrix4::toMatrix3x3() const {
 
 void Matrix4::set(i32 row, i32 col, f32 value) { m[ROW_COL_TO_INDEX(row, col, 4)] = value; }
 
-f32 Matrix4::operator()(i32 row, i32 col) { return m[ROW_COL_TO_INDEX(row, col, 4)]; }
 f32 Matrix4::operator()(i32 row, i32 col) const { return m[ROW_COL_TO_INDEX(row, col, 4)]; }
 
 Matrix4 Matrix4::operator+(const Matrix4 &right) const {
