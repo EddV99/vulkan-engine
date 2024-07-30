@@ -1,5 +1,0 @@
-* Some things that needs to be done
-- Multiple Object Rendering
-- Environment Maps
-- Font Rendering
-- User Interface
