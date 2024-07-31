@@ -174,7 +174,7 @@ Matrix4::Matrix4(const Matrix3 &m3)
     : m{m3(0, 0), m3(0, 1), m3(0, 2), 0.0f, //
         m3(1, 0), m3(1, 1), m3(1, 2), 0.0f, //
         m3(2, 0), m3(2, 1), m3(2, 2), 0.0f, //
-        m3(3, 0), m3(3, 1), m3(3, 2), 1.0f} {}
+        0.0f,     0.0f,     0.0f,     1.0f} {}
 
 Matrix4::Matrix4(const Matrix4 &other) {
   for (int r = 0; r < 16; r++)
