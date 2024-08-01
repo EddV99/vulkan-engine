@@ -3,6 +3,7 @@
  */
 #include "game/object.hpp"
 #include "game/scene.hpp"
+#include "math/matrix.hpp"
 #include "math/vector.hpp"
 #include "renderer/renderer.hpp"
 #include "util/defines.hpp"
@@ -15,6 +16,16 @@ int main(void) {
   std::string cubePath = "res/cube/cube.obj";
   std::string teapotPath = "res/teapot/teapot.obj";
   std::string spherePath = "res/sphere/sphere.obj";
+
+  Math::Matrix4 B(0, 0, -1, 2, //
+                  0, 1, 0, 0, //
+                  9, 0, 0, 0, //
+                  0, 0, 0, 1  //
+  );
+
+  B.print();
+  B.inverse();
+  B.print();
 
   try {
     std::vector<Game::ModelInfo> models;
@@ -80,7 +91,7 @@ int main(void) {
         "res/env/dark-desert/dark_sand_right.png", "res/env/dark-desert/dark_sand_left.png"};
 
     Game::Scene scene(models, env);
-    //Game::Scene scene(models);
+    // Game::Scene scene(models);
 
     Renderer::Renderer renderer(SCREEN_WIDTH, SCREEN_HEIGHT, scene);
     while (renderer.running()) {

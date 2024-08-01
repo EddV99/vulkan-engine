@@ -2,8 +2,7 @@
 #include <cmath>
 
 namespace Game {
-Camera::Camera() : position{0, 0, 10}, target{0, 0, 0}, up{0, 1, 0}, direction{0, 0, 1} { update(); }
-
+Camera::Camera() : position{0, 0, 10}, target{0, 0, 0}, up{0, 1, 0}, direction{0, 0, -1} { update(); }
 Camera::Camera(const Camera &other)
     : position(other.position), target(other.target), up(other.up), direction(other.direction), yaw(other.yaw),
       pitch(other.pitch), view(other.view), right(other.right), cameraUp(other.cameraUp), forward(other.forward),
@@ -66,10 +65,9 @@ Math::Vector3 Camera::getUpVector() const { return cameraUp; }
 void Camera::update() {
   if (freecam) {
     // free fly camera
-    forward = direction;
+    /*forward = direction;*/
+    forward = position - (position + direction);
     forward.normalize();
-    /* forward = position - (position + direction); */
-    /* forward.normalize(); */
 
     right = up.cross(forward);
     right.normalize();
