@@ -106,13 +106,13 @@ void RendererVulkan::init(GLFWwindow *window, uint32_t width, uint32_t height) {
   WIDTH = width;
   HEIGHT = height;
 
-  proj = perspectiveMatrix(90, (f32)WIDTH / HEIGHT);
-
   r = (f32)WIDTH / 2.0;
   l = -r;
 
   t = (f32)HEIGHT / 2.0;
   b = -t;
+
+  proj = perspectiveMatrix(90, (f32)WIDTH / HEIGHT);
 
   initializeVulkan();
   minUniformSize = getMinUniformBufferOffsetAlignment();
@@ -1493,11 +1493,11 @@ uint32_t RendererVulkan::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFla
 Math::Matrix4 RendererVulkan::perspectiveMatrix(f32 fov, f32 aspect) {
   f32 fovy = TO_RADIANS(fov);
   f32 focalLength = (f32)1.0 / std::tan(fovy * 0.5);
-  f32 A = f / (-f + n);
-  f32 B = (f * n) / (-f + n);
+  f32 A = f / (f - n);
+  f32 B = -(f * n) / (f - n);
   return Math::Matrix4(focalLength / aspect, 0, 0, 0, //
                        0, -focalLength, 0, 0,         //
-                       0, 0, A, B,                    //
+                       0, 0, -A, B,                   //
                        0, 0, -1, 0);
 }
 
