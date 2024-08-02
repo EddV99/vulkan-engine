@@ -17,16 +17,6 @@ int main(void) {
   std::string teapotPath = "res/teapot/teapot.obj";
   std::string spherePath = "res/sphere/sphere.obj";
 
-  Math::Matrix4 B(0, 0, -1, 2, //
-                  0, 1, 0, 0, //
-                  9, 0, 0, 0, //
-                  0, 0, 0, 1  //
-  );
-
-  B.print();
-  B.inverse();
-  B.print();
-
   try {
     std::vector<Game::ModelInfo> models;
     Game::ModelInfo sphere;
@@ -86,9 +76,9 @@ int main(void) {
     models.push_back(cube2);
 
     std::array<std::string, 6> env = {
-        "res/env/dark-desert/dark_sand_front.png", "res/env/dark-desert/dark_sand_back.png",
+        "res/env/dark-desert/dark_sand_right.png", "res/env/dark-desert/dark_sand_left.png",
         "res/env/dark-desert/dark_sand_top.png",   "res/env/dark-desert/dark_sand_bottom.png",
-        "res/env/dark-desert/dark_sand_right.png", "res/env/dark-desert/dark_sand_left.png"};
+        "res/env/dark-desert/dark_sand_front.png", "res/env/dark-desert/dark_sand_back.png"};
 
     Game::Scene scene(models, env);
     // Game::Scene scene(models);
