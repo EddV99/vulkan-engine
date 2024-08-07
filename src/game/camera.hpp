@@ -41,6 +41,7 @@ public:
   Math::Vector3 getRightVector() const;
   Math::Vector3 getForwardVector() const;
   Math::Vector3 getUpVector() const;
+  bool isFreecam() const;
 
   void update();
 

@@ -99,5 +99,6 @@ void Camera::update() {
   this->view = view * transform;
 }
 
+bool Camera::isFreecam() const { return freecam; }
 void Camera::toggleFreecam() { freecam = !freecam; }
 }; // namespace Game

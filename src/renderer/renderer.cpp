@@ -120,7 +120,7 @@ void Renderer::handleInput() {
 void Renderer::mousePointerCallback(GLFWwindow *window, double x, double y) {
   Renderer *app = static_cast<Renderer *>(glfwGetWindowUserPointer(window));
 
-  if (app->state != State::RUNNING)
+  if (app->state != State::RUNNING || !app->scene.camera.isFreecam())
     return;
 
   if (app->firstMouse) {
