@@ -1,5 +1,4 @@
 #include "vector.hpp"
-#include "matrix.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -103,18 +102,6 @@ Vector3 Vector3::normal() {
   result.z = z * l;
   return result;
 }
-
-void Vector3::rotate(f32 angle, Vector3 axis) {
-  Quaternion r(angle, axis);
-  Quaternion c = r.conjugate();
-  Quaternion pos(0, {x, y, z});
-  Quaternion w = r * pos * c;
-
-  this->x = w.v.x;
-  this->y = w.v.y;
-  this->z = w.v.z;
-}
-
 // =============================================================================
 // Vector 4
 // =============================================================================

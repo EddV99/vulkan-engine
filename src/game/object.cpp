@@ -1,5 +1,6 @@
 #include "object.hpp"
 #include "../util/util.hpp"
+#include "../math/quaternion.hpp"
 
 #include <cmath>
 

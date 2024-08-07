@@ -6,6 +6,7 @@
 #include "../math/vector.hpp"
 #include "../mesh/mesh.hpp"
 #include "../util/defines.hpp"
+#include "../math/quaternion.hpp"
 
 namespace Game {
 class Object {

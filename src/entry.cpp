@@ -3,7 +3,6 @@
  */
 #include "game/object.hpp"
 #include "game/scene.hpp"
-#include "math/matrix.hpp"
 #include "math/vector.hpp"
 #include "renderer/renderer.hpp"
 #include "util/defines.hpp"
