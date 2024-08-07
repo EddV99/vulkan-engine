@@ -4,7 +4,6 @@
 #pragma once
 
 #include "../util/defines.hpp"
-#include "vector.hpp"
 
 namespace Math {
 
@@ -88,45 +87,4 @@ public:
 private:
   static Matrix3 submatrix(i32 row, i32 col, const Matrix4 &m);
 };
-
-// ===================================================================================================================
-// 3D Graphics
-// ===================================================================================================================
-Matrix4 viewMatrix(const Vector3 &cameraPosition, const Vector3 &cameraTarget, const Vector3 &up);
-Matrix4 modelMatrix(const Vector3 &translation, const Vector3 &rotation, const Vector3 &scale);
-
-Matrix4 scale(const Matrix4 &m, const Vector3 &scale);
-Matrix4 translate(const Matrix4 &m, const Vector3 &translation);
-Matrix4 rotate(const Matrix4 &m, const Vector3 &rotation);
-
-// =============================================================================
-// Quaternions
-// =============================================================================
-struct Quaternion {
-  Quaternion() = delete;
-  Quaternion(f32 angle, const Vector3 &axis);
-  Quaternion(f32 w, f32 i, f32 j, f32 k);
-  Quaternion(const Quaternion &other);
-  Quaternion(Quaternion &&other) noexcept;
-  void print();
-  Quaternion &operator=(const Quaternion &other);
-  Quaternion &operator=(Quaternion &&other) noexcept;
-
-  Quaternion operator*(const Quaternion &other);
-  Quaternion operator*(f32 scalar);
-  Quaternion operator+(const Quaternion &other);
-  Quaternion conjugate();
-  void normalize();
-  f32 length();
-
-  Quaternion rotateEuler();
-
-  void rotate(Vector3 r);
-
-  Matrix4 toRotationMatrix();
-
-  f32 w;
-  Vector3 v;
-};
-
 } // namespace Math
