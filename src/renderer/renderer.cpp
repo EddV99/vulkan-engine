@@ -87,7 +87,7 @@ void Renderer::FPS() {
 }
 
 void Renderer::handleInput() {
-  f32 speed = 0.002;
+  f32 speed = 0.02;
 
   if (input.isPressed(Keys::KEY_W)) {
     scene.camera.movePosition(scene.camera.getForwardVector() * (speed * -1.0));
@@ -143,20 +143,20 @@ void Renderer::mousePointerCallback(GLFWwindow *window, double x, double y) {
   app->scene.camera.yaw += dx;
   app->scene.camera.pitch += dy;
 
-  if (app->scene.camera.pitch > 89.0)
-    app->scene.camera.pitch = 89.0;
-  if (app->scene.camera.pitch < -89.0)
-    app->scene.camera.pitch = -89.0;
-
+  /*if (app->scene.camera.pitch > 89.0)*/
+  /*  app->scene.camera.pitch = 89.0;*/
+  /*if (app->scene.camera.pitch < -89.0)*/
+  /*  app->scene.camera.pitch = -89.0;*/
+  /**/
   /*app->scene.camera.direction.x =*/
   /*    std::cos(TO_RADIANS(app->scene.camera.yaw)) * std::cos(TO_RADIANS(app->scene.camera.pitch));*/
   /*app->scene.camera.direction.y = std::sin(TO_RADIANS(app->scene.camera.pitch));*/
   /*app->scene.camera.direction.z =*/
   /*    std::cos(TO_RADIANS(app->scene.camera.pitch)) * std::sin(TO_RADIANS(app->scene.camera.yaw));*/
-
-  app->scene.camera.direction.x = std::cos(TO_RADIANS(app->scene.camera.yaw));
-  app->scene.camera.direction.z = std::sin(TO_RADIANS(app->scene.camera.yaw));
-  app->scene.camera.direction.y = 0;
+  /**/
+  /*app->scene.camera.direction.x = std::cos(TO_RADIANS(app->scene.camera.yaw));*/
+  /*app->scene.camera.direction.z = std::sin(TO_RADIANS(app->scene.camera.yaw));*/
+  /*app->scene.camera.direction.y = 0;*/
 
   app->scene.camera.update(); // might be a better place to do an update for mouse movement
 }
