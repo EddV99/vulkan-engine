@@ -1297,7 +1297,7 @@ void RendererVulkan::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
 
   vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, environmentMap.pipelineLayout, 0, 1,
                           &environmentMap.descriptorSets[currentFrame], 0, 0);
-  vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+  vkCmdDraw(commandBuffer, ENV_MAP_COUNT / 3, 1, 0, 0);
 
   // blinn
   vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, blinn.pipeline);
@@ -1382,15 +1382,18 @@ void RendererVulkan::drawScene() {
 }
 
 void RendererVulkan::updateUniformBuffer(uint32_t frame) {
+  scene->camera.update();
   const Math::Matrix4 view = scene->camera.getViewMatrix();
 
   // sky box -----
+  /*Math::Matrix4 viewNoTranslation(view.toMatrix3x3());*/
+  /*environmentMapUBO[0].mvp = proj * viewNoTranslation;*/
+  /*environmentMapUBO[0].mvp.inverse();*/
+
   Math::Matrix4 viewNoTranslation(view.toMatrix3x3());
   environmentMapUBO[0].mvp = proj * viewNoTranslation;
-  environmentMapUBO[0].mvp.inverse();
-
   memcpy(environmentMap.uniformBuffersMapped[frame], environmentMapUBO.data(),
-         sizeof(EnvironmentMapUniformBufferObject));
+         sizeof(EnvironmentMapUniformBufferObject) * environmentMapUBO.size());
 
   VkMappedMemoryRange memoryRangeEnv{};
   memoryRangeEnv.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;

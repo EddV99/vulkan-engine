@@ -7,5 +7,5 @@ layout(location = 0) in vec3 dir;
 layout(binding = 1) uniform samplerCube env;
 
 void main() {
-    color = texture(env, normalize(dir));
+    color = texture(env, dir);
 }
