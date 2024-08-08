@@ -79,14 +79,14 @@ Vector3 Vector3::operator*(f32 scalar) const { return Vector3(x * scalar, y * sc
 
 Vector3 Vector3::operator-(const Vector3 &right) const { return Vector3(x - right.x, y - right.y, z - right.z); }
 
-f32 Vector3::dot(const Vector3 &right) { return x * right.x + y * right.y + z * right.z; }
+f32 Vector3::dot(const Vector3 &right) const { return x * right.x + y * right.y + z * right.z; }
 
-Vector3 Vector3::cross(const Vector3 &right) {
+Vector3 Vector3::cross(const Vector3 &right) const {
   return Vector3(this->y * right.z - this->z * right.y, -(this->x * right.z - this->z * right.x),
                  this->x * right.y - this->y * right.x);
 }
 
-f32 Vector3::length() { return std::sqrt(this->x * this->x + this->y * this->y + this->z * this->z); }
+f32 Vector3::length() const { return std::sqrt(this->x * this->x + this->y * this->y + this->z * this->z); }
 
 void Vector3::normalize() {
   f32 l = 1.0f / this->length();
@@ -94,7 +94,7 @@ void Vector3::normalize() {
   y = y * l;
   z = z * l;
 }
-Vector3 Vector3::normal() {
+Vector3 Vector3::normal() const {
   f32 l = 1.0f / this->length();
   Vector3 result;
   result.x = x * l;

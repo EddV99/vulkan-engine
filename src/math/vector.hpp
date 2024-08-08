@@ -28,11 +28,11 @@ public:
   bool operator==(const Vector3 &right) const;
   void print() const;
 
-  f32 dot(const Vector3 &right);
-  Vector3 cross(const Vector3 &right);
-  f32 length();
+  f32 dot(const Vector3 &right) const;
+  Vector3 cross(const Vector3 &right) const;
+  f32 length() const;
   void normalize();
-  Vector3 normal();
+  Vector3 normal() const;
   void rotate(f32 angle, Vector3 axis);
 };
 

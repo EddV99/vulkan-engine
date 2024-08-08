@@ -17,19 +17,21 @@ struct Quaternion {
   Quaternion(f32 w, f32 i, f32 j, f32 k);
   Quaternion(const Quaternion &other);
   Quaternion(Quaternion &&other) noexcept;
-  void print();
+  void print() const;
   Quaternion &operator=(const Quaternion &other);
   Quaternion &operator=(Quaternion &&other) noexcept;
 
-  Quaternion operator*(const Quaternion &other);
-  Quaternion operator*(f32 scalar);
-  Quaternion operator+(const Quaternion &other);
-  Quaternion conjugate();
+  Quaternion operator*(const Quaternion &other) const;
+  Quaternion operator*(f32 scalar) const;
+  Quaternion operator+(const Quaternion &other) const;
+  Quaternion conjugate() const;
+  void conjugate();
   void normalize();
   f32 length();
 
   Quaternion rotateEuler();
 
+  static Vector3 rotateVector(const Quaternion &q, const Vector3 &v);
   static Quaternion rotateX(f32 angle);
   static Quaternion rotateY(f32 angle);
   static Quaternion rotateZ(f32 angle);

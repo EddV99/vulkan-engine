@@ -23,7 +23,7 @@ Quaternion::Quaternion(const Quaternion &other) : w(other.w), v(other.v) {}
 
 Quaternion::Quaternion(Quaternion &&other) noexcept : w(other.w), v(other.v) {}
 
-void Quaternion::print() { std::cout << "(" << w << "{" << v.x << " " << v.y << " " << v.z << "})\n"; }
+void Quaternion::print() const { std::cout << "(" << w << "{" << v.x << " " << v.y << " " << v.z << "})\n"; }
 
 Quaternion &Quaternion::operator=(Quaternion &&other) noexcept {
   if (this == &other)
@@ -45,15 +45,26 @@ Quaternion &Quaternion::operator=(const Quaternion &other) {
   return *this;
 }
 
-Quaternion Quaternion::operator*(const Quaternion &other) {
-  f32 x0 = w * other.w - v.dot(other.v);
-  Math::Vector3 x = (other.v * w) + (v * other.w) + v.cross(other.v);
-  return Quaternion{x0, x.x, x.y, x.z};
+Quaternion Quaternion::operator*(const Quaternion &other) const {
+  /*f32 r = w * other.w - v.dot(other.v);*/
+  /*Math::Vector3 i = (other.v * w) + (v * other.w) + v.cross(other.v);*/
+  /*return Quaternion{r, i.x, i.y, i.z};*/
+  f32 ow = other.w;
+  f32 ox = other.v.x;
+  f32 oy = other.v.y;
+  f32 oz = other.v.z;
+
+  return Quaternion{
+      w * ow - v.x * ox - v.y * oy - v.z * oz, //
+      w * ox + v.x * ow + v.y * oz - v.z * oy, //
+      w * oy - v.x * oz + v.y * ow + v.z * ox, //
+      w * oz + v.x * oy - v.y * ox + v.z * ow  //
+  };
 }
-Quaternion Quaternion::operator*(f32 scalar) {
+Quaternion Quaternion::operator*(f32 scalar) const {
   return Quaternion(w * scalar, v.x * scalar, v.y * scalar, v.z * scalar);
 }
-Quaternion Quaternion::operator+(const Quaternion &other) {
+Quaternion Quaternion::operator+(const Quaternion &other) const {
   return Quaternion(w + other.w, v.x + other.v.x, v.y + other.v.y, v.z + other.v.z);
 }
 
@@ -78,7 +89,8 @@ void Quaternion::rotate(Vector3 r) {
 
 f32 Quaternion::length() { return std::sqrt(w * w + v.x * v.x + v.y * v.y + v.z * v.z); }
 
-Quaternion Quaternion::conjugate() { return Quaternion{w, Vector3(v * -1.0f)}; }
+Quaternion Quaternion::conjugate() const { return Quaternion{w, v.x * -1.0f, v.y * -1.0f, v.z * -1.0f}; }
+void Quaternion::conjugate() { v = v * -1.0f; };
 
 void Quaternion::normalize() {
   f32 length = 1.0f / this->length();
@@ -108,6 +120,19 @@ Matrix4 Quaternion::toRotationMatrix() {
                  2 * x * y + 2 * w * z, ww - xx + yy - zz, 2 * y * z - 2 * w * x, 0, //
                  2 * x * z - 2 * w * y, 2 * y * z + 2 * w * x, ww - xx - yy + zz, 0, //
                  0, 0, 0, 1);
+}
+
+Vector3 Quaternion::rotateVector(const Quaternion &q, const Vector3 &v) {
+  Quaternion r(0, v.x, v.y, v.z);
+
+  Quaternion qn = q;
+  qn.normalize();
+
+  Quaternion qprime = qn;
+  qprime.conjugate();
+
+  Quaternion result = (qn * r) * qprime;
+  return result.v;
 }
 Quaternion Quaternion::rotateX(f32 angle) {
   f32 a = angle / 2;
