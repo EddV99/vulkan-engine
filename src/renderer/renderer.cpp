@@ -123,11 +123,11 @@ void Renderer::mousePointerCallback(GLFWwindow *window, double x, double y) {
   if (app->state != State::RUNNING || !app->scene.camera.isFreecam())
     return;
 
-  if (app->firstMouse) {
-    app->mx = x;
-    app->my = y;
-    app->firstMouse = false;
-  }
+  /*if (app->firstMouse) {*/
+  /*  app->mx = x;*/
+  /*  app->my = y;*/
+  /*  app->firstMouse = false;*/
+  /*}*/
 
   double dx = x - app->mx;
   double dy = app->my - y;
@@ -143,10 +143,10 @@ void Renderer::mousePointerCallback(GLFWwindow *window, double x, double y) {
   app->scene.camera.yaw += dx;
   app->scene.camera.pitch += dy;
 
-  /*if (app->scene.camera.pitch > 89.0)*/
-  /*  app->scene.camera.pitch = 89.0;*/
-  /*if (app->scene.camera.pitch < -89.0)*/
-  /*  app->scene.camera.pitch = -89.0;*/
+  if (app->scene.camera.pitch > 89.0)
+    app->scene.camera.pitch = 89.0;
+  if (app->scene.camera.pitch < -89.0)
+    app->scene.camera.pitch = -89.0;
   /**/
   /*app->scene.camera.direction.x =*/
   /*    std::cos(TO_RADIANS(app->scene.camera.yaw)) * std::cos(TO_RADIANS(app->scene.camera.pitch));*/
@@ -154,6 +154,15 @@ void Renderer::mousePointerCallback(GLFWwindow *window, double x, double y) {
   /*app->scene.camera.direction.z =*/
   /*    std::cos(TO_RADIANS(app->scene.camera.pitch)) * std::sin(TO_RADIANS(app->scene.camera.yaw));*/
   /**/
+
+  // QUATERNIONS ------------------------------------
+  Math::Vector3 r(0, 0, -1);
+  Math::Quaternion qx = Math::Quaternion::rotateY(TO_RADIANS(-app->scene.camera.yaw));
+  Math::Quaternion qy = Math::Quaternion::rotateX(TO_RADIANS(-app->scene.camera.pitch));
+  Math::Quaternion q = qx;
+  app->scene.camera.direction = Math::Quaternion::rotateVector(q, r);
+  // QUATERNIONS ------------------------------------
+
   /*app->scene.camera.direction.x = std::cos(TO_RADIANS(app->scene.camera.yaw));*/
   /*app->scene.camera.direction.z = std::sin(TO_RADIANS(app->scene.camera.yaw));*/
   /*app->scene.camera.direction.y = 0;*/

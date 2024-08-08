@@ -65,8 +65,8 @@ Math::Vector3 Camera::getUpVector() const { return cameraUp; }
 void Camera::update() {
   if (freecam) {
     // free fly camera
-    /*forward = direction;*/
-    forward = position - (position + direction);
+    forward = direction;
+    /*forward = position - (position + direction);*/
     forward.normalize();
 
     right = up.cross(forward);
