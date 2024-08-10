@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../math/matrix.hpp"
+#include "../math/quaternion.hpp"
 #include "../math/vector.hpp"
 #include "../util/defines.hpp"
 
@@ -29,6 +30,8 @@ public:
   Math::Vector3 right;
   Math::Vector3 cameraUp;
   Math::Vector3 forward;
+
+  Math::Quaternion rotation;
 
   void movePosition(Math::Vector3 dp);
   void movePositionX(f32 dx);

@@ -2,16 +2,18 @@
 #include <cmath>
 
 namespace Game {
-Camera::Camera() : position{0, 0, 10}, target{0, 0, 0}, up{0, 1, 0}, direction{0, 0, -1} { update(); }
+Camera::Camera() : position{0, 0, 10}, target{0, 0, 0}, up{0, 1, 0}, direction{0, 0, -1}, rotation(0, 0, 0, 0) {
+  update();
+}
 Camera::Camera(const Camera &other)
     : position(other.position), target(other.target), up(other.up), direction(other.direction), yaw(other.yaw),
       pitch(other.pitch), view(other.view), right(other.right), cameraUp(other.cameraUp), forward(other.forward),
-      freecam(other.freecam) {}
+      freecam(other.freecam), rotation(other.rotation) {}
 
 Camera::Camera(Camera &&other) noexcept
     : position(other.position), target(other.target), up(other.up), direction(other.direction), yaw(other.yaw),
       pitch(other.pitch), view(other.view), right(other.right), cameraUp(other.cameraUp), forward(other.forward),
-      freecam(other.freecam) {}
+      freecam(other.freecam), rotation(other.rotation) {}
 
 Camera &Camera::operator=(const Camera &other) {
   if (this == &other)
@@ -28,6 +30,7 @@ Camera &Camera::operator=(const Camera &other) {
   this->cameraUp = other.cameraUp;
   this->forward = other.forward;
   this->freecam = other.freecam;
+  this->rotation = other.rotation;
 
   return *this;
 }
@@ -47,6 +50,7 @@ Camera &Camera::operator=(Camera &&other) noexcept {
   this->cameraUp = other.cameraUp;
   this->forward = other.forward;
   this->freecam = other.freecam;
+  this->rotation = other.rotation;
 
   return *this;
 }
@@ -86,10 +90,15 @@ void Camera::update() {
     cameraUp.normalize();
   }
 
-  Math::Matrix4 view(right.x, right.y, right.z, 0.0f,          //
-                     cameraUp.x, cameraUp.y, cameraUp.z, 0.0f, //
-                     forward.x, forward.y, forward.z, 0.0f,    //
-                     0, 0, 0, 1);
+  Math::Matrix4 view;
+  if (freecam) {
+    view = rotation.toRotationMatrix();
+  } else {
+    view = Math::Matrix4(right.x, right.y, right.z, 0.0f,          //
+                         cameraUp.x, cameraUp.y, cameraUp.z, 0.0f, //
+                         forward.x, forward.y, forward.z, 0.0f,    //
+                         0, 0, 0, 1);
+  }
 
   Math::Matrix4 transform(1.0f, 0, 0, -position.x, //
                           0, 1.0f, 0, -position.y, //
