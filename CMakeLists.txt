@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(vulkan-engine)
+project(vulkan-engine VERSION 1.0)
 
 IF(WIN32)
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -8,24 +8,34 @@ IF(WIN32)
 
     add_subdirectory(vendor/glfw)
 ELSE()
-    # set(CMAKE_CXX_FLAGS "-Wextra -Wall -fsanitize=address")
     set(CMAKE_CXX_FLAGS "-Wextra -Wall")
     find_package(glfw3 REQUIRED)
 ENDIF()
 
-set(CMAKE_CXX_STANDARD 17)
+find_package(Vulkan REQUIRED)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE Debug)
 #set(CMAKE_BUILD_TYPE Release)
 
-find_package(Vulkan REQUIRED)
-#find_package(glfw3 REQUIRED)
-
-project(vulkan-engine VERSION 1.0)
 
 add_subdirectory(src)
-
 add_executable(vulkan-engine src/entry.cpp)
+
+# Google Test Framework
+include(FetchContent)
+FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+)
+
+IF(WIN32)
+    # For Windows
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+ENDIF()
+
 
 target_include_directories(vulkan-engine PUBLIC 
     ${Vulkan_INCLUDE_DIR}
