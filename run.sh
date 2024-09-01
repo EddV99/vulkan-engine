@@ -43,6 +43,10 @@ run (){
     ./build/vulkan-engine
 }
 
+test() {
+    ctest --output-on-failure --test-dir build/tests/
+}
+
 
 
 if [[ $1 == "run" ]]; then
@@ -51,6 +55,8 @@ elif [[ $1 == "build" ]]; then
     build
 elif [[ $1 == "clean" ]]; then
     clean
+elif [[ $1 == "test" ]]; then
+    test
 else
     build
     run
