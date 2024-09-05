@@ -5,7 +5,7 @@
 #include <string>
 
 // A count of the number of matrices to generate
-#define NUMBER_TO_GENERATE 1000
+#define NUMBER_TO_GENERATE 10000
 // The max range for entries in matrix [0, MAX_RANGE]
 #define MAX_RANGE 100
 // Size of matrix (MATRIX_SIZE x MATRIX_SIZE)
@@ -32,6 +32,8 @@ void entry(std::fstream &f, std::fstream &r) {
 
   Eigen::Matrix4f A;
   Eigen::Matrix4f B;
+  A.setZero();
+  B.setZero();
 
   int run = 0;
   while (run < MATRIX_SIZE) {
@@ -42,7 +44,7 @@ void entry(std::fstream &f, std::fstream &r) {
       else
         f << x << "|";
 
-      A(i, run) = x;
+      A(run, i) = x;
     }
     for (int i = 0; i < MATRIX_SIZE; i++) {
       float x = distrib(gen);
@@ -51,7 +53,7 @@ void entry(std::fstream &f, std::fstream &r) {
       else
         f << x << "\n";
 
-      B(i, run) = x;
+      B(run, i) = x;
     }
     run++;
   }
@@ -61,9 +63,9 @@ void entry(std::fstream &f, std::fstream &r) {
   for (int i = 0; i < MATRIX_SIZE; i++) {
     for (int j = 0; j < MATRIX_SIZE; j++) {
       if (j + 1 < MATRIX_SIZE)
-        r << C(j, i) << " ";
+        r << C(i, j) << " ";
       else
-        r << C(j, i);
+        r << C(i, j);
     }
     r << "\n";
   }
