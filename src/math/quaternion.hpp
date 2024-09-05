@@ -12,7 +12,7 @@ namespace Math {
 // Quaternions
 // =============================================================================
 struct Quaternion {
-  Quaternion() = delete;
+  Quaternion();
   Quaternion(f32 angle, const Vector3 &axis);
   Quaternion(f32 w, f32 i, f32 j, f32 k);
   Quaternion(const Quaternion &other);
@@ -23,6 +23,7 @@ struct Quaternion {
 
   Quaternion operator*(const Quaternion &other) const;
   Quaternion operator*(f32 scalar) const;
+  bool operator==(const Quaternion other) const;
   Quaternion operator+(const Quaternion &other) const;
   Quaternion conjugate() const;
   void conjugate();

@@ -7,6 +7,7 @@ namespace Math {
 // =============================================================================
 // Quaternions
 // =============================================================================
+Quaternion::Quaternion() : w(0), v{0, 0, 0} {}
 Quaternion::Quaternion(f32 w, f32 i, f32 j, f32 k) : w(w), v{i, j, k} {}
 
 Quaternion::Quaternion(f32 angle, const Vector3 &axis) {
@@ -64,6 +65,9 @@ Quaternion Quaternion::operator*(const Quaternion &other) const {
 Quaternion Quaternion::operator*(f32 scalar) const {
   return Quaternion(w * scalar, v.x * scalar, v.y * scalar, v.z * scalar);
 }
+
+bool Quaternion::operator==(const Quaternion other) const { return w == other.w && v == other.v; }
+
 Quaternion Quaternion::operator+(const Quaternion &other) const {
   return Quaternion(w + other.w, v.x + other.v.x, v.y + other.v.y, v.z + other.v.z);
 }
