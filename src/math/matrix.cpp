@@ -251,6 +251,24 @@ Matrix4 Matrix4::operator*(const Matrix4 &right) const {
 
   return value;
 }
+bool Matrix4::operator==(const Matrix4 &right) const {
+  return m[0] == right.m[0] &&   //
+         m[1] == right.m[1] &&   //
+         m[2] == right.m[2] &&   //
+         m[3] == right.m[3] &&   //
+         m[4] == right.m[4] &&   //
+         m[5] == right.m[5] &&   //
+         m[6] == right.m[6] &&   //
+         m[7] == right.m[7] &&   //
+         m[8] == right.m[8] &&   //
+         m[9] == right.m[9] &&   //
+         m[10] == right.m[10] && //
+         m[11] == right.m[11] && //
+         m[12] == right.m[12] && //
+         m[13] == right.m[13] && //
+         m[14] == right.m[14] && //
+         m[15] == right.m[15];
+}
 
 void Matrix4::transpose() {
   for (int r = 0; r < 4; r++) {

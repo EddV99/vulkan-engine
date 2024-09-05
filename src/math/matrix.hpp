@@ -76,6 +76,7 @@ public:
   Matrix4 operator-(const Matrix4 &right) const;
   Matrix4 operator*(const Matrix4 &right) const;
   Matrix4 operator*(f32 scalar) const;
+  bool operator==(const Matrix4 &right) const;
   Matrix3 toMatrix3x3() const;
 
   f32 determinate();
