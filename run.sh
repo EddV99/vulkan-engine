@@ -47,6 +47,20 @@ test() {
     ctest --output-on-failure --test-dir build/tests/
 }
 
+generate() {
+    cd tests
+    # rm files/* &> /dev/null
+    # g++ matrix-generator.cpp testDataGeneratorHelper.hpp testDataGeneratorHelper.cpp &> /dev/null
+    # ./a.out
+    # rm a.out
+
+    g++ quaternion-generator.cpp testDataGeneratorHelper.hpp testDataGeneratorHelper.cpp 
+    ./a.out
+    rm a.out
+
+    cd ..
+}
+
 
 
 if [[ $1 == "run" ]]; then
@@ -57,6 +71,8 @@ elif [[ $1 == "clean" ]]; then
     clean
 elif [[ $1 == "test" ]]; then
     test
+elif [[ $1 == "generate" ]]; then
+    generate
 else
     build
     run

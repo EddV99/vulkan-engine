@@ -13,7 +13,7 @@ enable_testing()
 
 include(GoogleTest)
 
-add_executable(hello_test test.cpp)
+add_executable(hello_test test.cpp testDataReaderHelper.cpp)
 gtest_discover_tests(hello_test)
 target_link_libraries(hello_test game
                                  GTest::gtest_main

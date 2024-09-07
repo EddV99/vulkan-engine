@@ -1,26 +1,23 @@
 #include "../src/math/matrix.hpp"
 #include "../src/math/quaternion.hpp"
 #include "../src/util/util.hpp"
+#include "testDataReaderHelper.hpp"
 
 #include <cstdio>
 #include <fstream>
 #include <gtest/gtest.h>
 #include <sys/types.h>
 
-bool loadMatricesData(Math::Matrix4 &A, Math::Matrix4 &B, std::ifstream &data);
-bool loadMatrixResult(Math::Matrix4 &A, std::ifstream &data);
-
-bool loadQuaternionData(Math::Quaternion &A, Math::Quaternion &B, std::ifstream &data);
-bool loadQuaternionResult(Math::Quaternion &A, std::ifstream &data);
+float margin = 0.00001;
 
 TEST(RandomMatrices10K, Multiplication) {
-  std::string name = "../../tests/files/matrix-multiplication.data";
+  std::string name = "../../tests/files/matrix-multiplication-data.txt";
   std::ifstream data(name);
 
   if (!data.is_open())
     Util::Error("Can't open file: " + name);
 
-  name = "../../tests/files/matrix-multiplication.res";
+  name = "../../tests/files/matrix-multiplication-res.txt";
 
   std::ifstream res(name);
   if (!res.is_open())
@@ -29,19 +26,19 @@ TEST(RandomMatrices10K, Multiplication) {
   Math::Matrix4 A;
   Math::Matrix4 B;
   Math::Matrix4 C;
-  while (loadMatricesData(A, B, data) && loadMatrixResult(C, res)) {
+  while (readTwoMatrixFromFile(data, A, B) && readSingleMatrixFromFile(res, C)) {
     EXPECT_EQ(A * B, C);
   }
 }
 
 TEST(RandomQuaternions10K, Multiplication) {
-  std::string name = "../../tests/files/quaternion-multiplication.data";
+  std::string name = "../../tests/files/quaternion-multiplication-data.txt";
   std::ifstream data(name);
 
   if (!data.is_open())
     Util::Error("Can't open file: " + name);
 
-  name = "../../tests/files/quaternion-multiplication.res";
+  name = "../../tests/files/quaternion-multiplication-res.txt";
 
   std::ifstream res(name);
   if (!res.is_open())
@@ -51,165 +48,56 @@ TEST(RandomQuaternions10K, Multiplication) {
   Math::Quaternion B;
   Math::Quaternion C;
 
-  while (loadQuaternionData(A, B, data) && loadQuaternionResult(C, res)) {
+  while (readTwoQuaternionFromFile(data, A, B) && readSingleQuaternionFromFile(res, C)) {
     EXPECT_EQ(A * B, C);
   }
 }
 
-bool loadMatrixResult(Math::Matrix4 &C, std::ifstream &data) {
-  int r = 0, c = 0;
-  int i = 0;
-  std::string line;
+TEST(RandomQuaternions10K, Normalize) {
+  std::string name = "../../tests/files/quaternion-normalize-data.txt";
+  std::ifstream data(name);
 
-  getline(data, line);
-  while (!line.empty() && !data.eof()) {
+  if (!data.is_open())
+    Util::Error("Can't open file: " + name);
 
-    std::string num = "";
-    i = 0;
+  name = "../../tests/files/quaternion-normalize-res.txt";
 
-    while (i <= line.size()) {
-      if (i == line.size() || line[i] == ' ') {
-        C.set(r, c, std::stof(num));
-        num.clear();
-        c++;
-      } else {
-        num += line[i];
-      }
-      i++;
-    }
-    r++;
-    c = 0;
-    getline(data, line);
+  std::ifstream res(name);
+  if (!res.is_open())
+    Util::Error("Can't open file: " + name);
+
+  Math::Quaternion A;
+  Math::Quaternion C;
+
+  while (readSingleQuaternionFromFile(data, A) && readSingleQuaternionFromFile(res, C)) {
+    A.normalize();
+    EXPECT_NEAR(A.w, C.w, margin);
+    EXPECT_NEAR(A.v.x, C.v.x, margin);
+    EXPECT_NEAR(A.v.y, C.v.y, margin);
+    EXPECT_NEAR(A.v.z, C.v.z, margin);
   }
-
-  if (data.eof())
-    return false;
-
-  return true;
 }
 
-bool loadMatricesData(Math::Matrix4 &A, Math::Matrix4 &B, std::ifstream &data) {
-  int r = 0, c = 0;
-  int i = 0;
-  std::string line;
-  bool isA = true;
+TEST(RandomQuaternions10K, ToRotationMatrix) {
+  std::string name = "../../tests/files/quaternion-to-rotation-matrix-data.txt";
+  std::ifstream data(name);
 
-  getline(data, line);
-  while (!line.empty() && !data.eof()) {
+  if (!data.is_open())
+    Util::Error("Can't open file: " + name);
 
-    std::string num = "";
-    i = 0;
-    while (i <= line.size()) {
-      if (i == line.size() || line[i] == ' ') {
-        if (isA)
-          A.set(r, c, std::stof(num));
-        else
-          B.set(r, c, std::stof(num));
-        c++;
-        num.clear();
-      } else if (line[i] == '|') {
-        A.set(r, c, std::stof(num));
-        num.clear();
-        isA = false;
-        c = 0;
-      } else {
-        num += line[i];
-      }
-      i++;
-    }
+  name = "../../tests/files/quaternion-to-rotation-matrix-res.txt";
 
-    isA = true;
-    r++;
-    c = 0;
-    getline(data, line);
+  std::ifstream res(name);
+  if (!res.is_open())
+    Util::Error("Can't open file: " + name);
+
+  Math::Quaternion A;
+  Math::Matrix4 C;
+
+  while (readSingleQuaternionFromFile(data, A) && readSingleMatrixFromFile(res, C)) {
+    Math::Matrix4 D = A.toRotationMatrix();
+    for (int r = 0; r < 4; r++)
+      for (int c = 0; c < 4; c++)
+        EXPECT_NEAR(D(r, c), C(r, c), margin);
   }
-
-  if (data.eof())
-    return false;
-
-  return true;
-}
-
-bool loadQuaternionData(Math::Quaternion &A, Math::Quaternion &B, std::ifstream &data) {
-  int i = 0;
-  std::string line;
-  bool isA = true;
-  int x = 0;
-  getline(data, line);
-  if (!line.empty() && !data.eof()) {
-    std::string num = "";
-    i = 0;
-    while (i <= line.size()) {
-      if (i == line.size() || line[i] == ' ') {
-        if (isA) {
-          if (x == 0)
-            A.w = std::stof(num);
-          else if (x == 1)
-            A.v.x = std::stof(num);
-          else if (x == 2)
-            A.v.y = std::stof(num);
-        } else {
-          if (x == 0)
-            B.w = std::stof(num);
-          else if (x == 1)
-            B.v.x = std::stof(num);
-          else if (x == 2)
-            B.v.y = std::stof(num);
-          else
-            B.v.z = std::stof(num);
-        }
-        x++;
-        num.clear();
-      } else if (line[i] == '|') {
-        A.v.z = std::stof(num);
-        num.clear();
-        isA = false;
-        x = 0;
-      } else {
-        num += line[i];
-      }
-      i++;
-    }
-
-    isA = true;
-  }
-
-  if (data.eof() || line.empty())
-    return false;
-
-  return true;
-}
-bool loadQuaternionResult(Math::Quaternion &A, std::ifstream &data) {
-  int i = 0;
-  std::string line;
-  int x = 0;
-
-  getline(data, line);
-
-  if (!line.empty() && !data.eof()) {
-    std::string num = "";
-    i = 0;
-    while (i <= line.size()) {
-      if (i == line.size() || line[i] == ' ') {
-        if (x == 0)
-          A.w = std::stof(num);
-        else if (x == 1)
-          A.v.x = std::stof(num);
-        else if (x == 2)
-          A.v.y = std::stof(num);
-        else
-          A.v.z = std::stof(num);
-        x++;
-        num.clear();
-      } else {
-        num += line[i];
-      }
-      i++;
-    }
-  }
-
-  if (data.eof() || line.empty())
-    return false;
-
-  return true;
 }
