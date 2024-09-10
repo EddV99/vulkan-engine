@@ -14,7 +14,9 @@ public:
   void fillQuaternion(Eigen::Quaternionf &A);
   void singleQuaternionToFile(std::fstream &file, const Eigen::Quaternionf &A);
   void twoQuaternionToFile(std::fstream &file, const Eigen::Quaternionf &A, const Eigen::Quaternionf &B);
-
+  void quaternionAndVector3ToFile(std::fstream &file, const Eigen::Quaternionf &A, const Eigen::Vector3f &B);
+  void fillVector3(Eigen::Vector3f &A);
+  void singleVectorToFile(std::fstream &file, const Eigen::Vector3f &A);
 private:
   std::random_device seed;
   std::mt19937 gen;

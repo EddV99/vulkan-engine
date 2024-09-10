@@ -62,3 +62,18 @@ void TestDataGeneratorHelper::twoQuaternionToFile(std::fstream &file, const Eige
   file << B.w() << " " << B.x() << " " << B.y() << " " << B.z() << "\n";
 }
 
+void TestDataGeneratorHelper::quaternionAndVector3ToFile(std::fstream &file, const Eigen::Quaternionf &A,
+                                                         const Eigen::Vector3f &B) {
+  file << A.w() << " " << A.x() << " " << A.y() << " " << A.z() << "|";
+  file << B.x() << " " << B.y() << " " << B.z() << "\n";
+}
+
+void TestDataGeneratorHelper::fillVector3(Eigen::Vector3f &A) {
+  A.x() = distrib(gen);
+  A.y() = distrib(gen);
+  A.z() = distrib(gen);
+}
+
+void TestDataGeneratorHelper::singleVectorToFile(std::fstream &file, const Eigen::Vector3f &A) {
+  file << A.x() << " " << A.y() << " " << A.z() << "\n";
+}

@@ -7,7 +7,7 @@ bool readSingleQuaternionFromFile(std::ifstream &file, Math::Quaternion &A) {
 
   std::vector<float> line = readLineOfFloatsInFile(file);
 
-  if(line.empty())
+  if (line.empty())
     return false;
 
   A.w = line[0];
@@ -24,7 +24,7 @@ bool readTwoQuaternionFromFile(std::ifstream &file, Math::Quaternion &A, Math::Q
 
   std::vector<float> line = readLineOfFloatsInFile(file);
 
-  if(line.empty())
+  if (line.empty())
     return false;
 
   A.w = line[0];
@@ -46,7 +46,7 @@ bool readSingleMatrixFromFile(std::ifstream &file, Math::Matrix4 &A) {
 
   std::vector<float> line = readLineOfFloatsInFile(file);
 
-  if(line.empty())
+  if (line.empty())
     return false;
 
   A.set(0, 0, line[0]);
@@ -80,7 +80,7 @@ bool readTwoMatrixFromFile(std::ifstream &file, Math::Matrix4 &A, Math::Matrix4 
     return false;
   std::vector<float> line = readLineOfFloatsInFile(file);
 
-  if(line.empty())
+  if (line.empty())
     return false;
 
   A.set(0, 0, line[0]);
@@ -125,6 +125,43 @@ bool readTwoMatrixFromFile(std::ifstream &file, Math::Matrix4 &A, Math::Matrix4 
   B.set(3, 1, line[5]);
   B.set(3, 2, line[6]);
   B.set(3, 3, line[7]);
+
+  return true;
+}
+
+bool readVectorFromFile(std::ifstream &file, Math::Vector3 &A) {
+  if (file.eof())
+    return false;
+
+  std::vector<float> line = readLineOfFloatsInFile(file);
+
+  if (line.empty())
+    return false;
+
+  A.x = line[0];
+  A.y = line[1];
+  A.z = line[2];
+
+  return true;
+}
+
+bool readQuaternionAndVectorFromFile(std::ifstream &file, Math::Quaternion &A, Math::Vector3 &B) {
+  if (file.eof())
+    return false;
+
+  std::vector<float> line = readLineOfFloatsInFile(file);
+
+  if (line.empty())
+    return false;
+
+  A.w = line[0];
+  A.v.x = line[1];
+  A.v.y = line[2];
+  A.v.z = line[3];
+
+  B.x = line[4];
+  B.y = line[5];
+  B.z = line[6];
 
   return true;
 }
