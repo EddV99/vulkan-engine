@@ -47,9 +47,6 @@ Quaternion &Quaternion::operator=(const Quaternion &other) {
 }
 
 Quaternion Quaternion::operator*(const Quaternion &other) const {
-  /*f32 r = w * other.w - v.dot(other.v);*/
-  /*Math::Vector3 i = (other.v * w) + (v * other.w) + v.cross(other.v);*/
-  /*return Quaternion{r, i.x, i.y, i.z};*/
   f32 ow = other.w;
   f32 ox = other.v.x;
   f32 oy = other.v.y;
@@ -106,10 +103,6 @@ void Quaternion::normalize() {
 
 Matrix4 Quaternion::toRotationMatrix() {
   this->normalize();
-  /* return Matrix4(2 * (w * w + v.x * v.x) - 1, 2 * (v.x * v.y - w * v.z), 2 * (v.x * v.z + w * v.y), 0, // */
-  /*                2 * (v.x * v.y + w * v.z), 2 * (w * w + v.y * v.y) - 1, 2 * (v.y * v.z - w * v.x), 0, // */
-  /*                2 * (v.x * v.z - w * v.y), 2 * (v.y * v.z + w * v.x), 2 * (w * w + v.z * v.z) - 1, 0, // */
-  /*                0, 0, 0, 1); */
 
   f32 ww = w * w;
   f32 xx = v.x * v.x;
