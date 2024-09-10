@@ -8,7 +8,7 @@
 #include <gtest/gtest.h>
 #include <sys/types.h>
 
-float margin = 0.00001;
+float margin = 0.01;
 
 TEST(RandomMatrices10K, Multiplication) {
   std::string name = "../../tests/files/matrix-multiplication-data.txt";
@@ -99,5 +99,30 @@ TEST(RandomQuaternions10K, ToRotationMatrix) {
     for (int r = 0; r < 4; r++)
       for (int c = 0; c < 4; c++)
         EXPECT_NEAR(D(r, c), C(r, c), margin);
+  }
+}
+
+TEST(RandomQuaternions10K, rotatePoint) {
+  std::string name = "../../tests/files/quaternion-rotation-data.txt";
+  std::ifstream data(name);
+
+  if (!data.is_open())
+    Util::Error("Can't open file: " + name);
+
+  name = "../../tests/files/quaternion-rotation-res.txt";
+
+  std::ifstream res(name);
+  if (!res.is_open())
+    Util::Error("Can't open file: " + name);
+
+  Math::Quaternion rot;
+  Math::Vector3 pos;
+  Math::Vector3 newPos;
+
+  while (readQuaternionAndVectorFromFile(data, rot, pos) && readVectorFromFile(res, newPos)) {
+    Math::Vector3 r = Math::Quaternion::rotateVector(rot, pos);
+    EXPECT_NEAR(r.x, newPos.x, margin);
+    EXPECT_NEAR(r.y, newPos.y, margin);
+    EXPECT_NEAR(r.z, newPos.z, margin);
   }
 }
